@@ -1,0 +1,415 @@
+/* ============================================
+   GRUNDLAYOUT
+============================================ */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f2f2ee;
+    color: #2c3e50;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    background: #3e5c3f;
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+main {
+    padding: 1rem;
+    margin-bottom: 80px; /* Platz für Footer */
+}
+
+/* ============================================
+   MAP & LIVE DOT
+============================================ */
+#map-container {
+    margin-bottom: 1rem;
+}
+
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-top: 0.5rem;
+}
+
+/* Live Map Status Punkt */
+#map-container h2::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    background: green;
+}
+
+/* ============================================
+   GPS MARKER PULSIEREND
+============================================ */
+.gps-marker-wrapper {
+    position: relative;
+    width: 24px;
+    height: 24px;
+}
+
+.gps-marker {
+    width: 12px;
+    height: 12px;
+    background-color: #007bff;
+    border-radius: 50%;
+    border: 2px solid white;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 1000;
+}
+
+.gps-marker-pulse {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(0, 123, 255, 0.5);
+    border-radius: 50%;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    animation: pulse 1.5s infinite;
+}
+
+.gps-marker-wrapper.offline .gps-marker,
+.gps-marker-wrapper.offline .gps-marker-pulse {
+    background-color: #e74c3c;
+    border-color: #fff;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================
+   CARD & STRECKENLISTE
+============================================ */
+.card {
+    background: #ffffff;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+ul {
+    padding-left: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+/* Streckenliste Einträge */
+#entry-list li {
+    background-color: #e6e1d9;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-left: 5px solid #3e5c3f;
+    border-radius: 5px;
+    position: relative;
+}
+
+/* Löschen Button */
+.entry-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.3s;
+}
+
+.entry-delete-btn:hover {
+    background: #c0392b;
+}
+
+/* ============================================
+   TABS & FOOTER
+============================================ */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #3e5c3f;
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+}
+
+.tabs {
+    display: flex;
+}
+
+.tab-button {
+    flex: 1;
+    border: none;
+    background: #3e5c3f;
+    color: #d4cbb4;
+    font-size: 1rem;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.tab-button:hover {
+    background: #4a704a;
+}
+
+.tab-button.active {
+    background: #d4cbb4;
+    color: #3e5c3f;
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+}
+
+/* Tab Inhalte */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   PLUS BUTTON FÜR STRECKENLISTE
+============================================ */
+#streckenliste {
+    position: relative;
+    padding-top: 2rem;
+}
+
+#add-entry-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
+    background: #3e5c3f;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: background 0.3s;
+}
+
+#add-entry-btn:hover {
+    background: #4a704a;
+}
+
+/* ============================================
+   MODAL / NEUER EINTRAG
+============================================ */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 420px;
+    padding: 1.2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    animation: modalFade 0.25s ease-out;
+}
+
+@keyframes modalFade {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+#entry-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+#entry-form input,
+#entry-form select,
+#entry-form textarea {
+    margin-top: 0.3rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+#entry-form textarea { resize: vertical; }
+
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#cancel-entry {
+    background: #ccc;
+}
+
+#cancel-entry:hover { background: #b5b5b5; }
+
+.modal-actions button[type="submit"] {
+    background: #3e5c3f;
+    color: #fff;
+}
+
+.modal-actions button[type="submit"]:hover {
+    background: #4a704a;
+}
+
+/* ============================================
+   LOGIN OVERLAY
+============================================ */
+#login-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.login-box {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+#pin-input {
+    font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    letter-spacing: 0.3rem;
+}
+
+/* PIN TASTATUR */
+#pin-display {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5rem;
+}
+
+.pin-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.pin-btn {
+    padding: 1.5rem;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 10px;
+    background: #3e5c3f;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.pin-btn:hover {
+    background: #4a704a;
+}
+
+.pin-btn.delete {
+    background: #e74c3c;
+}
+
+.pin-btn.delete:hover {
+    background: #c0392b;
+}
+
+.pin-btn.ok {
+    background: #007bff;
+}
+
+.pin-btn.ok:hover {
+    background: #0056b3;
+}
+
+
+/* ============================================
+   MOBILFREUNDLICH
+============================================ */
+@media (max-width: 600px) {
+    header { font-size: 1.3rem; }
+
+    .tab-button {
+        font-size: 0.95rem;
+        padding: 0.5rem 0;
+    }
+
+    main { padding: 0.75rem; }
+
+    #map { height: 300px; }
+
+    #add-entry-btn { width: 40px; height: 40px; font-size: 1.2rem; }
+
+    .pin-btn {
+        font-size: 1.3rem;
+        padding: 0.8rem;
+    }
+}
