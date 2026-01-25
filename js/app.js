@@ -17,13 +17,12 @@ tabButtons.forEach(btn => {
 // ==============================
 // LOCKSCREEN / LOGIN
 // ==============================
-const pinInput = document.getElementById("pin-input"); // unsichtbares Input
+const pinInput = document.getElementById("pin-input");
 const pinDisplay = document.getElementById("pin-display");
 const pinButtons = document.querySelectorAll(".pin-btn");
 const overlay = document.getElementById("login-overlay");
 const pinError = document.getElementById("pin-error");
-const correctPin = "1939"; // PIN hier ändern
-
+const correctPinHash = CryptoJS.SHA256("1939").toString();
 // ------------------------------
 // PIN DISPLAY UPDATE
 // ------------------------------
@@ -45,9 +44,11 @@ function updatePinDisplay() {
 // PIN CHECK
 // ------------------------------
 function checkPin() {
-    if(pinInput.value === correctPin){
+    const enteredHash = CryptoJS.SHA256(pinInput.value).toString();
+
+    if (enteredHash === correctPinHash) {
         overlay.style.display = "none";
-        if(typeof initializeMap === "function") initializeMap();
+        if (typeof initializeMap === "function") initializeMap();
     } else {
         pinError.classList.remove("hidden");
         pinInput.value = "";
@@ -55,6 +56,7 @@ function checkPin() {
         setTimeout(() => pinError.classList.add("hidden"), 1500);
     }
 }
+
 
 // ------------------------------
 // PIN BUTTONS
