@@ -1,6 +1,6 @@
-// -----------------------------
+// ==============================
 // TAB SWITCHING
-// -----------------------------
+// ==============================
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
 
@@ -14,37 +14,104 @@ tabButtons.forEach(btn => {
     });
 });
 
-// -----------------------------
-// LOGIN / PIN PAD
-// -----------------------------
-let pin = "";
-const correctPin = "1234"; // Hier kannst du deine PIN eintragen
+// ==============================
+// LOCKSCREEN / LOGIN
+// ==============================
+const pinInput = document.getElementById("pin-input");
 const pinDisplay = document.getElementById("pin-display");
-const pinError = document.getElementById("pin-error");
+const pinButtons = document.querySelectorAll(".pin-btn");
 const overlay = document.getElementById("login-overlay");
+const pinError = document.getElementById("pin-error");
+const correctPinHash = CryptoJS.SHA256("1939").toString();
+// ------------------------------
+// PIN DISPLAY UPDATE
+// ------------------------------
+function updatePinDisplay() {
+    const dots = document.querySelectorAll("#pin-display span");
+    const val = pinInput.value;
 
-document.querySelectorAll(".pin-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        if (btn.classList.contains("delete")) {
-            pin = pin.slice(0, -1);
-        } else if (btn.classList.contains("ok")) {
-            if (pin === correctPin) {
-                overlay.style.display = "none";
-                initializeMap(); // Karte erst nach Login laden
-            } else {
-                pinError.classList.remove("hidden");
-                pin = "";
-            }
+    dots.forEach((dot, idx) => {
+        if(idx < val.length){
+            dot.classList.add("active");
         } else {
-            if (pin.length < 4) pin += btn.textContent;
+            dot.classList.remove("active");
         }
-        pinDisplay.textContent = pin.padEnd(4, "•");
+    });
+}
+
+
+// ------------------------------
+// PIN CHECK
+// ------------------------------
+function checkPin() {
+    const enteredHash = CryptoJS.SHA256(pinInput.value).toString();
+
+    if (enteredHash === correctPinHash) {
+        overlay.style.display = "none";
+        if (typeof initializeMap === "function") initializeMap();
+    } else {
+        pinError.classList.remove("hidden");
+        pinInput.value = "";
+        updatePinDisplay();
+        setTimeout(() => pinError.classList.add("hidden"), 1500);
+    }
+}
+
+
+// ------------------------------
+// PIN BUTTONS
+// ------------------------------
+pinButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if(btn.classList.contains("delete")){
+            pinInput.value = pinInput.value.slice(0,-1);
+        } else if(btn.classList.contains("ok")){
+            checkPin();
+        } else if(pinInput.value.length < 4){
+            pinInput.value += btn.textContent.trim();
+        }
+        updatePinDisplay();
     });
 });
 
-// -----------------------------
-// STRECKENLISTE & MODAL ELEMENTE
-// -----------------------------
+// ------------------------------
+// KEYBOARD SUPPORT
+// ------------------------------
+document.addEventListener("keydown", e => {
+    if(!overlay || overlay.style.display === "none") return;
+    if(e.key >= "0" && e.key <= "9" && pinInput.value.length < 4){
+        pinInput.value += e.key;
+    } else if(e.key === "Backspace"){
+        pinInput.value = pinInput.value.slice(0,-1);
+    } else if(e.key === "Enter"){
+        checkPin();
+    }
+    updatePinDisplay();
+});
+
+// Initial PIN-Dots
+updatePinDisplay();
+
+// ==============================
+// LOCKSCREEN CLOCK
+// ==============================
+function updateClock(){
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2,'0');
+    const minutes = now.getMinutes().toString().padStart(2,'0');
+    const day = now.getDate().toString().padStart(2,'0');
+    const month = (now.getMonth()+1).toString().padStart(2,'0');
+    const year = now.getFullYear();
+
+    document.getElementById('time').textContent = `${hours}:${minutes}`;
+    document.getElementById('date').textContent = `${day}.${month}.${year}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ==============================
+// STRECKENLISTE & MODAL
+// ==============================
 const entryList = document.getElementById("entry-list");
 const addBtn = document.getElementById("add-entry-btn");
 const modal = document.getElementById("entry-modal");
@@ -56,9 +123,7 @@ const subcategoryContainer = document.getElementById("subcategory-container");
 let entries = JSON.parse(localStorage.getItem("entries")) || [];
 renderEntries();
 
-// -----------------------------
-// ADD ENTRY MODAL
-// -----------------------------
+// Open / Close Modal
 addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
 cancelBtn.addEventListener("click", () => {
     modal.classList.add("hidden");
@@ -66,14 +131,11 @@ cancelBtn.addEventListener("click", () => {
     subcategoryContainer.innerHTML = "";
 });
 
-// -----------------------------
-// WILDART UNTERKATEGORIEN
-// -----------------------------
+// Wildart Unterkategorien
 wildSelect.addEventListener("change", () => {
     const value = wildSelect.value;
     let html = "";
-
-    switch(value) {
+    switch(value){
         case "Rehwild":
             html = `<label>Unterart
                         <select name="unterart">
@@ -114,18 +176,15 @@ wildSelect.addEventListener("change", () => {
         default:
             html = "";
     }
-
     subcategoryContainer.innerHTML = html;
 });
 
-// -----------------------------
-// ADD ENTRY FORM SUBMIT
-// -----------------------------
+// Submit Entry
 form.addEventListener("submit", e => {
     e.preventDefault();
     const formData = new FormData(form);
     const entry = {};
-    formData.forEach((val,key) => entry[key] = val);
+    formData.forEach((val,key) => entry[key]=val);
     entries.push(entry);
     localStorage.setItem("entries", JSON.stringify(entries));
     renderEntries();
@@ -134,21 +193,18 @@ form.addEventListener("submit", e => {
     subcategoryContainer.innerHTML = "";
 });
 
-// -----------------------------
-// RENDER ENTRIES
-// -----------------------------
-function renderEntries() {
-    entryList.innerHTML = "";
-    entries.forEach((entry, idx) => {
+// Render Entries
+function renderEntries(){
+    entryList.innerHTML="";
+    entries.forEach((entry, idx)=>{
         const li = document.createElement("li");
         li.innerHTML = `${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""} 
                         <button class="entry-delete-btn" data-idx="${idx}">Löschen</button>`;
         entryList.appendChild(li);
     });
 
-    // DELETE BUTTONS
-    document.querySelectorAll(".entry-delete-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
+    document.querySelectorAll(".entry-delete-btn").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
             const index = btn.dataset.idx;
             entries.splice(index,1);
             localStorage.setItem("entries", JSON.stringify(entries));
@@ -157,74 +213,44 @@ function renderEntries() {
     });
 }
 
-// -----------------------------
+// ==============================
 // INITIALIZE MAP (NACH LOGIN)
-// -----------------------------
-function initializeMap() {
-    // -----------------------------
-    // MAP INITIALIZATION
-    // -----------------------------
-    let map = L.map("map", {
-        center: [49.180, 13.065],
-        zoom: 15
-    });
-
-    // Satelliten-Map (Esri World Imagery)
-    L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
-            maxZoom: 20
+// ==============================
+function initializeMap(){
+    let map = L.map("map",{center:[49.180,13.065],zoom:15});
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+        attribution:"Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
+        maxZoom:20
     }).addTo(map);
 
-    // -----------------------------
-    // REVIERE POLYGONS
-    // -----------------------------
-    reviere.forEach(r => {
-        L.polygon(r.coords, {
-            color: r.color,
-            fillColor: r.fillColor,
-            fillOpacity: 0.3
-        }).addTo(map).bindPopup(r.name);
+    reviere.forEach(r=>{
+        L.polygon(r.coords,{color:r.color,fillColor:r.fillColor,fillOpacity:0.3}).addTo(map).bindPopup(r.name);
     });
 
-    // -----------------------------
-    // LIVE MAP STATUS DOT
-    // -----------------------------
     const mapStatusDot = document.createElement("span");
     mapStatusDot.classList.add("gps-dot");
     mapStatusDot.textContent = "Live Revier Map online";
     document.getElementById("map-container").insertBefore(mapStatusDot, document.getElementById("map"));
 
-    map.on('tileerror', () => {
-        mapStatusDot.style.background = 'red';
-        mapStatusDot.textContent = "Live Revier Map offline";
-    });
-    map.on('tileload', () => {
-        mapStatusDot.style.background = 'green';
-        mapStatusDot.textContent = "Live Revier Map online";
-    });
+    map.on('tileerror', () => { mapStatusDot.style.background = 'red'; mapStatusDot.textContent = "Live Revier Map offline"; });
+    map.on('tileload', () => { mapStatusDot.style.background = 'green'; mapStatusDot.textContent = "Live Revier Map online"; });
 
-    // -----------------------------
-    // GPS MARKER
-    // -----------------------------
     let gpsMarkerWrapper = L.divIcon({
-        className: "gps-marker-wrapper",
-        html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-        iconSize: [24,24],
-        iconAnchor: [12,12]
+        className:"gps-marker-wrapper",
+        html:`<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
+        iconSize:[24,24],
+        iconAnchor:[12,12]
     });
 
-    let gpsMarker = L.marker([49.180, 13.065], {icon: gpsMarkerWrapper}).addTo(map);
+    let gpsMarker = L.marker([49.180,13.065],{icon:gpsMarkerWrapper}).addTo(map);
 
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(pos => {
+    if(navigator.geolocation){
+        navigator.geolocation.watchPosition(pos=>{
             const {latitude, longitude} = pos.coords;
             gpsMarker.setLatLng([latitude, longitude]);
             gpsMarker.getElement().classList.remove("offline");
         }, err => {
             gpsMarker.getElement().classList.add("offline");
-        }, {enableHighAccuracy: true});
-    } else {
-        gpsMarker.getElement().classList.add("offline");
-    }
+        }, {enableHighAccuracy:true});
+    } else gpsMarker.getElement().classList.add("offline");
 }
