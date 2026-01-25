@@ -22,14 +22,24 @@ const pinDisplay = document.getElementById("pin-display");
 const pinButtons = document.querySelectorAll(".pin-btn");
 const overlay = document.getElementById("login-overlay");
 const pinError = document.getElementById("pin-error");
-const correctPin = "1234"; // PIN hier ändern
+const correctPin = "1939"; // PIN hier ändern
 
 // ------------------------------
 // PIN DISPLAY UPDATE
 // ------------------------------
 function updatePinDisplay() {
-    pinDisplay.textContent = pinInput.value.padEnd(4, "•");
+    const dots = document.querySelectorAll("#pin-display span");
+    const val = pinInput.value;
+
+    dots.forEach((dot, idx) => {
+        if(idx < val.length){
+            dot.classList.add("active");
+        } else {
+            dot.classList.remove("active");
+        }
+    });
 }
+
 
 // ------------------------------
 // PIN CHECK
