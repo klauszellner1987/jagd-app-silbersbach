@@ -41,7 +41,7 @@ header {
 ============================================ */
 main {
     padding: 1rem;
-    margin-bottom: 80px; /* Platz für Footer */
+    margin-bottom: 80px;
 }
 
 .container {
@@ -146,7 +146,6 @@ main {
 ul { padding-left: 1.5rem; }
 li { margin-bottom: 0.5rem; }
 
-/* Streckenliste Einträge */
 #entry-list li {
     display: flex;
     align-items: center;
@@ -167,14 +166,12 @@ li { margin-bottom: 0.5rem; }
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
-/* Optional Icon für Wildart */
 #entry-list li::before {
     content: "🦌";
     margin-right: 0.5rem;
     font-size: 1.2rem;
 }
 
-/* Löschen Button */
 .entry-delete-btn {
     background: var(--danger);
     color: #fff;
@@ -211,23 +208,19 @@ button:hover {
     box-shadow: 0 6px 12px rgba(0,0,0,0.12);
 }
 
-/* Primary Button */
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: #4a704a; }
 
-/* Accent Button */
 .btn-accent { background: var(--accent); color: #fff; }
 .btn-accent:hover { background: #0056b3; }
 
-/* Danger Button */
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover { background: #c0392b; }
 
-/* Floating Add Button (+) */
 #add-entry-btn {
     position: absolute;
-    top: 1.5rem;  /* weiter nach oben */
-    right: 1.5rem; /* weiter nach rechts */
+    top: 1.5rem;
+    right: 1.5rem;
     background: var(--accent);
     color: #fff;
     font-size: 1.6rem;
@@ -318,60 +311,90 @@ button:hover {
 .modal-actions button[type="submit"]:hover { background: #4a704a; }
 
 /* ============================================
-   LOGIN OVERLAY / PIN PAD
+   FULLSCREEN LOGIN (iPhone Lockscreen)
 ============================================ */
 #login-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: linear-gradient(160deg, #2f6f4e, #1f4d36);
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    z-index: 2000;
+    align-items: center;
+    z-index: 3000;
+    color: white;
 }
 
 .login-box {
-    background: var(--surface);
+    background: transparent;
+    width: 100%;
+    max-width: 400px;
     padding: 2rem;
-    border-radius: var(--radius);
     text-align: center;
-    width: 90%;
-    max-width: 320px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
-#pin-display {
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 1rem;
-    letter-spacing: 0.5rem;
+.login-box h2 { font-size: 1.8rem; margin-bottom: 2rem; }
+
+/* PIN DOTS */
+#pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 2.5rem;
 }
 
+.pin-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.9);
+    transition: .2s ease;
+}
+
+.pin-dot.filled {
+    background: white;
+}
+
+/* echtes Input unsichtbar */
+#pin-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* PIN PAD */
 .pin-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 15px;
 }
 
 .pin-btn {
     padding: 1.5rem;
-    font-size: 1.5rem;
-    border: none;
-    border-radius: 50%;
-    background: var(--primary);
+    font-size: 1.6rem;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.15);
     color: white;
-    cursor: pointer;
-    transition: background var(--transition), transform var(--transition);
+    backdrop-filter: blur(5px);
+    transition: 0.2s ease;
 }
 
-.pin-btn:hover { background: #4a704a; transform: translateY(-2px); }
-.pin-btn.delete { background: var(--danger); }
-.pin-btn.delete:hover { background: #c0392b; }
-.pin-btn.ok { background: var(--accent); }
-.pin-btn.ok:hover { background: #0056b3; }
+.pin-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
+.pin-btn.delete { background: rgba(231,76,60,0.7); }
+.pin-btn.ok { background: rgba(0,123,255,0.8); }
+
+#pin-error {
+    margin-top: 1rem;
+    color: #ffb4b4;
+    font-size: 0.9rem;
+}
 
 /* ============================================
-   FOOTER & TABS FIX
+   FOOTER & TABS
 ============================================ */
 footer {
     position: fixed;
@@ -432,4 +455,22 @@ footer {
     #map { height: 300px; }
     #add-entry-btn { width: 40px; height: 40px; font-size: 1.2rem; top: 1rem; right: 1rem; }
     .pin-btn { font-size: 1.3rem; padding: 0.8rem; }
+}
+/* Clock Display */
+#clock {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+#time {
+    font-size: 4rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+#date {
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-top: 0.2rem;
+    color: rgba(255,255,255,0.8);
 }
