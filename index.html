@@ -3,15 +3,35 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Revier App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GJR Silbersbach</title>
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="style/main.css">
+
+    <!-- Leaflet CSS (für Karte) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- Manifest für PWA -->
     <link rel="manifest" href="manifest.json">
+
+    <!-- Theme Farbe für Android Toolbar / Statusbar -->
     <meta name="theme-color" content="#2f6f4e">
 
+    <!-- Icons für Android / iOS -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
+    <!-- iOS Safari: App vollbild -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
+
 
 <body>
     <!-- LOGIN OVERLAY (iPhone Lockscreen) -->
@@ -58,8 +78,13 @@
     </div>
 
     <header>
-        <h1>🦌 GJR Silbersbach</h1>
-    </header>
+    <div class="header-bg">
+        <div class="header-overlay">
+            <h1>GJR Silbersbach</h1>
+        </div>
+    </div>
+</header>
+
 
     <main>
         <!-- Revier Tab -->
@@ -104,10 +129,11 @@
 
     <footer>
         <div class="tabs">
-            <button class="tab-button active" data-tab="revier">🏞 Revier</button>
-            <button class="tab-button" data-tab="streckenliste-tab">🦌 Streckenliste</button>
-            <button class="tab-button" data-tab="wetter-tab">🌦 Wetter</button>
+            <button class="tab-button active" data-tab="revier">🏞<span>Revier</span></button>
+            <button class="tab-button" data-tab="streckenliste-tab">🦌<span>Streckenliste</span></button>
+            <button class="tab-button" data-tab="wetter-tab">🌦<span>Wetter</span></button>
         </div>
+
     </footer>
 
     <!-- Modal -->
