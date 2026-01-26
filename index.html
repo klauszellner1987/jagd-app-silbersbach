@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Revier App</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style/main.css">
@@ -76,15 +76,26 @@
             </div>
         </div>
 
-        <!-- Wetter Tab -->
-        <div class="tab-content" id="wetter-tab">
-            <div class="card">
-                <h2>🌦 Wetter</h2>
-                <div id="weather-content">
-                    <p>Lade Wetterdaten...</p>
-                </div>
-            </div>
-        </div>
+<!-- Wetter Tab -->
+<div class="tab-content" id="wetter-tab">
+    <div class="card weather-widget" id="widget-weather">
+        <h3>🌡 Wetter</h3>
+        <p>Temperatur: -- °C</p>
+        <p>Luftfeuchtigkeit: -- %</p>
+    </div>
+
+    <div class="card wind-widget" id="widget-wind">
+        <h3>💨 Wind</h3>
+        <p>Richtung: --</p>
+        <p>Geschwindigkeit: -- km/h</p>
+    </div>
+
+    <div class="card moon-widget" id="widget-moon">
+        <h3>🌙 Mondphase</h3>
+        <p>Heute: --</p>
+        <p>Nächste Vollmond: --</p>
+    </div>
+</div>
 
     </main>
 
