@@ -574,12 +574,33 @@ footer {
    MOBILFREUNDLICH
 ============================================ */
 @media (max-width: 600px) {
-    header { font-size: 1.3rem; }
-    .tab-button { font-size: 0.95rem; padding: 0.5rem 0; }
+    header {
+        background: url('assets/Images/header_img.avif') center/cover no-repeat;
+        height: 140px;
+        font-size: 1.3rem;
+    }
+
+    .tab-button { 
+        font-size: 0.95rem; 
+        padding: 0.5rem 0; 
+    }
+
     main { padding: 0.75rem; }
+
     #map { height: 300px; }
-    #add-entry-btn { width: 40px; height: 40px; font-size: 1.2rem; top: 1rem; right: 1rem; }
-    .pin-btn { font-size: 1.3rem; padding: 0.8rem; }
+
+    #add-entry-btn { 
+        width: 40px; 
+        height: 40px; 
+        font-size: 1.2rem; 
+        top: 1rem; 
+        right: 1rem; 
+    }
+
+    .pin-btn { 
+        font-size: 1.3rem; 
+        padding: 0.8rem; 
+    }
 }
 /* Clock Display */
 #clock {
