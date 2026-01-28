@@ -23,6 +23,7 @@ const pinButtons = document.querySelectorAll(".pin-btn");
 const overlay = document.getElementById("login-overlay");
 const pinError = document.getElementById("pin-error");
 const correctPinHash = CryptoJS.SHA256("1939").toString();
+
 // ------------------------------
 // PIN DISPLAY UPDATE
 // ------------------------------
@@ -38,7 +39,6 @@ function updatePinDisplay() {
         }
     });
 }
-
 
 // ------------------------------
 // PIN CHECK
@@ -56,7 +56,6 @@ function checkPin() {
         setTimeout(() => pinError.classList.add("hidden"), 1500);
     }
 }
-
 
 // ------------------------------
 // PIN BUTTONS
@@ -249,23 +248,43 @@ function renderEntries() {
 // ==============================
 function initializeMap() {
     let map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
-        maxZoom: 20
-    }).addTo(map);
 
+    const tileLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 
+        {
+            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
+            maxZoom: 20
+        }
+    ).addTo(map);
+
+    // Polygone hinzufügen
     reviere.forEach(r => {
-        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 }).addTo(map).bindPopup(r.name);
+        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
+            .addTo(map)
+            .bindPopup(r.name);
     });
 
+    // ===========================
+    // Statuspunkt in der H2-Zeile
+    // ===========================
     const mapStatusDot = document.createElement("span");
-    mapStatusDot.classList.add("gps-dot");
-    mapStatusDot.textContent = "Live Revier Map online";
-    document.getElementById("map-container").insertBefore(mapStatusDot, document.getElementById("map"));
+    mapStatusDot.id = "map-status-dot";
+    mapStatusDot.classList.add("offline"); // Standard = rot
+    document.querySelector("#map-container h2").appendChild(mapStatusDot);
 
-    map.on('tileerror', () => { mapStatusDot.style.background = 'red'; mapStatusDot.textContent = "Live Revier Map offline"; });
-    map.on('tileload', () => { mapStatusDot.style.background = 'green'; mapStatusDot.textContent = "Live Revier Map online"; });
+    // TileLayer Events (nur einmal!)
+    tileLayer.on('tileload', () => {
+        mapStatusDot.classList.remove("offline");
+        mapStatusDot.classList.add("online");
+    });
+    tileLayer.on('tileerror', () => {
+        mapStatusDot.classList.remove("online");
+        mapStatusDot.classList.add("offline");
+    });
 
+    // ===========================
+    // GPS Marker
+    // ===========================
     let gpsMarkerWrapper = L.divIcon({
         className: "gps-marker-wrapper",
         html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
@@ -276,55 +295,49 @@ function initializeMap() {
     let gpsMarker = L.marker([49.180, 13.065], { icon: gpsMarkerWrapper }).addTo(map);
 
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(pos => {
-            const { latitude, longitude } = pos.coords;
-            gpsMarker.setLatLng([latitude, longitude]);
-            gpsMarker.getElement().classList.remove("offline");
-        }, err => {
-            gpsMarker.getElement().classList.add("offline");
-        }, { enableHighAccuracy: true });
+        navigator.geolocation.watchPosition(
+            pos => {
+                const { latitude, longitude } = pos.coords;
+                gpsMarker.setLatLng([latitude, longitude]);
+                gpsMarker.getElement().classList.remove("offline");
+            },
+            err => {
+                gpsMarker.getElement().classList.add("offline");
+            },
+            { enableHighAccuracy: true }
+        );
     } else gpsMarker.getElement().classList.add("offline");
 }
 
+
+
 async function fetchLiveWeather() {
     const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW"; // dein Visual Crossing Key
-
-    // Lam, Bayern: Latitude / Longitude
     const LAT = 49.2;
     const LON = 13.05;
-
-    // URL für Visual Crossing Timeline API
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
 
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error("Netzwerkfehler beim Laden der Wetterdaten");
-
         const data = await response.json();
 
-        // Debug: Ausgabe in Konsole
-        console.log("Wetterdaten Lam:", data.currentConditions);
-
-        // === Wetter-Widget ===
         document.getElementById("widget-weather").innerHTML = `
             <h3>🌡 Wetter</h3>
             <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
             <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
         `;
 
-        // === Wind-Widget ===
         const windDirDegrees = data.currentConditions.winddir;
         const windDirText = getWindDirection(windDirDegrees);
 
         document.getElementById("widget-wind").innerHTML = `
-    <h3>💨 Wind</h3>
-    <p>Richtung: ${windDirText} (${windDirDegrees}°)</p>
-    <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
-`;
+            <h3>💨 Wind</h3>
+            <p>Richtung: ${windDirText} (${windDirDegrees}°)</p>
+            <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
+        `;
 
-
-        // === Mondphase ===
-        const phaseNum = data.currentConditions.moonphase; // 0–1
+        const phaseNum = data.currentConditions.moonphase;
         let moonPhaseName = "";
         if (phaseNum === 0) moonPhaseName = "Neumond";
         else if (phaseNum > 0 && phaseNum < 0.25) moonPhaseName = "Zunehmender Sichelmond";
@@ -348,7 +361,6 @@ async function fetchLiveWeather() {
     }
 }
 
-// Event: Wetter-Tab klick
 document.querySelector('[data-tab="wetter-tab"]').addEventListener("click", () => {
     fetchLiveWeather();
 });
