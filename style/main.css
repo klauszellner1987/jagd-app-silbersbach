@@ -31,7 +31,7 @@ header {
     position: relative;
     width: 100%;
     height: 180px; /* feste saubere Höhe für Mobile */
-    background-image: url("/assets/images/header.avif");
+    background-image: url("../assets/images/header.avif");
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
