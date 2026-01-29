@@ -1,4 +1,17 @@
 // ==============================
+// FIREBASE CONFIG
+// ==============================
+const firebaseConfig = {
+    apiKey: "AIzaSyDyMDljblBST0UTimxzfDFVR0RHBYJEkpk",
+    authDomain: "jagd-app-silbersbach.firebaseapp.com",
+    projectId: "jagd-app-silbersbach",
+    storageBucket: "jagd-app-silbersbach.firebasestorage.app",
+    messagingSenderId: "243860338509",
+    appId: "1:243860338509:web:40aa7818742f594bc62904",
+    measurementId: "G-ETVC5YJFT9"
+};
+
+// ==============================
 // TAB SWITCHING
 // ==============================
 const tabButtons = document.querySelectorAll(".tab-button");
@@ -48,7 +61,7 @@ function checkPin() {
 
     if (enteredHash === correctPinHash) {
         overlay.style.display = "none";
-        if (typeof initializeMap === "function") initializeMap();
+        initializeApp(); // Firebase, Map und Firestore starten
     } else {
         pinError.classList.remove("hidden");
         pinInput.value = "";
@@ -109,182 +122,166 @@ setInterval(updateClock, 1000);
 updateClock();
 
 // ==============================
-// STRECKENLISTE & MODAL
+// INITIALIZE APP (NACH LOGIN)
 // ==============================
-const entryList = document.getElementById("entry-list");
-const addBtn = document.getElementById("add-entry-btn");
-const modal = document.getElementById("entry-modal");
-const form = document.getElementById("entry-form");
-const cancelBtn = document.getElementById("cancel-entry");
-const wildSelect = document.getElementById("wildart");
-const subcategoryContainer = document.getElementById("subcategory-container");
+async function initializeApp() {
+    // -------- Firebase Initialisierung --------
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const entriesCollection = db.collection("entries");
 
-let entries = JSON.parse(localStorage.getItem("entries")) || [];
-renderEntries();
+    // -------- STRECKENLISTE & MODAL --------
+    const entryList = document.getElementById("entry-list");
+    const addBtn = document.getElementById("add-entry-btn");
+    const modal = document.getElementById("entry-modal");
+    const form = document.getElementById("entry-form");
+    const cancelBtn = document.getElementById("cancel-entry");
+    const wildSelect = document.getElementById("wildart");
+    const subcategoryContainer = document.getElementById("subcategory-container");
 
-// ==============================
-// WEATHER TAB FUNCTION
-// ==============================
-function loadWeatherTab() {
-    // Widget Wetter
-    document.getElementById("widget-weather").innerHTML = `
-        <h3>🌡 Wetter</h3>
-        <p>Temperatur: 12 °C</p>
-        <p>Luftfeuchtigkeit: 65 %</p>
-    `;
+    let entries = [];
 
-    // Widget Wind
-    document.getElementById("widget-wind").innerHTML = `
-        <h3>💨 Wind</h3>
-        <p>Richtung: Nord-Ost</p>
-        <p>Geschwindigkeit: 15 km/h</p>
-    `;
-
-    // Widget Mondphase
-    document.getElementById("widget-moon").innerHTML = `
-        <h3>🌙 Mondphase</h3>
-        <p>Heute: Halbmond</p>
-        <p>Nächste Vollmond: 29.01.2026</p>
-    `;
-}
-
-// Tab-Klick Event
-document.querySelector('[data-tab="wetter-tab"]').addEventListener("click", () => {
-    loadWeatherTab();
-});
-
-// Open / Close Modal
-addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
-cancelBtn.addEventListener("click", () => {
-    modal.classList.add("hidden");
-    form.reset();
-    subcategoryContainer.innerHTML = "";
-});
-
-// Wildart Unterkategorien
-wildSelect.addEventListener("change", () => {
-    const value = wildSelect.value;
-    let html = "";
-    switch (value) {
-        case "Rehwild":
-            html = `<label>Unterart
-                        <select name="unterart">
-                            <option>Geiß</option>
-                            <option>Bock</option>
-                            <option>Kitz</option>
-                            <option>Schmal</option>
-                        </select>
-                    </label>`;
-            break;
-        case "Rotwild":
-        case "Dammwild":
-            html = `<label>Unterart
-                        <select name="unterart">
-                            <option>Hirsch</option>
-                            <option>Alttier</option>
-                            <option>Schmaltier</option>
-                            <option>Spießer</option>
-                        </select>
-                    </label>`;
-            break;
-        case "Schwarzwild":
-            html = `<label>Unterart
-                        <select name="unterart">
-                            <option>Keiler</option>
-                            <option>Bache</option>
-                            <option>Frischling</option>
-                            <option>Überläufer</option>
-                        </select>
-                    </label>`;
-            break;
-        case "Raubwild":
-        case "Federwild":
-            html = `<label>Bemerkung/Freitext
-                        <input type="text" name="unterart">
-                    </label>`;
-            break;
-        default:
-            html = "";
-    }
-    subcategoryContainer.innerHTML = html;
-});
-
-// Submit Entry
-form.addEventListener("submit", e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const entry = {};
-    formData.forEach((val, key) => entry[key] = val);
-    entries.push(entry);
-    localStorage.setItem("entries", JSON.stringify(entries));
-    renderEntries();
-    modal.classList.add("hidden");
-    form.reset();
-    subcategoryContainer.innerHTML = "";
-});
-
-// Render Entries
-function renderEntries() {
-    entryList.innerHTML = "";
-    entries.forEach((entry, idx) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""} 
-                        <button class="entry-delete-btn" data-idx="${idx}">Löschen</button>`;
-        entryList.appendChild(li);
-    });
-
-    document.querySelectorAll(".entry-delete-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const index = btn.dataset.idx;
-            entries.splice(index, 1);
-            localStorage.setItem("entries", JSON.stringify(entries));
+    // Firestore Realtime Listener
+    entriesCollection.orderBy("datum", "desc")
+        .onSnapshot(snapshot => {
+            entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderEntries();
         });
+
+    // Render Entries
+    function renderEntries() {
+        entryList.innerHTML = "";
+        entries.forEach((entry, idx) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                ${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""} 
+                <button class="entry-delete-btn" data-idx="${idx}">Löschen</button>
+            `;
+            entryList.appendChild(li);
+        });
+        attachDeleteEvents();
+    }
+
+    function attachDeleteEvents() {
+        document.querySelectorAll(".entry-delete-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const index = btn.dataset.idx;
+                const entry = entries[index];
+                if (!entry.id) return;
+                try {
+                    await entriesCollection.doc(entry.id).delete();
+                } catch (err) {
+                    console.error("Fehler beim Löschen:", err);
+                    alert("Eintrag konnte nicht gelöscht werden.");
+                }
+            });
+        });
+    }
+
+    // Modal Open / Close
+    addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+    cancelBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        form.reset();
+        subcategoryContainer.innerHTML = "";
     });
+
+    // Unterkategorien
+    wildSelect.addEventListener("change", () => {
+        const value = wildSelect.value;
+        let html = "";
+        switch (value) {
+            case "Rehwild":
+                html = `<label>Unterart
+                            <select name="unterart">
+                                <option>Geiß</option>
+                                <option>Bock</option>
+                                <option>Kitz</option>
+                                <option>Schmal</option>
+                            </select>
+                        </label>`;
+                break;
+            case "Rotwild":
+            case "Dammwild":
+                html = `<label>Unterart
+                            <select name="unterart">
+                                <option>Hirsch</option>
+                                <option>Alttier</option>
+                                <option>Schmaltier</option>
+                                <option>Spießer</option>
+                            </select>
+                        </label>`;
+                break;
+            case "Schwarzwild":
+                html = `<label>Unterart
+                            <select name="unterart">
+                                <option>Keiler</option>
+                                <option>Bache</option>
+                                <option>Frischling</option>
+                                <option>Überläufer</option>
+                            </select>
+                        </label>`;
+                break;
+            case "Raubwild":
+            case "Federwild":
+                html = `<label>Bemerkung/Freitext
+                            <input type="text" name="unterart">
+                        </label>`;
+                break;
+            default:
+                html = "";
+        }
+        subcategoryContainer.innerHTML = html;
+    });
+
+    // Submit Entry
+    form.addEventListener("submit", async e => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const entry = {};
+        formData.forEach((val, key) => entry[key] = val);
+        try {
+            await entriesCollection.add(entry);
+            form.reset();
+            subcategoryContainer.innerHTML = "";
+            modal.classList.add("hidden");
+        } catch (err) {
+            console.error("Fehler beim Speichern:", err);
+            alert("Eintrag konnte nicht gespeichert werden.");
+        }
+    });
+
+    // -------- INITIALIZE MAP --------
+    initializeMap();
 }
 
 // ==============================
-// INITIALIZE MAP (NACH LOGIN)
+// MAP FUNCTION
 // ==============================
 function initializeMap() {
     let map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
-
     const tileLayer = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 
-        {
-            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
-            maxZoom: 20
-        }
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others", maxZoom: 20 }
     ).addTo(map);
 
-    // Polygone hinzufügen
+    // Polygone
     reviere.forEach(r => {
         L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
             .addTo(map)
             .bindPopup(r.name);
     });
 
-    // ===========================
-    // Statuspunkt in der H2-Zeile
-    // ===========================
+    // Statusdot
     const mapStatusDot = document.createElement("span");
     mapStatusDot.id = "map-status-dot";
-    mapStatusDot.classList.add("offline"); // Standard = rot
+    mapStatusDot.classList.add("offline");
     document.querySelector("#map-container h2").appendChild(mapStatusDot);
 
-    // TileLayer Events (nur einmal!)
-    tileLayer.on('tileload', () => {
-        mapStatusDot.classList.remove("offline");
-        mapStatusDot.classList.add("online");
-    });
-    tileLayer.on('tileerror', () => {
-        mapStatusDot.classList.remove("online");
-        mapStatusDot.classList.add("offline");
-    });
+    tileLayer.on('tileload', () => { mapStatusDot.classList.replace("offline", "online"); });
+    tileLayer.on('tileerror', () => { mapStatusDot.classList.replace("online", "offline"); });
 
-    // ===========================
     // GPS Marker
-    // ===========================
     let gpsMarkerWrapper = L.divIcon({
         className: "gps-marker-wrapper",
         html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
@@ -301,25 +298,24 @@ function initializeMap() {
                 gpsMarker.setLatLng([latitude, longitude]);
                 gpsMarker.getElement().classList.remove("offline");
             },
-            err => {
-                gpsMarker.getElement().classList.add("offline");
-            },
+            err => { gpsMarker.getElement().classList.add("offline"); },
             { enableHighAccuracy: true }
         );
     } else gpsMarker.getElement().classList.add("offline");
 }
 
-
-
+// ==============================
+// WEATHER
+// ==============================
 async function fetchLiveWeather() {
-    const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW"; // dein Visual Crossing Key
+    const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
     const LAT = 49.2;
     const LON = 13.05;
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
 
     try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Netzwerkfehler beim Laden der Wetterdaten");
+        if (!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
 
         document.getElementById("widget-weather").innerHTML = `
@@ -327,7 +323,6 @@ async function fetchLiveWeather() {
             <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
             <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
         `;
-
         const windDirDegrees = data.currentConditions.winddir;
         const windDirText = getWindDirection(windDirDegrees);
 
@@ -348,11 +343,7 @@ async function fetchLiveWeather() {
         else if (phaseNum === 0.75) moonPhaseName = "Letztes Viertel";
         else moonPhaseName = "Abnehmender Sichelmond";
 
-        document.getElementById("widget-moon").innerHTML = `
-            <h3>🌙 Mondphase</h3>
-            <p>Heute: ${moonPhaseName}</p>
-        `;
-
+        document.getElementById("widget-moon").innerHTML = `<h3>🌙 Mondphase</h3><p>Heute: ${moonPhaseName}</p>`;
     } catch (err) {
         console.error("Wetterdaten Fehler:", err);
         document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden der Wetterdaten</p>";
@@ -361,9 +352,7 @@ async function fetchLiveWeather() {
     }
 }
 
-document.querySelector('[data-tab="wetter-tab"]').addEventListener("click", () => {
-    fetchLiveWeather();
-});
+document.querySelector('[data-tab="wetter-tab"]').addEventListener("click", fetchLiveWeather);
 
 function getWindDirection(degrees) {
     const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
@@ -372,6 +361,9 @@ function getWindDirection(degrees) {
     return directions[index];
 }
 
+// ==============================
+// SERVICE WORKER
+// ==============================
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js")
