@@ -12,6 +12,22 @@ const firebaseConfig = {
     measurementId: "G-ETVC5YJFT9"
 };
 
+function showToast(message, type = "info") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+
 // ==============================
 // TAB SWITCHING
 // ==============================
@@ -179,13 +195,18 @@ async function initializeApp() {
                 if (!entry.id) return;
                 try {
                     await entriesCollection.doc(entry.id).delete();
+                    showToast("Eintrag gelöscht 🗑️", "info");
+
                 } catch (err) {
                     console.error("Fehler beim Löschen:", err);
                     alert("Eintrag konnte nicht gelöscht werden.");
+                    showToast("Fehler beim Speichern ⚠️", "error");
+
                 }
             });
         });
     }
+
 
     // Modal Open / Close
     addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
@@ -251,15 +272,19 @@ async function initializeApp() {
         formData.forEach((val, key) => entry[key] = val);
         try {
             await entriesCollection.add(entry);
+            showToast("Eintrag gespeichert ✅", "success");
+
             form.reset();
             subcategoryContainer.innerHTML = "";
             modal.classList.add("hidden");
         } catch (err) {
             console.error("Fehler beim Speichern:", err);
             alert("Eintrag konnte nicht gespeichert werden.");
+            showToast("Fehler beim Speichern ⚠️", "error");
+
         }
     });
-let map;
+    let map;
     // -------- INITIALIZE MAP --------
     initializeMap();
 }
