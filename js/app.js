@@ -1,3 +1,4 @@
+let map;
 // ==============================
 // FIREBASE CONFIG
 // ==============================
@@ -10,6 +11,22 @@ const firebaseConfig = {
     appId: "1:243860338509:web:40aa7818742f594bc62904",
     measurementId: "G-ETVC5YJFT9"
 };
+
+function showToast(message, type = "info") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
 
 // ==============================
 // TAB SWITCHING
@@ -24,6 +41,13 @@ tabButtons.forEach(btn => {
 
         btn.classList.add("active");
         document.getElementById(btn.dataset.tab).classList.add("active");
+
+        // 🔧 Leaflet Fix bei Rückkehr zur Map
+        if (btn.dataset.tab === "revier" && map) {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 200);
+        }
     });
 });
 
@@ -121,6 +145,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+
 // ==============================
 // INITIALIZE APP (NACH LOGIN)
 // ==============================
@@ -170,13 +195,18 @@ async function initializeApp() {
                 if (!entry.id) return;
                 try {
                     await entriesCollection.doc(entry.id).delete();
+                    showToast("Eintrag gelöscht 🗑️", "info");
+
                 } catch (err) {
                     console.error("Fehler beim Löschen:", err);
                     alert("Eintrag konnte nicht gelöscht werden.");
+                    showToast("Fehler beim Speichern ⚠️", "error");
+
                 }
             });
         });
     }
+
 
     // Modal Open / Close
     addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
@@ -242,15 +272,19 @@ async function initializeApp() {
         formData.forEach((val, key) => entry[key] = val);
         try {
             await entriesCollection.add(entry);
+            showToast("Eintrag gespeichert ✅", "success");
+
             form.reset();
             subcategoryContainer.innerHTML = "";
             modal.classList.add("hidden");
         } catch (err) {
             console.error("Fehler beim Speichern:", err);
             alert("Eintrag konnte nicht gespeichert werden.");
+            showToast("Fehler beim Speichern ⚠️", "error");
+
         }
     });
-
+    let map;
     // -------- INITIALIZE MAP --------
     initializeMap();
 }
@@ -259,7 +293,7 @@ async function initializeApp() {
 // MAP FUNCTION
 // ==============================
 function initializeMap() {
-    let map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
+    map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
     const tileLayer = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         { attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others", maxZoom: 20 }

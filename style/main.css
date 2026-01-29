@@ -668,3 +668,43 @@ footer {
 #map-status-dot.offline {
     background: red;
 }
+
+/* ============================
+   TOAST NOTIFICATIONS
+============================ */
+
+#toast-container {
+    position: fixed;
+    bottom: 90px; /* über den Tabs */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    min-width: 220px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    animation: toastSlide 0.3s ease, toastFade 0.3s ease 2.7s forwards;
+}
+
+.toast.success { background: #2ecc71; }
+.toast.error { background: #e74c3c; }
+.toast.info { background: #3498db; }
+
+@keyframes toastSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastFade {
+    to { opacity: 0; transform: translateY(20px); }
+}
