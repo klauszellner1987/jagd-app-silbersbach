@@ -248,40 +248,40 @@ async function initializeApp() {
 // MAP (FIXED)
 // ==============================
 function initializeMap() {
-    // -------- Map erstellen --------
-    const map = L.map("map", { 
-        center: [49.180, 13.065], 
-        zoom: 15 
-    });
+    // Karte initialisieren
+    const map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
+    window.mapInstance = map; // Für Tab-Fix
 
-    window.mapInstance = map; // global für Tab-Wechsel
-
-    // -------- TileLayer hinzufügen --------
+    // TileLayer
     const tileLayer = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-            attribution: "Tiles © Esri",
+            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others",
             maxZoom: 20
         }
     ).addTo(map);
 
-    // -------- Polygone hinzufügen --------
+    // Polygone
     reviere.forEach(r => {
-        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
-            .addTo(map)
-            .bindPopup(r.name);
+        L.polygon(r.coords, {
+            color: r.color,
+            fillColor: r.fillColor,
+            fillOpacity: 0.3
+        }).addTo(map).bindPopup(r.name);
     });
 
-    // -------- Status-Dot --------
+    // Statusdot
     const mapStatusDot = document.createElement("span");
     mapStatusDot.id = "map-status-dot";
-    mapStatusDot.classList.add("offline"); // Standard = rot
+    mapStatusDot.classList.add("offline");
     document.querySelector("#map-container h2").appendChild(mapStatusDot);
 
-    tileLayer.on('tileload', () => { mapStatusDot.classList.replace("offline", "online"); });
-    tileLayer.on('tileerror', () => { mapStatusDot.classList.replace("online", "offline"); });
+    tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline", "online"));
+    tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online", "offline"));
 
-    // -------- GPS Marker (animiert) --------
+    // ======================
+    // GPS Marker
+    // ======================
     const gpsMarkerWrapper = L.divIcon({
         className: "gps-marker-wrapper",
         html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
@@ -291,20 +291,47 @@ function initializeMap() {
 
     const gpsMarker = L.marker([49.180, 13.065], { icon: gpsMarkerWrapper }).addTo(map);
 
-    // -------- GPS Tracking --------
+    // Geolocation
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
             pos => {
                 const { latitude, longitude } = pos.coords;
+
+                // Marker setzen
                 gpsMarker.setLatLng([latitude, longitude]);
-                gpsMarker.getElement()?.classList.remove("offline");
+
+                // Marker Styling
+                const el = gpsMarker.getElement();
+                if (el) el.classList.remove("offline");
+
+                // Karte zentrieren (nur beim ersten Laden oder Tab-Fix)
+                map.setView([latitude, longitude], map.getZoom());
             },
-            () => { gpsMarker.getElement()?.classList.add("offline"); },
-            { enableHighAccuracy: true }
+            err => {
+                const el = gpsMarker.getElement();
+                if (el) el.classList.add("offline");
+                console.warn("GPS konnte nicht geladen werden:", err);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 10000
+            }
         );
     } else {
-        gpsMarker.getElement()?.classList.add("offline");
+        const el = gpsMarker.getElement();
+        if (el) el.classList.add("offline");
+        console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
     }
+
+    // Tab-Fix: Map neu rendern, falls Tab gewechselt wird
+    tabButtons.forEach(btn => {
+        if (btn.dataset.tab === "map-container") {
+            btn.addEventListener("click", () => {
+                setTimeout(() => map.invalidateSize(), 200);
+            });
+        }
+    });
 }
 
 
@@ -316,4 +343,72 @@ if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js");
     });
+}
+// ==============================
+// WEATHER
+// ==============================
+async function fetchLiveWeather() {
+
+    const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
+    const LAT = 49.2;
+    const LON = 13.05;
+
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Netzwerkfehler");
+
+        const data = await response.json();
+
+        document.getElementById("widget-weather").innerHTML = `
+            <h3>🌡 Wetter</h3>
+            <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
+            <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
+        `;
+
+        const windDirDegrees = data.currentConditions.winddir;
+        const windDirText = getWindDirection(windDirDegrees);
+
+        document.getElementById("widget-wind").innerHTML = `
+            <h3>💨 Wind</h3>
+            <p>Richtung: ${windDirText} (${windDirDegrees}°)</p>
+            <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
+        `;
+
+        const phaseNum = data.currentConditions.moonphase;
+        let moonPhaseName = "";
+
+        if (phaseNum === 0) moonPhaseName = "Neumond";
+        else if (phaseNum < 0.25) moonPhaseName = "Zunehmender Sichelmond";
+        else if (phaseNum === 0.25) moonPhaseName = "Erstes Viertel";
+        else if (phaseNum < 0.5) moonPhaseName = "Zunehmender Mond";
+        else if (phaseNum === 0.5) moonPhaseName = "Vollmond";
+        else if (phaseNum < 0.75) moonPhaseName = "Abnehmender Mond";
+        else if (phaseNum === 0.75) moonPhaseName = "Letztes Viertel";
+        else moonPhaseName = "Abnehmender Sichelmond";
+
+        document.getElementById("widget-moon").innerHTML = `
+            <h3>🌙 Mondphase</h3>
+            <p>Heute: ${moonPhaseName}</p>
+        `;
+
+    } catch (err) {
+        console.error("Wetter Fehler:", err);
+
+        document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
+        document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
+        document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
+    }
+}
+
+
+// Wetter laden beim Klick auf Tab
+document.querySelector('[data-tab="wetter-tab"]').addEventListener("click", fetchLiveWeather);
+
+
+function getWindDirection(deg) {
+    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE",
+                  "S","SSW","SW","WSW","W","WNW","NW","NNW"];
+    return dirs[Math.floor((deg / 22.5) + 0.5) % 16];
 }
