@@ -861,3 +861,53 @@ footer {
 .fab-add:active {
     transform: translateX(-50%) scale(0.95);
 }
+#hochsitz-modal.hidden {
+  display: none;
+}
+
+#hochsitz-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 9999;
+}
+
+.hochsitz-modal-backdrop {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.hochsitz-modal-content {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 250px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.hochsitz-modal-content input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.hochsitz-modal-buttons button {
+  margin: 5px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#hochsitz-save-btn { background: #3DBE6A; color: white; }
+#hochsitz-cancel-btn { background: #e74c3c; color: white; }

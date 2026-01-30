@@ -361,31 +361,48 @@ reviere.forEach(r => {
         .addTo(map)
         .bindPopup(r.name);
 
-    polygon.on('click', async e => {
-        if (!settingHochsitz) return;
+polygon.on('click', async e => {
+    if (!settingHochsitz) return;
 
-        // Prompt für Namen
-        const name = prompt("Gib den Namen des Hochsitzes ein:");
-        if (!name) {
-            showToast("Hochsitz nicht gespeichert – Name fehlt ⚠️", "error");
-            settingHochsitz = false;
-            return;
-        }
+    const modal = document.getElementById('hochsitz-modal');
+    const input = document.getElementById('hochsitz-name-input');
+    const saveBtn = document.getElementById('hochsitz-save-btn');
+    const cancelBtn = document.getElementById('hochsitz-cancel-btn');
 
+    modal.classList.remove('hidden');
+    input.value = '';
+    input.focus();
+
+    const cleanup = () => {
+        modal.classList.add('hidden');
+        saveBtn.onclick = null;
+        cancelBtn.onclick = null;
+    };
+
+    saveBtn.onclick = async () => {
+        const name = input.value.trim();
+        if (!name) return alert("Bitte einen Namen eingeben!");
         try {
-            const docRef = await hochsitzeCollection.add({
+            await hochsitzeCollection.add({
                 lat: e.latlng.lat,
                 lng: e.latlng.lng,
                 name: name,
                 imageUrl: null
             });
             showToast(`Hochsitz "${name}" gesetzt ✅`);
+            cleanup();
             settingHochsitz = false;
         } catch(err) {
             console.error(err);
             showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
         }
-    });
+    };
+
+    cancelBtn.onclick = () => {
+        cleanup();
+        settingHochsitz = false;
+    };
+});
 });
 
 // ==========================
