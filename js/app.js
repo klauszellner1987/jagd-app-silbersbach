@@ -95,8 +95,8 @@ updatePinDisplay();
 // ==============================
 function updateClock() {
     const now = new Date();
-    document.getElementById('time').textContent = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-    document.getElementById('date').textContent = now.getDate().toString().padStart(2,'0') + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getFullYear();
+    document.getElementById('time').textContent = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('date').textContent = now.getDate().toString().padStart(2, '0') + "." + (now.getMonth() + 1).toString().padStart(2, '0') + "." + now.getFullYear();
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -120,10 +120,10 @@ async function initializeApp() {
     let entries = [];
     const fabBtn = document.getElementById("fab-add-btn");
 
-    if(fabBtn){
-       fabBtn.addEventListener("click", () => {
-          modal.classList.remove("hidden");
-       });
+    if (fabBtn) {
+        fabBtn.addEventListener("click", () => {
+            modal.classList.remove("hidden");
+        });
     }
 
     entriesCollection.orderBy("datum", "desc")
@@ -153,7 +153,7 @@ async function initializeApp() {
                 try {
                     await entriesCollection.doc(entry.id).delete();
                     showToast("Eintrag gelöscht 🗑️");
-                } catch(err) {
+                } catch (err) {
                     console.error(err);
                     showToast("Fehler beim Löschen ⚠️", "error");
                 }
@@ -182,14 +182,14 @@ async function initializeApp() {
         e.preventDefault();
         const formData = new FormData(form);
         const entry = {};
-        formData.forEach((v,k) => entry[k]=v);
+        formData.forEach((v, k) => entry[k] = v);
         try {
             await entriesCollection.add(entry);
             showToast("Eintrag gespeichert ✅");
             form.reset();
             subcategoryContainer.innerHTML = "";
             modal.classList.add("hidden");
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             showToast("Fehler beim Speichern ⚠️", "error");
         }
@@ -214,8 +214,8 @@ function initializeMap(db) {
     mapStatusDot.id = "map-status-dot";
     mapStatusDot.classList.add("offline");
     document.querySelector("#map-container h2").appendChild(mapStatusDot);
-    tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline","online"));
-    tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
+    tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline", "online"));
+    tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online", "offline"));
 
     // GPS Marker
     let gpsMarker = null;
@@ -229,8 +229,8 @@ function initializeMap(db) {
                         icon: L.divIcon({
                             className: "gps-marker-wrapper",
                             html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-                            iconSize: [24,24],
-                            iconAnchor: [12,12]
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
                         })
                     }).addTo(map);
                 } else gpsMarker.setLatLng([latitude, longitude]);
@@ -244,10 +244,10 @@ function initializeMap(db) {
                 }
             },
             err => {
-                if (gpsMarker) { const el = gpsMarker.getElement(); if(el) el.classList.add("offline"); }
+                if (gpsMarker) { const el = gpsMarker.getElement(); if (el) el.classList.add("offline"); }
                 console.warn("GPS konnte nicht geladen werden:", err);
             },
-            { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
         );
     }
 
@@ -257,23 +257,23 @@ function initializeMap(db) {
         }
     });
 
-// ==========================
-// HOCHSITZ BUTTON + MARKER HANDLER
-// ==========================
-let settingHochsitz = false;
-const hochsitzeMarkers = {}; // Marker-Objekte zwischenspeichern
+    // ==========================
+    // HOCHSITZ BUTTON + MARKER HANDLER
+    // ==========================
+    let settingHochsitz = false;
+    const hochsitzeMarkers = {}; // Marker-Objekte zwischenspeichern
 
-// Hochsitz-Button (oben rechts)
-const markerButton = L.control({ position: 'topright' });
-markerButton.onAdd = function () {
-    const container = L.DomUtil.create('div', 'hoch-sitz-container');
-    container.style.textAlign = "center";
+    // Hochsitz-Button (oben rechts)
+    const markerButton = L.control({ position: 'topright' });
+    markerButton.onAdd = function () {
+        const container = L.DomUtil.create('div', 'hoch-sitz-container');
+        container.style.textAlign = "center";
 
-    // Button selbst
-    const btn = L.DomUtil.create('button', 'hoch-sitz-btn', container);
-    btn.innerHTML = '+';
-    btn.title = 'Hochsitz markieren';
-    btn.style.cssText = `
+        // Button selbst
+        const btn = L.DomUtil.create('button', 'hoch-sitz-btn', container);
+        btn.innerHTML = '+';
+        btn.title = 'Hochsitz markieren';
+        btn.style.cssText = `
         background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
         border: none;
         color: white;
@@ -292,205 +292,207 @@ markerButton.onAdd = function () {
         padding: 0;
     `;
 
-    // Label unter Button
-    const label = L.DomUtil.create('div', '', container);
-    label.textContent = "Hochsitz +";
-    label.style.fontSize = "0.75rem";
-    label.style.marginTop = "4px";
-    label.style.color = "#ffffff";
-    label.style.fontWeight = "bold";
+        // Label unter Button
+        const label = L.DomUtil.create('div', '', container);
+        label.textContent = "Hochsitz +";
+        label.style.fontSize = "0.75rem";
+        label.style.marginTop = "4px";
+        label.style.color = "#ffffff";
+        label.style.fontWeight = "bold";
 
-    L.DomEvent.on(btn, 'click', () => {
-        settingHochsitz = true;
-        showToast("Klicke auf die Karte, um eine Hochsitz hinzuzufügen");
-    });
+        L.DomEvent.on(btn, 'click', () => {
+            settingHochsitz = true;
+            showToast("Klicke auf die Karte, um eine Hochsitz hinzuzufügen");
+        });
 
-    return container;
-};
-markerButton.addTo(map);
+        return container;
+    };
+    markerButton.addTo(map);
 
-// ==========================
-// Firebase Marker laden und verwalten
-// ==========================
-const hochsitzeCollection = db.collection("hochsitze");
+    // ==========================
+    // Firebase Marker laden und verwalten
+    // ==========================
+    const hochsitzeCollection = db.collection("hochsitze");
 
-hochsitzeCollection.onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-        const data = change.doc.data();
-        const id = change.doc.id;
+    hochsitzeCollection.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+            const data = change.doc.data();
+            const id = change.doc.id;
 
-        // vorhandenen Marker löschen
-        if (hochsitzeMarkers[id]) {
-            map.removeLayer(hochsitzeMarkers[id]);
-            delete hochsitzeMarkers[id];
-        }
+            // vorhandenen Marker löschen
+            if (hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
 
-        if (change.type === "added" || change.type === "modified") {
-            const marker = L.marker([data.lat, data.lng], {
-                icon: L.icon({
-                    iconUrl: 'assets/icons/hoch_sitz.png',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32]
-                })
-            }).addTo(map);
+            if (change.type === "added" || change.type === "modified") {
+                const marker = L.marker([data.lat, data.lng], {
+                    icon: L.divIcon({
+                        className: "hochsitz-emoji-marker",
+                        html: "🪜",
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    })
+                }).addTo(map);
 
-            let popupContent = `<div style="text-align:center;">
+
+                let popupContent = `<div style="text-align:center;">
                 <strong>${data.name || ''}</strong><br>
                 ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ''}
                 <br>
                 <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
                 <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
             </div>`;
-            marker.bindPopup(popupContent);
+                marker.bindPopup(popupContent);
 
-            hochsitzeMarkers[id] = marker;
+                hochsitzeMarkers[id] = marker;
+            }
+
+            if (change.type === "removed" && hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
+        });
+    });
+
+    // ==========================
+    // Polygon Klick → Marker setzen mit Prompt
+    // ==========================
+    reviere.forEach(r => {
+        const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
+            .addTo(map)
+            .bindPopup(r.name);
+
+        // Marker setzen
+        polygon.on('click', async e => {
+            if (!settingHochsitz) return;
+
+            const modal = document.getElementById("hochsitz-modal");
+            const input = document.getElementById("hochsitz-name-input");
+            modal.style.display = "block";
+            input.value = "";
+            input.focus();
+
+            const saveBtn = document.getElementById("hochsitz-save-btn");
+            const cancelBtn = document.getElementById("hochsitz-cancel-btn");
+
+            const closeModal = () => { modal.style.display = "none"; };
+
+            saveBtn.onclick = async () => {
+                const name = input.value.trim();
+                if (!name) return alert("Bitte einen Namen eingeben");
+                try {
+                    await hochsitzeCollection.add({
+                        lat: e.latlng.lat,
+                        lng: e.latlng.lng,
+                        name: name,
+                        imageUrl: null
+                    });
+                    showToast("Hochsitz gesetzt ✅");
+                } catch (err) {
+                    console.error(err);
+                    showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
+                }
+                closeModal();
+                settingHochsitz = false;
+            };
+
+            cancelBtn.onclick = () => {
+                closeModal();
+                settingHochsitz = false;
+            };
+        });
+
+
+    });
+
+    // ==========================
+    // Bild hochladen / Marker löschen
+    // ==========================
+    document.addEventListener('click', async (evt) => {
+        const target = evt.target;
+        const id = target.dataset.id;
+        if (!id) return;
+        const docRef = hochsitzeCollection.doc(id);
+
+        if (target.classList.contains('add-photo-btn')) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.click();
+            fileInput.onchange = async () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
+                await fileRef.put(file);
+                const url = await fileRef.getDownloadURL();
+                await docRef.update({ imageUrl: url });
+                showToast("Bild hochgeladen ✅");
+            };
         }
 
-        if (change.type === "removed" && hochsitzeMarkers[id]) {
-            map.removeLayer(hochsitzeMarkers[id]);
-            delete hochsitzeMarkers[id];
+        if (target.classList.contains('delete-marker-btn')) {
+            if (confirm("Hochsitz wirklich löschen?")) {
+                await docRef.delete();
+                showToast("Hochsitz gelöscht 🗑️");
+            }
         }
     });
-});
 
-// ==========================
-// Polygon Klick → Marker setzen mit Prompt
-// ==========================
-reviere.forEach(r => {
-    const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
-        .addTo(map)
-        .bindPopup(r.name);
 
-// Marker setzen
-polygon.on('click', async e => {
-    if (!settingHochsitz) return;
+    // ==============================
+    // WEATHER
+    // ==============================
+    async function fetchLiveWeather() {
+        const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
+        const LAT = 49.2, LON = 13.05;
+        const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
 
-    const modal = document.getElementById("hochsitz-modal");
-    const input = document.getElementById("hochsitz-name-input");
-    modal.style.display = "block";
-    input.value = "";
-    input.focus();
-
-    const saveBtn = document.getElementById("hochsitz-save-btn");
-    const cancelBtn = document.getElementById("hochsitz-cancel-btn");
-
-    const closeModal = () => { modal.style.display = "none"; };
-
-    saveBtn.onclick = async () => {
-        const name = input.value.trim();
-        if (!name) return alert("Bitte einen Namen eingeben");
         try {
-            await hochsitzeCollection.add({
-                lat: e.latlng.lat,
-                lng: e.latlng.lng,
-                name: name,
-                imageUrl: null
-            });
-            showToast("Hochsitz gesetzt ✅");
-        } catch(err) {
-            console.error(err);
-            showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
-        }
-        closeModal();
-        settingHochsitz = false;
-    };
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Netzwerkfehler");
+            const data = await response.json();
 
-    cancelBtn.onclick = () => {
-        closeModal();
-        settingHochsitz = false;
-    };
-});
-
-
-});
-
-// ==========================
-// Bild hochladen / Marker löschen
-// ==========================
-document.addEventListener('click', async (evt) => {
-    const target = evt.target;
-    const id = target.dataset.id;
-    if (!id) return;
-    const docRef = hochsitzeCollection.doc(id);
-
-    if (target.classList.contains('add-photo-btn')) {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.click();
-        fileInput.onchange = async () => {
-            const file = fileInput.files[0];
-            if (!file) return;
-            const storageRef = firebase.storage().ref();
-            const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
-            await fileRef.put(file);
-            const url = await fileRef.getDownloadURL();
-            await docRef.update({ imageUrl: url });
-            showToast("Bild hochgeladen ✅");
-        };
-    }
-
-    if (target.classList.contains('delete-marker-btn')) {
-        if (confirm("Hochsitz wirklich löschen?")) {
-            await docRef.delete();
-            showToast("Hochsitz gelöscht 🗑️");
-        }
-    }
-});
-
-
-// ==============================
-// WEATHER
-// ==============================
-async function fetchLiveWeather() {
-    const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
-    const LAT = 49.2, LON = 13.05;
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
-
-    try {
-        const response = await fetch(url);
-        if(!response.ok) throw new Error("Netzwerkfehler");
-        const data = await response.json();
-
-        document.getElementById("widget-weather").innerHTML = `
+            document.getElementById("widget-weather").innerHTML = `
             <h3>🌡 Wetter</h3>
             <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
             <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
         `;
-        const windDirText = getWindDirection(data.currentConditions.winddir);
-        document.getElementById("widget-wind").innerHTML = `
+            const windDirText = getWindDirection(data.currentConditions.winddir);
+            document.getElementById("widget-wind").innerHTML = `
             <h3>💨 Wind</h3>
             <p>Richtung: ${windDirText} (${data.currentConditions.winddir}°)</p>
             <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
         `;
-        const phaseNum = data.currentConditions.moonphase;
-        let moonPhaseName = "";
-        if (phaseNum === 0) moonPhaseName = "Neumond";
-        else if (phaseNum <0.25) moonPhaseName = "Zunehmender Sichelmond";
-        else if (phaseNum ===0.25) moonPhaseName = "Erstes Viertel";
-        else if (phaseNum <0.5) moonPhaseName = "Zunehmender Mond";
-        else if (phaseNum ===0.5) moonPhaseName = "Vollmond";
-        else if (phaseNum <0.75) moonPhaseName = "Abnehmender Mond";
-        else if (phaseNum ===0.75) moonPhaseName = "Letztes Viertel";
-        else moonPhaseName = "Abnehmender Sichelmond";
-        document.getElementById("widget-moon").innerHTML = `<h3>🌙 Mondphase</h3><p>Heute: ${moonPhaseName}</p>`;
-    } catch(err) {
-        console.error("Wetter Fehler:", err);
-        document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
-        document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
-        document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
+            const phaseNum = data.currentConditions.moonphase;
+            let moonPhaseName = "";
+            if (phaseNum === 0) moonPhaseName = "Neumond";
+            else if (phaseNum < 0.25) moonPhaseName = "Zunehmender Sichelmond";
+            else if (phaseNum === 0.25) moonPhaseName = "Erstes Viertel";
+            else if (phaseNum < 0.5) moonPhaseName = "Zunehmender Mond";
+            else if (phaseNum === 0.5) moonPhaseName = "Vollmond";
+            else if (phaseNum < 0.75) moonPhaseName = "Abnehmender Mond";
+            else if (phaseNum === 0.75) moonPhaseName = "Letztes Viertel";
+            else moonPhaseName = "Abnehmender Sichelmond";
+            document.getElementById("widget-moon").innerHTML = `<h3>🌙 Mondphase</h3><p>Heute: ${moonPhaseName}</p>`;
+        } catch (err) {
+            console.error("Wetter Fehler:", err);
+            document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
+            document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
+            document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
+        }
     }
-}
 
-function getWindDirection(deg) {
-    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    return dirs[Math.floor((deg/22.5)+0.5)%16];
-}
+    function getWindDirection(deg) {
+        const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        return dirs[Math.floor((deg / 22.5) + 0.5) % 16];
+    }
 
-// ==============================
-// SERVICE WORKER
-// ==============================
-if("serviceWorker" in navigator){
-    window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
-}
+    // ==============================
+    // SERVICE WORKER
+    // ==============================
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+    }
 }
