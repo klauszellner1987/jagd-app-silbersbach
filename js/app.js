@@ -275,7 +275,7 @@ markerButton.onAdd = function () {
     btn.innerHTML = '+';
     btn.title = 'Hochsitz markieren';
     btn.style.cssText = `
-        background: #5fa175;       /* grün für Map-Kontrast */
+        background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
         border: none;
         color: white;              /* Plus weiß */
         font-size: 1.5rem;
@@ -284,16 +284,18 @@ markerButton.onAdd = function () {
         height: 40px;
         border-radius: 50%;
         cursor: pointer;
-        display: flex;
+        display: center;
         align-items: center;       /* vertikal zentrieren */
         justify-content: center;   /* horizontal zentrieren */
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow:
+        0 10px 25px rgba(0,0,0,0.35),
+        0 0 18px rgba(124,255,155,0.8);
         padding: 0;
     `;
 
     // Label darunter
     const label = L.DomUtil.create('div', '', container);
-    label.textContent = "Kanzel+";
+    label.textContent = "Jagdeinrichtung";
     label.style.fontSize = "0.75rem";
     label.style.marginTop = "4px";
     label.style.color = "#ffffff";  // weiß für dunkle Map
@@ -302,7 +304,7 @@ markerButton.onAdd = function () {
     // Klick-Event
     L.DomEvent.on(btn, 'click', () => {
         settingHochsitz = true;
-        showToast("Klicke auf die Karte, um den Hochsitz zu setzen");
+        showToast("Klicke auf die Karte, um eine Jagdeinrichtung hinzuzufügen");
     });
 
     return container;

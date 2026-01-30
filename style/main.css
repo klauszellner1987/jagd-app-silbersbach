@@ -729,7 +729,7 @@ footer {
 
 .toast.success { background: #2ecc71; }
 .toast.error { background: #e74c3c; }
-.toast.info { background: #3498db; }
+.toast.info { background: #3495db; }
 
 @keyframes toastSlide {
     from { opacity: 0; transform: translateY(20px); }
