@@ -263,11 +263,9 @@ function initializeMap() {
 
     // Polygone
     reviere.forEach(r => {
-        L.polygon(r.coords, {
-            color: r.color,
-            fillColor: r.fillColor,
-            fillOpacity: 0.3
-        }).addTo(map).bindPopup(r.name);
+        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
+         .addTo(map)
+         .bindPopup(r.name);
     });
 
     // Statusdot
@@ -279,62 +277,53 @@ function initializeMap() {
     tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline", "online"));
     tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online", "offline"));
 
- // ======================
-// GPS Marker
-// ======================
-const gpsMarkerWrapper = L.divIcon({
-    className: "gps-marker-wrapper",
-    html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
-});
+    // ======================
+    // GPS Marker
+    // ======================
+    let gpsMarker = null;
+    let firstFix = true;
 
-let gpsMarker;
-let firstFix = true;
-
-if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(
-        pos => {
-            const { latitude, longitude } = pos.coords;
-
-            if (!gpsMarker) {
-                gpsMarker = L.marker([latitude, longitude], {
-                    icon: L.divIcon({
-                        className: "gps-marker-wrapper",
-                        html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    })
-                }).addTo(map);
-            } else {
-                gpsMarker.setLatLng([latitude, longitude]);
-            }
-
-            const el = gpsMarker.getElement();
-            if (el) el.classList.remove("offline");
-
-            if (firstFix) {
-                map.setView([latitude, longitude], map.getZoom());
-                firstFix = false;
-            }
-        },
-        err => {
-            if (gpsMarker) {
-                const el = gpsMarker.getElement();
-                if (el) el.classList.add("offline");
-            }
-            console.warn("GPS konnte nicht geladen werden:", err);
-        },
-        {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 10000
+    function addOrUpdateMarker(lat, lon) {
+        if (!gpsMarker) {
+            gpsMarker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                    className: "gps-marker-wrapper",
+                    html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                })
+            }).addTo(map);
+        } else {
+            gpsMarker.setLatLng([lat, lon]);
         }
-    );
-} else {
-    console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
-}
 
+        const el = gpsMarker.getElement();
+        if (el) el.classList.remove("offline");
+
+        if (firstFix) {
+            map.setView([lat, lon], map.getZoom());
+            firstFix = false;
+        }
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            pos => {
+                const { latitude, longitude } = pos.coords;
+                addOrUpdateMarker(latitude, longitude);
+            },
+            err => {
+                if (gpsMarker) {
+                    const el = gpsMarker.getElement();
+                    if (el) el.classList.add("offline");
+                }
+                console.warn("GPS konnte nicht geladen werden:", err);
+            },
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+        );
+    } else {
+        console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
+    }
 
     // Tab-Fix: Map neu rendern, falls Tab gewechselt wird
     tabButtons.forEach(btn => {
@@ -345,6 +334,7 @@ if (navigator.geolocation) {
         }
     });
 }
+
 
 
 
