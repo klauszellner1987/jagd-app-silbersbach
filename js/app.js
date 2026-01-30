@@ -248,9 +248,8 @@ async function initializeApp() {
 // MAP (FIXED)
 // ==============================
 function initializeMap() {
-    // Karte initialisieren
     const map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
-    window.mapInstance = map; // Für Tab-Fix
+    window.mapInstance = map;
 
     // TileLayer
     const tileLayer = L.tileLayer(
@@ -283,34 +282,34 @@ function initializeMap() {
     let gpsMarker = null;
     let firstFix = true;
 
-    function addOrUpdateMarker(lat, lon) {
-        if (!gpsMarker) {
-            gpsMarker = L.marker([lat, lon], {
-                icon: L.divIcon({
-                    className: "gps-marker-wrapper",
-                    html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                })
-            }).addTo(map);
-        } else {
-            gpsMarker.setLatLng([lat, lon]);
-        }
-
-        const el = gpsMarker.getElement();
-        if (el) el.classList.remove("offline");
-
-        if (firstFix) {
-            map.setView([lat, lon], map.getZoom());
-            firstFix = false;
-        }
-    }
-
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
             pos => {
                 const { latitude, longitude } = pos.coords;
-                addOrUpdateMarker(latitude, longitude);
+
+                // Marker erst erstellen, wenn er noch nicht existiert
+                if (!gpsMarker) {
+                    gpsMarker = L.marker([latitude, longitude], {
+                        icon: L.divIcon({
+                            className: "gps-marker-wrapper",
+                            html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        })
+                    }).addTo(map);
+                } else {
+                    gpsMarker.setLatLng([latitude, longitude]);
+                }
+
+                // DOM Element prüfen, bevor Klasse manipuliert wird
+                const el = gpsMarker.getElement();
+                if (el) el.classList.remove("offline");
+
+                // Karte beim ersten Fix zentrieren
+                if (firstFix) {
+                    map.setView([latitude, longitude], map.getZoom());
+                    firstFix = false;
+                }
             },
             err => {
                 if (gpsMarker) {
@@ -334,6 +333,7 @@ function initializeMap() {
         }
     });
 }
+
 
 
 
