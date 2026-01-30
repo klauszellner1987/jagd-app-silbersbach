@@ -651,8 +651,8 @@ footer {
 
 #map-status-dot {
     display: inline-block;
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
     margin-left: 8px;
     border-radius: 50%;
     background-color: red; /* offline Standard */
