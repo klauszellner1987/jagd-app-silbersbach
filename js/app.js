@@ -279,50 +279,51 @@ function initializeMap() {
     tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline", "online"));
     tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online", "offline"));
 
-    // ======================
-    // GPS Marker
-    // ======================
-    const gpsMarkerWrapper = L.divIcon({
-        className: "gps-marker-wrapper",
-        html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-    });
+ // ======================
+// GPS Marker
+// ======================
+const gpsMarkerWrapper = L.divIcon({
+    className: "gps-marker-wrapper",
+    html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+});
 
-    const gpsMarker = L.marker([49.180, 13.065], { icon: gpsMarkerWrapper }).addTo(map);
+const gpsMarker = L.marker([49.180, 13.065], { icon: gpsMarkerWrapper }).addTo(map);
 
-    // Geolocation
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(
-            pos => {
-                const { latitude, longitude } = pos.coords;
+let firstFix = true;
 
-                // Marker setzen
-                gpsMarker.setLatLng([latitude, longitude]);
+if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+        pos => {
+            const { latitude, longitude } = pos.coords;
+            gpsMarker.setLatLng([latitude, longitude]);
 
-                // Marker Styling
-                const el = gpsMarker.getElement();
-                if (el) el.classList.remove("offline");
+            const el = gpsMarker.getElement();
+            if (el) el.classList.remove("offline");
 
-                // Karte zentrieren (nur beim ersten Laden oder Tab-Fix)
+            // Nur beim ersten Fix die Karte zentrieren
+            if (firstFix) {
                 map.setView([latitude, longitude], map.getZoom());
-            },
-            err => {
-                const el = gpsMarker.getElement();
-                if (el) el.classList.add("offline");
-                console.warn("GPS konnte nicht geladen werden:", err);
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 10000
+                firstFix = false;
             }
-        );
-    } else {
-        const el = gpsMarker.getElement();
-        if (el) el.classList.add("offline");
-        console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
-    }
+        },
+        err => {
+            const el = gpsMarker.getElement();
+            if (el) el.classList.add("offline");
+            console.warn("GPS konnte nicht geladen werden:", err);
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
+    );
+} else {
+    const el = gpsMarker.getElement();
+    if (el) el.classList.add("offline");
+    console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
+}
 
     // Tab-Fix: Map neu rendern, falls Tab gewechselt wird
     tabButtons.forEach(btn => {
