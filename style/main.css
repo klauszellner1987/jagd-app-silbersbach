@@ -651,54 +651,43 @@ footer {
 
 #map-status-dot {
     display: inline-block;
-    width: 14px;       /* Punktgröße */
+    width: 14px;
     height: 14px;
     margin-left: 8px;
     border-radius: 50%;
-    background-color: red; /* Standard offline */
+    background-color: red; /* offline Standard */
     vertical-align: middle;
-    position: relative;    /* für ::after Puls */
+
+    animation: statusPulse 1.5s infinite;
 }
 
 /* Farben abhängig vom Status */
 #map-status-dot.online {
-    background-color: #0f0; /* statisches Grün */
+    background-color: #00ff00; /* richtiges LED-Grün */
+    box-shadow: 0 0 6px #00ff00, 0 0 12px #00ff00, 0 0 18px #00ff00;
 }
 
 #map-status-dot.offline {
     background-color: red;
+    box-shadow: 0 0 6px red, 0 0 12px red, 0 0 18px red;
 }
 
-/* Puls Animation über Pseudoelement */
-#map-status-dot::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 14px;
-    height: 14px;
-    background: rgba(0, 255, 0, 0.5); /* leuchtendes Grün */
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    animation: ledPulse 1.5s infinite;
-    z-index: -1; /* hinter dem Punkt */
-}
-
-/* LED Pulse Animation */
-@keyframes ledPulse {
+/* Puls Animation */
+@keyframes statusPulse {
     0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0.6;
+        transform: scale(1);
+        opacity: 1;
     }
     50% {
-        transform: translate(-50%, -50%) scale(2.5);
-        opacity: 0;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: scale(1.5);
         opacity: 0.6;
     }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
+
 
 
 
