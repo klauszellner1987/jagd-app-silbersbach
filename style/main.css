@@ -68,7 +68,7 @@ header h1 {
 ============================================ */
 main {
     padding: 1rem;
-    margin-bottom: 80px;
+    margin-bottom: 140px;
 }
 
 .container {
@@ -707,4 +707,86 @@ footer {
 
 @keyframes toastFade {
     to { opacity: 0; transform: translateY(20px); }
+}
+/* ============================
+   MODERN FLOATING NAV
+============================ */
+
+.floating-nav {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 420px;
+
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-radius: 22px;
+    padding: 10px;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    z-index: 2000;
+}
+
+.floating-nav .tab-button {
+    flex: 1;
+    background: transparent;
+    box-shadow: none;
+    color: #e8f5e9;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 0;
+    border-radius: 16px;
+
+    transition: all 0.25s ease;
+}
+
+.floating-nav .tab-button .icon {
+    font-size: 1.4rem;
+    line-height: 1.2;
+}
+
+.floating-nav .tab-button .label {
+    font-size: 0.7rem;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
+/* ACTIVE TAB */
+
+.floating-nav .tab-button.active {
+    background: rgba(95,161,117,0.9);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+}
+
+.floating-nav .tab-button.active .label {
+    opacity: 1;
+    font-weight: 600;
+}
+
+/* HOVER FEEL (DESKTOP) */
+
+.floating-nav .tab-button:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* SAFE AREA FOR IPHONE */
+
+@supports(padding: env(safe-area-inset-bottom)) {
+    .floating-nav {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
 }
