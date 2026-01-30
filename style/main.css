@@ -861,53 +861,85 @@ footer {
 .fab-add:active {
     transform: translateX(-50%) scale(0.95);
 }
-#hochsitz-modal.hidden {
-  display: none;
-}
-
+/* =============================
+   Hochsitz Modal
+   ============================= */
 #hochsitz-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 9999;
-}
-
-.hochsitz-modal-backdrop {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-}
-
-.hochsitz-modal-content {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  padding: 20px 25px;
-  border-radius: 10px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* zentriert */
+  background: #1c2b1c;              /* dunkles, aber warmes Schwarzgrün */
+  border-radius: 16px;               /* weiche, abgerundete Ecken */
+  padding: 24px 28px;
+  width: 280px;
+  max-width: 90%;
   text-align: center;
-  width: 250px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  z-index: 10000;
+  display: none;
+  transition: all 0.25s ease-in-out; /* sanftes ein-/ausblenden */
 }
 
-.hochsitz-modal-content input {
+/* Überschrift */
+#hochsitz-modal h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #8ce6a3; /* sanftes Grün */
+}
+
+/* Inputfeld */
+#hochsitz-modal input {
   width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.hochsitz-modal-buttons button {
-  margin: 5px;
-  padding: 6px 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  background: #2a3b2a;       /* dunkleres Grün statt hartem Schwarz */
+  color: #fff;
+  outline: none;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
 }
 
-#hochsitz-save-btn { background: #3DBE6A; color: white; }
-#hochsitz-cancel-btn { background: #e74c3c; color: white; }
+/* Button Container */
+#hochsitz-modal .hoch-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Allgemeine Button Styles */
+#hochsitz-modal button {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Speichern Button */
+#hochsitz-save-btn {
+  background: linear-gradient(135deg, #9ff0b7, #5edc96); /* sanfte Grüntöne */
+  color: #1c2b1c;
+  box-shadow: 0 5px 15px rgba(94,220,150,0.35);
+}
+
+/* Abbrechen Button */
+#hochsitz-cancel-btn {
+  background: #f66b6b;
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(246,107,107,0.3);
+}
+
+/* Hover Effekt */
+#hochsitz-modal button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
