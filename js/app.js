@@ -39,7 +39,6 @@ tabButtons.forEach(btn => {
             setTimeout(() => window.mapInstance.invalidateSize(), 200);
         }
 
-        // Wetter laden, wenn Wetter-Tab
         if (btn.dataset.tab === "wetter-tab") fetchLiveWeather();
     });
 });
@@ -119,14 +118,13 @@ async function initializeApp() {
     const subcategoryContainer = document.getElementById("subcategory-container");
 
     let entries = [];
-const fabBtn = document.getElementById("fab-add-btn");
+    const fabBtn = document.getElementById("fab-add-btn");
 
-if(fabBtn){
-   fabBtn.addEventListener("click", () => {
-      modal.classList.remove("hidden");
-   });
-}
-
+    if(fabBtn){
+       fabBtn.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+       });
+    }
 
     entriesCollection.orderBy("datum", "desc")
         .onSnapshot(snapshot => {
@@ -197,29 +195,21 @@ if(fabBtn){
         }
     });
 
-    initializeMap();
+    initializeMap(db);
 }
 
 // ==============================
 // MAP
 // ==============================
-function initializeMap() {
+function initializeMap(db) {
     const map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
     window.mapInstance = map;
 
-    // TileLayer
     const tileLayer = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         { attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others", maxZoom: 20 }
     ).addTo(map);
 
-    // Polygone
-    reviere.forEach(r => {
-        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
-         .addTo(map).bindPopup(r.name);
-    });
-
-    // Statusdot
     const mapStatusDot = document.createElement("span");
     mapStatusDot.id = "map-status-dot";
     mapStatusDot.classList.add("offline");
@@ -230,7 +220,6 @@ function initializeMap() {
     // GPS Marker
     let gpsMarker = null;
     let firstFix = true;
-
     if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
             pos => {
@@ -260,12 +249,132 @@ function initializeMap() {
             },
             { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
         );
-    } else console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
+    }
 
-    // Tab-Fix
     tabButtons.forEach(btn => {
         if (btn.dataset.tab === "map-container") {
             btn.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 200));
+        }
+    });
+
+    // ==========================
+    // HOCHSITZ MARKIEREN BUTTON
+    // ==========================
+    let settingHochsitz = false;
+    const hochsitzeMarkers = {}; 
+
+    const markerButton = L.control({ position: 'topright' });
+    markerButton.onAdd = function () {
+        const btn = L.DomUtil.create('button', 'hoch-sitz-btn');
+        btn.innerHTML = '+';
+        btn.title = 'Hochsitz markieren';
+        btn.style.cssText = `
+            background: white; border: 2px solid #5fa175; color: #5fa175;
+            font-size: 1.2rem; width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; text-align: center; line-height: 28px;
+        `;
+        L.DomEvent.on(btn, 'click', () => {
+            settingHochsitz = true;
+            showToast("Klicke auf die Karte, um den Hochsitz zu setzen");
+        });
+        return btn;
+    };
+    markerButton.addTo(map);
+
+    // ==========================
+    // Marker aus Firebase laden
+    // ==========================
+    const hochsitzeCollection = db.collection("hochsitze");
+    hochsitzeCollection.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+            const data = change.doc.data();
+            const id = change.doc.id;
+
+            if (hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
+
+            if (change.type === "added" || change.type === "modified") {
+                const marker = L.marker([data.lat, data.lng], {
+                    icon: L.icon({
+                        iconUrl: 'assets/icons/hoch_sitz.png',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map);
+
+                let popupContent = `<div style="text-align:center;">
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ''}
+                    <br>
+                    <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
+                    <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
+                </div>`;
+                marker.bindPopup(popupContent);
+                hochsitzeMarkers[id] = marker;
+            }
+
+            if (change.type === "removed" && hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
+        });
+    });
+
+    // ==========================
+    // Polygon Click → Marker setzen
+    // ==========================
+    reviere.forEach(r => {
+        const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 }).addTo(map).bindPopup(r.name);
+
+        polygon.on('click', async e => {
+            if (!settingHochsitz) return;
+            try {
+                const docRef = await hochsitzeCollection.add({
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    imageUrl: null
+                });
+                showToast("Hochsitz gesetzt ✅");
+                settingHochsitz = false;
+            } catch(err) {
+                console.error(err);
+                showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
+            }
+        });
+    });
+
+    // ==========================
+    // Bild hochladen / Löschen
+    // ==========================
+    document.addEventListener('click', async (evt) => {
+        const target = evt.target;
+        const id = target.dataset.id;
+        if (!id) return;
+        const docRef = hochsitzeCollection.doc(id);
+
+        if (target.classList.contains('add-photo-btn')) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.click();
+            fileInput.onchange = async () => {
+                const file = fileInput.files[0];
+                if (!file) return;
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
+                await fileRef.put(file);
+                const url = await fileRef.getDownloadURL();
+                await docRef.update({ imageUrl: url });
+                showToast("Bild hochgeladen ✅");
+            };
+        }
+
+        if (target.classList.contains('delete-marker-btn')) {
+            if (confirm("Hochsitz wirklich löschen?")) {
+                await docRef.delete();
+                showToast("Hochsitz gelöscht 🗑️");
+            }
         }
     });
 }
