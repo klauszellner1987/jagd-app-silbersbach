@@ -651,22 +651,56 @@ footer {
 
 #map-status-dot {
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: 14px;       /* Punktgröße */
+    height: 14px;
     margin-left: 8px;
     border-radius: 50%;
-    background: red;
-    /* offline Standard */
+    background-color: red; /* Standard offline */
     vertical-align: middle;
+    position: relative;    /* für ::after Puls */
 }
 
+/* Farben abhängig vom Status */
 #map-status-dot.online {
-    background: green;
+    background-color: #0f0; /* statisches Grün */
 }
 
 #map-status-dot.offline {
-    background: red;
+    background-color: red;
 }
+
+/* Puls Animation über Pseudoelement */
+#map-status-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    background: rgba(0, 255, 0, 0.5); /* leuchtendes Grün */
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    animation: ledPulse 1.5s infinite;
+    z-index: -1; /* hinter dem Punkt */
+}
+
+/* LED Pulse Animation */
+@keyframes ledPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+}
+
+
 
 /* ============================
    TOAST NOTIFICATIONS
@@ -769,5 +803,19 @@ footer {
 @supports(padding: env(safe-area-inset-bottom)) {
     .floating-nav {
         padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
+}
+@keyframes statusPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }
