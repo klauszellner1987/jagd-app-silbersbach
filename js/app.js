@@ -263,23 +263,55 @@ function initializeMap(db) {
     let settingHochsitz = false;
     const hochsitzeMarkers = {}; 
 
-    const markerButton = L.control({ position: 'topright' });
-    markerButton.onAdd = function () {
-        const btn = L.DomUtil.create('button', 'hoch-sitz-btn');
-        btn.innerHTML = '+';
-        btn.title = 'Hochsitz markieren';
-        btn.style.cssText = `
-            background: white; border: 2px solid #5fa175; color: #5fa175;
-            font-size: 1.2rem; width: 36px; height: 36px; border-radius: 50%;
-            cursor: pointer; text-align: center; line-height: 28px;
-        `;
-        L.DomEvent.on(btn, 'click', () => {
-            settingHochsitz = true;
-            showToast("Klicke auf die Karte, um den Hochsitz zu setzen");
-        });
-        return btn;
-    };
-    markerButton.addTo(map);
+const markerButton = L.control({ position: 'topright' });
+
+markerButton.onAdd = function () {
+    // Container für Button + Label
+    const container = L.DomUtil.create('div', 'hoch-sitz-container');
+    container.style.textAlign = "center";
+
+    // Button
+    const btn = L.DomUtil.create('button', 'hoch-sitz-btn', container);
+    btn.innerHTML = '+';
+    btn.title = 'Hochsitz markieren';
+    btn.style.cssText = `
+        background: #5fa175;       /* grün für Map-Kontrast */
+        border: none;
+        color: white;              /* Plus weiß */
+        font-size: 1.5rem;
+        font-weight: bold;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;       /* vertikal zentrieren */
+        justify-content: center;   /* horizontal zentrieren */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        padding: 0;
+    `;
+
+    // Label darunter
+    const label = L.DomUtil.create('div', '', container);
+    label.textContent = "Kanzel+";
+    label.style.fontSize = "0.75rem";
+    label.style.marginTop = "4px";
+    label.style.color = "#ffffff";  // weiß für dunkle Map
+    label.style.fontWeight = "bold";
+
+    // Klick-Event
+    L.DomEvent.on(btn, 'click', () => {
+        settingHochsitz = true;
+        showToast("Klicke auf die Karte, um den Hochsitz zu setzen");
+    });
+
+    return container;
+};
+
+markerButton.addTo(map);
+
+
+
 
     // ==========================
     // Marker aus Firebase laden
