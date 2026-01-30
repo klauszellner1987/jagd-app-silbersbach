@@ -34,10 +34,11 @@ header {
     height: 180px;
 
     background-image: url("../assets/images/header.jpg");
+    background-color: transparent;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: scroll;
+    background-attachment: initial;
     background-color: #2f6f4e;
 
     display: flex;
