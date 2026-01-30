@@ -32,9 +32,9 @@ header {
     width: 100%;
     height: 180px;
     /* feste saubere Höhe für Mobile */
-    background-image: url("../assets/images/header.avif");
+    background-image: url("../assets/images/header.jpeg");
     background-size: cover;
-    background-position: center center;
+    background-position: center -5%;
     background-repeat: no-repeat;
     background-attachment: scroll;
     background-color: #2f6f4e;
