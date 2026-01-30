@@ -25,16 +25,17 @@ body {
     color: var(--text);
     margin: 0;
     line-height: 1.5;
+    overflow-x: hidden;
 }
 
 header {
     position: relative;
     width: 100%;
     height: 180px;
-    /* feste saubere Höhe für Mobile */
-    background-image: url("../assets/images/header.jpeg");
+
+    background-image: url("../assets/images/header.jpg");
     background-size: cover;
-    background-position: center -5%;
+    background-position: center;
     background-repeat: no-repeat;
     background-attachment: scroll;
     background-color: #2f6f4e;
@@ -46,7 +47,12 @@ header {
     border-bottom-left-radius: var(--radius);
     border-bottom-right-radius: var(--radius);
     box-shadow: var(--shadow);
+
+    /* SAFE AREA FIX */
+    padding-top: env(safe-area-inset-top);
+    margin-top: calc(env(safe-area-inset-top) * -1);
 }
+
 
 @media (min-width: 700px) {
     header {
@@ -59,9 +65,13 @@ header h1 {
     background-color: rgba(0, 0, 0, 0.35);
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    font-size: 2rem;
+
+    font-size: clamp(1.3rem, 4vw, 2rem);
     margin: 0;
+    line-height: 1.1;
+    white-space: nowrap;
 }
+
 
 /* ============================================
    MAIN & CONTAINER
@@ -578,8 +588,10 @@ footer {
 @media (max-width: 600px) {
     header {
         height: 140px;
-        font-size: 1.3rem;
     }
+}
+
+
 
     .tab-button {
         font-size: 0.95rem;
@@ -617,7 +629,7 @@ footer {
         font-size: 1.3rem;
         padding: 0.8rem;
     }
-}
+
 
 /* MOBILE LOGIN */
 @media (max-height: 750px) {
