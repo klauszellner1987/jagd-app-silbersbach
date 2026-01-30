@@ -257,161 +257,171 @@ function initializeMap(db) {
         }
     });
 
-    // ==========================
-    // HOCHSITZ MARKIEREN BUTTON
-    // ==========================
-    let settingHochsitz = false;
-    const hochsitzeMarkers = {}; 
+// ==========================
+// HOCHSITZ BUTTON + MARKER HANDLER
+// ==========================
+let settingHochsitz = false;
+const hochsitzeMarkers = {}; // Marker-Objekte zwischenspeichern
 
+// Hochsitz-Button (oben rechts)
 const markerButton = L.control({ position: 'topright' });
-
 markerButton.onAdd = function () {
-    // Container für Button + Label
     const container = L.DomUtil.create('div', 'hoch-sitz-container');
     container.style.textAlign = "center";
 
-    // Button
+    // Button selbst
     const btn = L.DomUtil.create('button', 'hoch-sitz-btn', container);
     btn.innerHTML = '+';
     btn.title = 'Hochsitz markieren';
     btn.style.cssText = `
         background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
         border: none;
-        color: white;              /* Plus weiß */
+        color: white;
         font-size: 1.5rem;
         font-weight: bold;
         width: 40px;
         height: 40px;
         border-radius: 50%;
         cursor: pointer;
-        display: center;
-        align-items: center;       /* vertikal zentrieren */
-        justify-content: center;   /* horizontal zentrieren */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         box-shadow:
         0 10px 25px rgba(0,0,0,0.35),
         0 0 18px rgba(124,255,155,0.8);
         padding: 0;
     `;
 
-    // Label darunter
+    // Label unter Button
     const label = L.DomUtil.create('div', '', container);
-    label.textContent = "Jagdeinrichtung";
+    label.textContent = "Hochsitz +";
     label.style.fontSize = "0.75rem";
     label.style.marginTop = "4px";
-    label.style.color = "#ffffff";  // weiß für dunkle Map
+    label.style.color = "#ffffff";
     label.style.fontWeight = "bold";
 
-    // Klick-Event
     L.DomEvent.on(btn, 'click', () => {
         settingHochsitz = true;
-        showToast("Klicke auf die Karte, um eine Jagdeinrichtung hinzuzufügen");
+        showToast("Klicke auf die Karte, um eine Hochsitz hinzuzufügen");
     });
 
     return container;
 };
-
 markerButton.addTo(map);
 
+// ==========================
+// Firebase Marker laden und verwalten
+// ==========================
+const hochsitzeCollection = db.collection("hochsitze");
 
+hochsitzeCollection.onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(change => {
+        const data = change.doc.data();
+        const id = change.doc.id;
 
-
-    // ==========================
-    // Marker aus Firebase laden
-    // ==========================
-    const hochsitzeCollection = db.collection("hochsitze");
-    hochsitzeCollection.onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-            const data = change.doc.data();
-            const id = change.doc.id;
-
-            if (hochsitzeMarkers[id]) {
-                map.removeLayer(hochsitzeMarkers[id]);
-                delete hochsitzeMarkers[id];
-            }
-
-            if (change.type === "added" || change.type === "modified") {
-                const marker = L.marker([data.lat, data.lng], {
-                    icon: L.icon({
-                        iconUrl: 'assets/icons/hoch_sitz.png',
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32]
-                    })
-                }).addTo(map);
-
-                let popupContent = `<div style="text-align:center;">
-                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ''}
-                    <br>
-                    <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
-                    <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
-                </div>`;
-                marker.bindPopup(popupContent);
-                hochsitzeMarkers[id] = marker;
-            }
-
-            if (change.type === "removed" && hochsitzeMarkers[id]) {
-                map.removeLayer(hochsitzeMarkers[id]);
-                delete hochsitzeMarkers[id];
-            }
-        });
-    });
-
-    // ==========================
-    // Polygon Click → Marker setzen
-    // ==========================
-    reviere.forEach(r => {
-        const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 }).addTo(map).bindPopup(r.name);
-
-        polygon.on('click', async e => {
-            if (!settingHochsitz) return;
-            try {
-                const docRef = await hochsitzeCollection.add({
-                    lat: e.latlng.lat,
-                    lng: e.latlng.lng,
-                    imageUrl: null
-                });
-                showToast("Hochsitz gesetzt ✅");
-                settingHochsitz = false;
-            } catch(err) {
-                console.error(err);
-                showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
-            }
-        });
-    });
-
-    // ==========================
-    // Bild hochladen / Löschen
-    // ==========================
-    document.addEventListener('click', async (evt) => {
-        const target = evt.target;
-        const id = target.dataset.id;
-        if (!id) return;
-        const docRef = hochsitzeCollection.doc(id);
-
-        if (target.classList.contains('add-photo-btn')) {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            fileInput.click();
-            fileInput.onchange = async () => {
-                const file = fileInput.files[0];
-                if (!file) return;
-                const storageRef = firebase.storage().ref();
-                const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
-                await fileRef.put(file);
-                const url = await fileRef.getDownloadURL();
-                await docRef.update({ imageUrl: url });
-                showToast("Bild hochgeladen ✅");
-            };
+        // vorhandenen Marker löschen
+        if (hochsitzeMarkers[id]) {
+            map.removeLayer(hochsitzeMarkers[id]);
+            delete hochsitzeMarkers[id];
         }
 
-        if (target.classList.contains('delete-marker-btn')) {
-            if (confirm("Hochsitz wirklich löschen?")) {
-                await docRef.delete();
-                showToast("Hochsitz gelöscht 🗑️");
-            }
+        if (change.type === "added" || change.type === "modified") {
+            const marker = L.marker([data.lat, data.lng], {
+                icon: L.icon({
+                    iconUrl: 'assets/icons/hoch_sitz.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32]
+                })
+            }).addTo(map);
+
+            let popupContent = `<div style="text-align:center;">
+                <strong>${data.name || ''}</strong><br>
+                ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ''}
+                <br>
+                <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
+                <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
+            </div>`;
+            marker.bindPopup(popupContent);
+
+            hochsitzeMarkers[id] = marker;
+        }
+
+        if (change.type === "removed" && hochsitzeMarkers[id]) {
+            map.removeLayer(hochsitzeMarkers[id]);
+            delete hochsitzeMarkers[id];
         }
     });
-}
+});
+
+// ==========================
+// Polygon Klick → Marker setzen mit Prompt
+// ==========================
+reviere.forEach(r => {
+    const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
+        .addTo(map)
+        .bindPopup(r.name);
+
+    polygon.on('click', async e => {
+        if (!settingHochsitz) return;
+
+        // Prompt für Namen
+        const name = prompt("Gib den Namen des Hochsitzes ein:");
+        if (!name) {
+            showToast("Hochsitz nicht gespeichert – Name fehlt ⚠️", "error");
+            settingHochsitz = false;
+            return;
+        }
+
+        try {
+            const docRef = await hochsitzeCollection.add({
+                lat: e.latlng.lat,
+                lng: e.latlng.lng,
+                name: name,
+                imageUrl: null
+            });
+            showToast(`Hochsitz "${name}" gesetzt ✅`);
+            settingHochsitz = false;
+        } catch(err) {
+            console.error(err);
+            showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
+        }
+    });
+});
+
+// ==========================
+// Bild hochladen / Marker löschen
+// ==========================
+document.addEventListener('click', async (evt) => {
+    const target = evt.target;
+    const id = target.dataset.id;
+    if (!id) return;
+    const docRef = hochsitzeCollection.doc(id);
+
+    if (target.classList.contains('add-photo-btn')) {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.click();
+        fileInput.onchange = async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const storageRef = firebase.storage().ref();
+            const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
+            await fileRef.put(file);
+            const url = await fileRef.getDownloadURL();
+            await docRef.update({ imageUrl: url });
+            showToast("Bild hochgeladen ✅");
+        };
+    }
+
+    if (target.classList.contains('delete-marker-btn')) {
+        if (confirm("Hochsitz wirklich löschen?")) {
+            await docRef.delete();
+            showToast("Hochsitz gelöscht 🗑️");
+        }
+    }
+});
+
 
 // ==============================
 // WEATHER
@@ -466,4 +476,5 @@ function getWindDirection(deg) {
 // ==============================
 if("serviceWorker" in navigator){
     window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+}
 }
