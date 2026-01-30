@@ -277,24 +277,20 @@ button:hover {
 }
 
 #add-entry-btn {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    background: var(--accent);
-    color: #fff;
-    font-size: 1.6rem;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+    display: none;
 }
 
+/* Hover (Desktop) */
 #add-entry-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
-    background: #0056b3;
+    transform: scale(1.08);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.45);
 }
+
+/* Tap Effekt (Mobile) */
+#add-entry-btn:active {
+    transform: scale(0.95);
+}
+
 
 /* ============================================
    MODAL / NEUER EINTRAG
@@ -807,4 +803,48 @@ footer {
         transform: scale(1);
         opacity: 1;
     }
+}
+/* ============================
+   FLOATING ADD BUTTON (CENTER)
+============================ */
+
+.fab-add {
+    position: fixed;
+    bottom: 72px; /* über der Floating Nav */
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+
+    background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
+    color: #0f3b25;
+
+    font-size: 2.2rem;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.35),
+        0 0 18px rgba(124,255,155,0.8);
+
+    cursor: pointer;
+    z-index: 3000;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab-add:hover {
+    transform: translateX(-50%) scale(1.08);
+    box-shadow:
+        0 14px 30px rgba(0,0,0,0.45),
+        0 0 28px rgba(124,255,155,1);
+}
+
+.fab-add:active {
+    transform: translateX(-50%) scale(0.95);
 }

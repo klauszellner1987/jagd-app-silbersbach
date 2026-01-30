@@ -35,7 +35,7 @@ tabButtons.forEach(btn => {
         btn.classList.add("active");
         document.getElementById(btn.dataset.tab).classList.add("active");
 
-        if (btn.dataset.tab === "map-container" && window.mapInstance) {
+        if (btn.dataset.tab === "revier" && window.mapInstance) {
             setTimeout(() => window.mapInstance.invalidateSize(), 200);
         }
 
@@ -119,6 +119,14 @@ async function initializeApp() {
     const subcategoryContainer = document.getElementById("subcategory-container");
 
     let entries = [];
+const fabBtn = document.getElementById("fab-add-btn");
+
+if(fabBtn){
+   fabBtn.addEventListener("click", () => {
+      modal.classList.remove("hidden");
+   });
+}
+
 
     entriesCollection.orderBy("datum", "desc")
         .onSnapshot(snapshot => {
