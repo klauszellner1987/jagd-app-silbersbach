@@ -20,6 +20,71 @@ function showToast(message, type = "info") {
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
+ // ==============================
+// WEATHER
+// ==============================
+async function fetchLiveWeather() {
+    const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
+    const LAT = 49.2, LON = 13.05;
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Netzwerkfehler: ${response.status}`);
+
+        const data = await response.json();
+        console.log("Wetter-Daten:", data); // zum Debuggen
+
+        // Sicherheitshalber prüfen, ob currentConditions existiert
+        const current = data.currentConditions;
+        if (!current) throw new Error("Keine aktuellen Wetterdaten gefunden");
+
+        // Temperatur & Luftfeuchtigkeit
+        document.getElementById("widget-weather").innerHTML = `
+            <h3>🌡 Wetter</h3>
+            <p>Temperatur: ${current.temp?.toFixed(1) ?? "-"} °C</p>
+            <p>Luftfeuchtigkeit: ${current.humidity ?? "-"} %</p>
+        `;
+
+        // Wind
+        const windDirText = getWindDirection(current.winddir ?? 0);
+        document.getElementById("widget-wind").innerHTML = `
+            <h3>💨 Wind</h3>
+            <p>Richtung: ${windDirText} (${current.winddir ?? "-" }°)</p>
+            <p>Geschwindigkeit: ${current.windspeed ?? "-"} km/h</p>
+        `;
+
+        // Mondphase
+        const phaseNum = current.moonphase ?? 0;
+        let moonPhaseName = "";
+        if (phaseNum === 0) moonPhaseName = "Neumond";
+        else if (phaseNum < 0.25) moonPhaseName = "Zunehmender Sichelmond";
+        else if (phaseNum === 0.25) moonPhaseName = "Erstes Viertel";
+        else if (phaseNum < 0.5) moonPhaseName = "Zunehmender Mond";
+        else if (phaseNum === 0.5) moonPhaseName = "Vollmond";
+        else if (phaseNum < 0.75) moonPhaseName = "Abnehmender Mond";
+        else if (phaseNum === 0.75) moonPhaseName = "Letztes Viertel";
+        else moonPhaseName = "Abnehmender Sichelmond";
+
+        document.getElementById("widget-moon").innerHTML = `
+            <h3>🌙 Mondphase</h3>
+            <p>Heute: ${moonPhaseName}</p>
+        `;
+    } catch (err) {
+        console.error("Wetter Fehler:", err);
+
+        // Fehlermeldung in die Widgets schreiben
+        document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
+        document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
+        document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
+    }
+}
+
+// Hilfsfunktion für Windrichtung
+function getWindDirection(deg) {
+    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+    return dirs[Math.floor((deg/22.5)+0.5)%16];
+}
 
 // ==============================
 // TAB SWITCHING
@@ -440,53 +505,8 @@ function initializeMap(db) {
     });
 
 
-    // ==============================
-    // WEATHER
-    // ==============================
-    async function fetchLiveWeather() {
-        const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
-        const LAT = 49.2, LON = 13.05;
-        const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("Netzwerkfehler");
-            const data = await response.json();
 
-            document.getElementById("widget-weather").innerHTML = `
-            <h3>🌡 Wetter</h3>
-            <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
-            <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
-        `;
-            const windDirText = getWindDirection(data.currentConditions.winddir);
-            document.getElementById("widget-wind").innerHTML = `
-            <h3>💨 Wind</h3>
-            <p>Richtung: ${windDirText} (${data.currentConditions.winddir}°)</p>
-            <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
-        `;
-            const phaseNum = data.currentConditions.moonphase;
-            let moonPhaseName = "";
-            if (phaseNum === 0) moonPhaseName = "Neumond";
-            else if (phaseNum < 0.25) moonPhaseName = "Zunehmender Sichelmond";
-            else if (phaseNum === 0.25) moonPhaseName = "Erstes Viertel";
-            else if (phaseNum < 0.5) moonPhaseName = "Zunehmender Mond";
-            else if (phaseNum === 0.5) moonPhaseName = "Vollmond";
-            else if (phaseNum < 0.75) moonPhaseName = "Abnehmender Mond";
-            else if (phaseNum === 0.75) moonPhaseName = "Letztes Viertel";
-            else moonPhaseName = "Abnehmender Sichelmond";
-            document.getElementById("widget-moon").innerHTML = `<h3>🌙 Mondphase</h3><p>Heute: ${moonPhaseName}</p>`;
-        } catch (err) {
-            console.error("Wetter Fehler:", err);
-            document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
-            document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
-            document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
-        }
-    }
-
-    function getWindDirection(deg) {
-        const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-        return dirs[Math.floor((deg / 22.5) + 0.5) % 16];
-    }
 
     // ==============================
     // SERVICE WORKER
