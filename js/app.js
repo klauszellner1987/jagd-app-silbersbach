@@ -20,7 +20,7 @@ function showToast(message, type = "info") {
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
- // ==============================
+// ==============================
 // WEATHER
 // ==============================
 async function fetchLiveWeather() {
@@ -50,7 +50,7 @@ async function fetchLiveWeather() {
         const windDirText = getWindDirection(current.winddir ?? 0);
         document.getElementById("widget-wind").innerHTML = `
             <h3>💨 Wind</h3>
-            <p>Richtung: ${windDirText} (${current.winddir ?? "-" }°)</p>
+            <p>Richtung: ${windDirText} (${current.winddir ?? "-"}°)</p>
             <p>Geschwindigkeit: ${current.windspeed ?? "-"} km/h</p>
         `;
 
@@ -82,8 +82,8 @@ async function fetchLiveWeather() {
 
 // Hilfsfunktion für Windrichtung
 function getWindDirection(deg) {
-    const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    return dirs[Math.floor((deg/22.5)+0.5)%16];
+    const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+    return dirs[Math.floor((deg / 22.5) + 0.5) % 16];
 }
 
 // ==============================
@@ -329,50 +329,83 @@ function initializeMap(db) {
     const hochsitzeMarkers = {}; // Marker-Objekte zwischenspeichern
 
     // Hochsitz-Button (oben rechts)
-    const markerButton = L.control({ position: 'topright' });
-    markerButton.onAdd = function () {
-        const container = L.DomUtil.create('div', 'hoch-sitz-container');
-        container.style.textAlign = "center";
+const markerButton = L.control({ position: 'topright' });
 
-        // Button selbst
-        const btn = L.DomUtil.create('button', 'hoch-sitz-btn', container);
-        btn.innerHTML = '+';
-        btn.title = 'Hochsitz markieren';
-        btn.style.cssText = `
-        background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
-        border: none;
+markerButton.onAdd = function () {
+
+    const btn = L.DomUtil.create('button', 'hoch-sitz-btn');
+
+    btn.innerHTML = '+';
+    btn.title = 'Hochsitz hinzufügen';
+
+    const normalStyle = `
+        background: #2f2f2f;
+        border: 1px solid rgba(255,255,255,0.25);
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: bold;
+
         width: 40px;
         height: 40px;
-        border-radius: 50%;
+
+        border-radius: 8px;
         cursor: pointer;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow:
-        0 10px 25px rgba(0,0,0,0.35),
-        0 0 18px rgba(124,255,155,0.8);
-        padding: 0;
+
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
     `;
 
-        // Label unter Button
-        const label = L.DomUtil.create('div', '', container);
-        label.textContent = "Hochsitz +";
-        label.style.fontSize = "0.75rem";
-        label.style.marginTop = "4px";
-        label.style.color = "#ffffff";
-        label.style.fontWeight = "bold";
+    const activeStyle = `
+        background: #3fa96b;
+        border: 1px solid #3fa96b;
+        color: white;
 
-        L.DomEvent.on(btn, 'click', () => {
-            settingHochsitz = true;
-            showToast("Klicke auf die Karte, um eine Hochsitz hinzuzufügen");
-        });
+        box-shadow:
+            0 0 0 2px rgba(63,169,107,0.4),
+            0 6px 16px rgba(0,0,0,0.6);
+    `;
 
-        return container;
+    btn.style.cssText = normalStyle;
+
+    // Hover nur wenn nicht aktiv
+    btn.onmouseenter = () => {
+        if (!settingHochsitz)
+            btn.style.background = "#3f3f3f";
     };
-    markerButton.addTo(map);
+
+    btn.onmouseleave = () => {
+        if (!settingHochsitz)
+            btn.style.background = "#2f2f2f";
+    };
+
+    // Klick → aktivieren
+    L.DomEvent.on(btn, 'click', () => {
+
+        settingHochsitz = !settingHochsitz;
+
+        if (settingHochsitz) {
+            btn.style.cssText = normalStyle + activeStyle;
+            showToast("Klicke auf die Karte um eine Jagdeinrichtung zu setzen");
+        } else {
+            btn.style.cssText = normalStyle;
+            showToast("Markieren abgebrochen");
+        }
+    });
+
+    // Wenn Marker gesetzt wurde → wieder deaktivieren
+    const originalSet = settingHochsitz;
+
+    return btn;
+};
+
+markerButton.addTo(map);
+
+
+
 
     // ==========================
     // Firebase Marker laden und verwalten
@@ -428,44 +461,69 @@ function initializeMap(db) {
             .addTo(map);
 
         // Marker setzen
-        polygon.on('click', async e => {
-            if (!settingHochsitz) return;
+       polygon.on('click', async e => {
+    if (!settingHochsitz) return;
 
-            const modal = document.getElementById("hochsitz-modal");
-            const input = document.getElementById("hochsitz-name-input");
-            modal.style.display = "block";
-            input.value = "";
-            input.focus();
+    const modal = document.getElementById("hochsitz-modal");
+    const input = document.getElementById("hochsitz-name-input");
+    modal.style.display = "block";
+    input.value = "";
+    input.focus();
 
-            const saveBtn = document.getElementById("hochsitz-save-btn");
-            const cancelBtn = document.getElementById("hochsitz-cancel-btn");
+    const saveBtn = document.getElementById("hochsitz-save-btn");
+    const cancelBtn = document.getElementById("hochsitz-cancel-btn");
 
-            const closeModal = () => { modal.style.display = "none"; };
+    const closeModal = () => { 
+        modal.style.display = "none"; 
+    };
 
-            saveBtn.onclick = async () => {
-                const name = input.value.trim();
-                if (!name) return alert("Bitte einen Namen eingeben");
-                try {
-                    await hochsitzeCollection.add({
-                        lat: e.latlng.lat,
-                        lng: e.latlng.lng,
-                        name: name,
-                        imageUrl: null
-                    });
-                    showToast("Hochsitz gesetzt ✅");
-                } catch (err) {
-                    console.error(err);
-                    showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
-                }
-                closeModal();
-                settingHochsitz = false;
-            };
+    saveBtn.onclick = async () => {
+        const name = input.value.trim();
+        if (!name) return alert("Bitte einen Namen eingeben");
+        try {
+            await hochsitzeCollection.add({
+                lat: e.latlng.lat,
+                lng: e.latlng.lng,
+                name: name,
+                imageUrl: null
+            });
+            showToast("Hochsitz gesetzt ✅");
+        } catch (err) {
+            console.error(err);
+            showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
+        }
+        closeModal();
+        settingHochsitz = false;
 
-            cancelBtn.onclick = () => {
-                closeModal();
-                settingHochsitz = false;
-            };
-        });
+        // -------------------------------
+        // Mini-Anpassung: Button zurücksetzen
+        // -------------------------------
+        const btn = document.querySelector('.hoch-sitz-btn');
+        if (btn) {
+            btn.style.background = "#2f2f2f";
+            btn.style.border = "1px solid rgba(255,255,255,0.25)";
+            btn.style.color = "white";
+            btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
+        }
+    };
+
+    cancelBtn.onclick = () => {
+        closeModal();
+        settingHochsitz = false;
+
+        // -------------------------------
+        // Mini-Anpassung: Button zurücksetzen
+        // -------------------------------
+        const btn = document.querySelector('.hoch-sitz-btn');
+        if (btn) {
+            btn.style.background = "#2f2f2f";
+            btn.style.border = "1px solid rgba(255,255,255,0.25)";
+            btn.style.color = "white";
+            btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
+        }
+    };
+});
+
 
 
     });
