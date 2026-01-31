@@ -32,7 +32,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <div id="toast-container"></div>
+<!-- Bestehender Hochsitz-Plus-Button -->
 <div class="fab-add" id="fab-add-btn">+</div>
+
+<!-- Neuer Listen-Button -->
+<div class="fab-list" id="fab-list-btn">≡</div>
+
 
 <body>
     <!-- LOGIN OVERLAY (iPhone Lockscreen) -->
@@ -217,6 +222,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <!-- Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Hochsitz Listen Panel -->
+    <div id="hochsitz-panel" class="hochsitz-panel hidden">
+        <div class="panel-header">
+            <span>Hochsitze</span>
+            <button id="close-hochsitz-panel">✖</button>
+        </div>
+
+        <div class="panel-content">
+            <!-- Hier kommt später die Liste rein -->
+        </div>
+    </div>
+
 </body>
 
 </html>
