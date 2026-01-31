@@ -360,8 +360,7 @@ function initializeMap(db) {
     // ==========================
     reviere.forEach(r => {
         const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
-            .addTo(map)
-            .bindPopup(r.name);
+            .addTo(map);
 
         // Marker setzen
         polygon.on('click', async e => {
