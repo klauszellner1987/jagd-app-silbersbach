@@ -24,13 +24,12 @@ function showToast(message, type = "info") {
 // ==============================
 // PAGE NAVIGATION (Dashboard -> Pages -> Back)
 // ==============================
-const fabBtn = document.getElementById("fab-add-btn");
-const allPages = document.querySelectorAll(".page");
-const navWidgets = document.querySelectorAll(".nav-widget");
-const backButtons = document.querySelectorAll(".back-to-home");
 
 // Navigate to a page
 function navigateToPage(targetId) {
+    const allPages = document.querySelectorAll(".page");
+    const fabBtn = document.getElementById("fab-add-btn");
+    
     allPages.forEach(p => p.classList.remove("active"));
     const targetPage = document.getElementById(targetId);
     if (targetPage) {
@@ -54,6 +53,9 @@ function navigateToPage(targetId) {
 
 // Navigate back to dashboard
 function navigateToDashboard() {
+    const allPages = document.querySelectorAll(".page");
+    const fabBtn = document.getElementById("fab-add-btn");
+    
     allPages.forEach(p => p.classList.remove("active"));
     const dashboard = document.getElementById("dashboard");
     if (dashboard) dashboard.classList.add("active");
@@ -62,67 +64,93 @@ function navigateToDashboard() {
     if (fabBtn) fabBtn.classList.remove("visible");
 }
 
-// Event Listeners for Navigation Widgets
-navWidgets.forEach(widget => {
-    widget.addEventListener("click", () => {
-        const target = widget.dataset.target;
-        if (target) navigateToPage(target);
+// Initialize Navigation when DOM is ready
+function initNavigation() {
+    const navWidgets = document.querySelectorAll(".nav-widget");
+    const backButtons = document.querySelectorAll(".back-to-home");
+    
+    // Event Listeners for Navigation Widgets
+    navWidgets.forEach(widget => {
+        widget.addEventListener("click", () => {
+            const target = widget.dataset.target;
+            if (target) navigateToPage(target);
+        });
     });
-});
 
-// Event Listeners for Back Buttons
-backButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        navigateToDashboard();
+    // Event Listeners for Back Buttons
+    backButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            navigateToDashboard();
+        });
     });
-});
+    
+    console.log("Navigation initialized:", navWidgets.length, "widgets,", backButtons.length, "back buttons");
+}
+
 
 // ==============================
 // LOCKSCREEN / LOGIN
 // ==============================
-const pinInput = document.getElementById("pin-input");
-const pinDisplay = document.getElementById("pin-display");
-const pinButtons = document.querySelectorAll(".pin-btn");
-const overlay = document.getElementById("login-overlay");
-const pinError = document.getElementById("pin-error");
-const correctPinHash = CryptoJS.SHA256("1939").toString();
+let pinInput, overlay, pinError, correctPinHash;
 
 function updatePinDisplay() {
     const dots = document.querySelectorAll("#pin-display span");
+    if (!pinInput) return;
     const val = pinInput.value;
     dots.forEach((dot, idx) => dot.classList.toggle("active", idx < val.length));
 }
 
 function checkPin() {
+    if (!pinInput || !overlay) return;
     const enteredHash = CryptoJS.SHA256(pinInput.value).toString();
     if (enteredHash === correctPinHash) {
         overlay.style.display = "none";
         initializeApp();
     } else {
-        pinError.classList.remove("hidden");
+        if (pinError) pinError.classList.remove("hidden");
         pinInput.value = "";
         updatePinDisplay();
-        setTimeout(() => pinError.classList.add("hidden"), 1500);
+        setTimeout(() => { if (pinError) pinError.classList.add("hidden"); }, 1500);
     }
 }
 
-pinButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        if (btn.classList.contains("delete")) pinInput.value = pinInput.value.slice(0, -1);
-        else if (btn.classList.contains("ok")) checkPin();
-        else if (pinInput.value.length < 4) pinInput.value += btn.textContent.trim();
+function initLogin() {
+    pinInput = document.getElementById("pin-input");
+    overlay = document.getElementById("login-overlay");
+    pinError = document.getElementById("pin-error");
+    
+    // CryptoJS muss geladen sein
+    if (typeof CryptoJS !== 'undefined') {
+        correctPinHash = CryptoJS.SHA256("1939").toString();
+    } else {
+        console.error("CryptoJS nicht geladen!");
+        return;
+    }
+    
+    const pinButtons = document.querySelectorAll(".pin-btn");
+    
+    pinButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (!pinInput) return;
+            if (btn.classList.contains("delete")) pinInput.value = pinInput.value.slice(0, -1);
+            else if (btn.classList.contains("ok")) checkPin();
+            else if (pinInput.value.length < 4) pinInput.value += btn.textContent.trim();
+            updatePinDisplay();
+        });
+    });
+
+    document.addEventListener("keydown", e => {
+        if (!overlay || overlay.style.display === "none") return;
+        if (!pinInput) return;
+        if (e.key >= "0" && e.key <= "9" && pinInput.value.length < 4) pinInput.value += e.key;
+        else if (e.key === "Backspace") pinInput.value = pinInput.value.slice(0, -1);
+        else if (e.key === "Enter") checkPin();
         updatePinDisplay();
     });
-});
-
-document.addEventListener("keydown", e => {
-    if (!overlay || overlay.style.display === "none") return;
-    if (e.key >= "0" && e.key <= "9" && pinInput.value.length < 4) pinInput.value += e.key;
-    else if (e.key === "Backspace") pinInput.value = pinInput.value.slice(0, -1);
-    else if (e.key === "Enter") checkPin();
+    
     updatePinDisplay();
-});
-updatePinDisplay();
+    console.log("Login initialized");
+}
 
 // ==============================
 // CLOCK
@@ -149,8 +177,12 @@ function updateClock() {
     if (dashboardTime) dashboardTime.textContent = timeStr;
     if (dashboardDate) dashboardDate.textContent = dashboardDateStr;
 }
-setInterval(updateClock, 1000);
-updateClock();
+
+function initClock() {
+    updateClock();
+    setInterval(updateClock, 1000);
+    console.log("Clock initialized");
+}
 
 // ==============================
 // INITIALIZE APP
@@ -305,15 +337,23 @@ async function initializeApp() {
 // MAP
 // ==============================
 function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
-    const map = L.map("map", { 
-        center: [49.180, 13.065], 
-        zoom: 15,
-        zoomAnimation: true,
-        zoomAnimationThreshold: 4,
-        fadeAnimation: true,
-        markerZoomAnimation: true
-    });
-    window.mapInstance = map;
+    // Pruefen ob Map-Element existiert
+    const mapElement = document.getElementById("map");
+    if (!mapElement) {
+        console.warn("Map element not found, skipping map initialization");
+        return;
+    }
+    
+    try {
+        const map = L.map("map", { 
+            center: [49.180, 13.065], 
+            zoom: 15,
+            zoomAnimation: true,
+            zoomAnimationThreshold: 4,
+            fadeAnimation: true,
+            markerZoomAnimation: true
+        });
+        window.mapInstance = map;
     const hochsitzeMarkers = {};
     let settingHochsitz = false;
 
@@ -394,13 +434,16 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         });
     });
 
-    // Statusdot
-    const mapStatusDot = document.createElement("span");
-    mapStatusDot.id = "map-status-dot";
-    mapStatusDot.classList.add("offline");
-    document.querySelector("#map-container h2").appendChild(mapStatusDot);
-    tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline","online"));
-    tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
+    // Statusdot (optional - nur wenn Container existiert)
+    const mapContainer = document.getElementById("map-container");
+    if (mapContainer) {
+        const mapStatusDot = document.createElement("span");
+        mapStatusDot.id = "map-status-dot";
+        mapStatusDot.classList.add("offline");
+        mapContainer.appendChild(mapStatusDot);
+        tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline","online"));
+        tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
+    }
 
     // GPS Marker
     let gpsMarker = null;
@@ -627,6 +670,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         }
     });
 
+    } catch(err) {
+        console.error("Map initialization error:", err);
+        showToast("Fehler beim Laden der Karte", "error");
+    }
 }
 
 // ==============================
@@ -710,4 +757,41 @@ function getWindDirection(deg) {
 // ==============================
 if("serviceWorker" in navigator){
     window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+}
+
+// ==============================
+// MAIN INITIALIZATION
+// ==============================
+function initAll() {
+    try {
+        initNavigation();
+        console.log("Navigation OK");
+    } catch(e) {
+        console.error("Navigation init error:", e);
+    }
+    
+    try {
+        initLogin();
+        console.log("Login OK");
+    } catch(e) {
+        console.error("Login init error:", e);
+    }
+    
+    try {
+        initClock();
+        console.log("Clock OK");
+    } catch(e) {
+        console.error("Clock init error:", e);
+    }
+    
+    console.log("All initializations complete");
+}
+
+// Wait for DOM and external scripts to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+} else {
+    // DOM already ready, but CryptoJS might not be loaded yet
+    // Small delay to ensure all scripts are loaded
+    setTimeout(initAll, 100);
 }
