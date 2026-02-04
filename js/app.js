@@ -106,8 +106,20 @@ updatePinDisplay();
 // ==============================
 function updateClock() {
     const now = new Date();
-    document.getElementById('time').textContent = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-    document.getElementById('date').textContent = now.getDate().toString().padStart(2,'0') + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getFullYear();
+    const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+    const dateStr = now.getDate().toString().padStart(2,'0') + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getFullYear();
+    
+    // Login Screen Clock
+    const loginTime = document.getElementById('time');
+    const loginDate = document.getElementById('date');
+    if (loginTime) loginTime.textContent = timeStr;
+    if (loginDate) loginDate.textContent = dateStr;
+    
+    // Header Clock
+    const headerTime = document.getElementById('header-time');
+    const headerDate = document.getElementById('header-date');
+    if (headerTime) headerTime.textContent = timeStr;
+    if (headerDate) headerDate.textContent = dateStr;
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -185,15 +197,16 @@ async function initializeApp() {
         entryList.innerHTML = "";
         entries.forEach((entry, idx) => {
             const li = document.createElement("li");
-            li.className = "flex items-center justify-between rounded-[var(--radius)] bg-[var(--primary-light)] px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#d6e6dc] hover:shadow-md";
+            li.className = "flex items-center justify-between rounded-xl backdrop-blur-sm bg-white/10 border border-white/10 px-4 py-3 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:bg-white/15 hover:border-white/20 hover:shadow-glass-lg animate-slide-in";
+            li.style.animationDelay = `${idx * 0.05}s`;
 
             const text = document.createElement("span");
-            text.className = "flex items-center gap-2 text-[var(--text)]";
-            text.innerHTML = `<span class="text-lg">🦌</span>
-                ${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""}`;
+            text.className = "flex items-center gap-3 text-[var(--text)] font-medium";
+            text.innerHTML = `<span class="text-2xl">🦌</span>
+                <span>${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) ${entry.bemerkung ? `- ${entry.bemerkung}` : ""}</span>`;
 
             const btn = document.createElement("button");
-            btn.className = "rounded-[var(--radius)] bg-[var(--danger)] px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#c0392b]";
+            btn.className = "rounded-lg backdrop-blur-sm bg-red-500/80 border border-red-400/30 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-600 hover:scale-105 hover:shadow-lg active:scale-95";
             btn.dataset.idx = idx;
             btn.textContent = "Löschen";
 
@@ -403,38 +416,47 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         btn.title = "Hochsitz hinzufügen";
 
         const normalStyle = `
-            background: #2f2f2f;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255,255,255,0.25);
             color: white;
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             font-weight: bold;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         `;
 
         const activeStyle = `
-            background: #3fa96b;
-            border: 1px solid #3fa96b;
+            background: linear-gradient(135deg, rgba(95, 161, 117, 0.4), rgba(61, 190, 106, 0.4));
+            border: 1px solid rgba(124, 255, 155, 0.5);
             color: white;
             box-shadow:
-                0 0 0 2px rgba(63,169,107,0.4),
-                0 6px 16px rgba(0,0,0,0.6);
+                0 0 0 3px rgba(124,255,155,0.3),
+                0 8px 24px rgba(0,0,0,0.4),
+                0 0 20px rgba(124,255,155,0.4);
         `;
 
         btn.style.cssText = normalStyle;
 
         btn.onmouseenter = () => {
-            if (!settingHochsitz) btn.style.background = "#3f3f3f";
+            if (!settingHochsitz) {
+                btn.style.background = "rgba(255, 255, 255, 0.18)";
+                btn.style.transform = "scale(1.08)";
+            }
         };
         btn.onmouseleave = () => {
-            if (!settingHochsitz) btn.style.background = "#2f2f2f";
+            if (!settingHochsitz) {
+                btn.style.background = "rgba(255, 255, 255, 0.12)";
+                btn.style.transform = "scale(1)";
+            }
         };
 
         L.DomEvent.on(btn, "click", () => {
@@ -461,23 +483,31 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         btn.innerHTML = "☰";
         btn.title = "Hochsitze anzeigen";
         btn.style.cssText = `
-            background: #2f2f2f;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255,255,255,0.25);
             color: white;
-            font-size: 1.4rem;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            font-size: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+            margin-top: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         `;
-        btn.onmouseenter = () => { btn.style.background = "#3f3f3f"; };
-        btn.onmouseleave = () => { btn.style.background = "#2f2f2f"; };
+        btn.onmouseenter = () => { 
+            btn.style.background = "rgba(255, 255, 255, 0.18)";
+            btn.style.transform = "scale(1.08)";
+        };
+        btn.onmouseleave = () => { 
+            btn.style.background = "rgba(255, 255, 255, 0.12)";
+            btn.style.transform = "scale(1)";
+        };
 
         L.DomEvent.on(btn, "click", () => {
             if (typeof openHochsitzPanel === "function") openHochsitzPanel();
