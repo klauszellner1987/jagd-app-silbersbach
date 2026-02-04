@@ -128,6 +128,76 @@ main {
 /* ============================================
    MAP
 ============================================ */
+
+/* Fullscreen Map Page */
+.fullscreen-map {
+    padding: 0 !important;
+    margin: 0 !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000; /* Above header */
+}
+
+/* Hide header when fullscreen map is active */
+.fullscreen-map.active ~ .app-header,
+body:has(.fullscreen-map.active) .app-header {
+    display: none;
+}
+
+.fullscreen-map #map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    /* Needed for absolute positioned children like back button */
+}
+
+.fullscreen-map #map {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    aspect-ratio: unset;
+}
+
+/* Floating Back Button on Map */
+.fullscreen-map .back-to-home.map-overlay {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000; /* Above Leaflet controls */
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    color: white;
+    font-weight: 500;
+    font-size: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.fullscreen-map .back-to-home.map-overlay:hover {
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.fullscreen-map .back-to-home.map-overlay:active {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+/* Default Map Styles (non-fullscreen fallback) */
 #map-container {
     margin-bottom: 1rem;
 }
@@ -135,7 +205,6 @@ main {
 #map {
     width: 100%;
     aspect-ratio: 16 / 9;
-    /* Karte proportional */
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     margin-top: 0.5rem;
@@ -144,6 +213,28 @@ main {
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+}
+
+/* Ensure Leaflet controls are clickable in fullscreen mode */
+.fullscreen-map .leaflet-control-container {
+    z-index: 5000 !important;
+}
+
+.fullscreen-map .leaflet-top.leaflet-right {
+    z-index: 5000 !important;
+}
+
+.fullscreen-map .leaflet-control {
+    pointer-events: auto !important;
+    z-index: 5000 !important;
+}
+
+.fullscreen-map .leaflet-control button,
+.fullscreen-map .hoch-sitz-btn,
+.fullscreen-map .hochsitz-list-btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 5000 !important;
 }
 
 /* Leaflet Tile Performance */
@@ -643,20 +734,38 @@ button:hover {
         padding: 0.75rem;
     }
 
-    #map-container {
+    /* Fullscreen map overrides for mobile */
+    .fullscreen-map #map-container {
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    .fullscreen-map #map {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: unset;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    /* Non-fullscreen map (fallback) */
+    #map-container:not(.fullscreen-map #map-container) {
         height: calc(100vh - 220px);
-        /* Header + Tabs Abstand */
         display: flex;
         flex-direction: column;
     }
 
     #map {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: unset; /* wichtig, sonst bleibt sie klein */
-    margin-top: 0.5rem;
-}
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        aspect-ratio: unset;
+        margin-top: 0.5rem;
+    }
 
     #add-entry-btn {
         width: 40px;
@@ -1346,6 +1455,12 @@ button:hover {
     display: block;
 }
 
+/* Non-fullscreen pages need z-index above header */
+.page.active:not(.fullscreen-map) {
+    position: relative;
+    z-index: 1500; /* Above header (1000) */
+}
+
 /* ============================================
    WIDGET BASE STYLE (Glassmorphism)
 ============================================ */
@@ -1502,6 +1617,8 @@ button:hover {
     gap: 0.5rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    position: relative;
+    z-index: 2000; /* Above header */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
