@@ -27,8 +27,13 @@ self.addEventListener("activate", event => {
   );
 });
 
-// Fetch - network first, fallback to cache
+// Fetch - network first, fallback to cache (only for GET requests)
 self.addEventListener("fetch", event => {
+  // Only cache GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then(response => {
