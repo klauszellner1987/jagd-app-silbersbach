@@ -29,14 +29,11 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
-        
-      - name: Debug - Check if vite exists
-        run: |
-          ls -la node_modules/.bin/ || echo "No .bin folder"
-          cat package.json
+        env:
+          NODE_ENV: development
         
       - name: Build
-        run: ./node_modules/.bin/vite build
+        run: npm run build
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
