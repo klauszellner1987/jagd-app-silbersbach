@@ -26,6 +26,7 @@ function showToast(message, type = "info") {
 // ==============================
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
+const fabBtn = document.getElementById("fab-add-btn");
 
 tabButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -41,6 +42,15 @@ tabButtons.forEach(btn => {
 
         // Wetter laden, wenn Wetter-Tab
         if (btn.dataset.tab === "wetter-tab") fetchLiveWeather();
+
+        // FAB-Button nur im Streckenlisten-Tab anzeigen
+        if (fabBtn) {
+            if (btn.dataset.tab === "streckenliste-tab") {
+                fabBtn.classList.add("visible");
+            } else {
+                fabBtn.classList.remove("visible");
+            }
+        }
     });
 });
 
@@ -108,6 +118,43 @@ updateClock();
 async function initializeApp() {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const hochsitzeCollection = db.collection("hochsitze");
+
+    const hochsitzPanel = document.getElementById("hochsitz-panel");
+    const panelContent = hochsitzPanel?.querySelector(".panel-content");
+
+    const openHochsitzPanel = () => {
+        if (!hochsitzPanel) return;
+        hochsitzPanel.classList.remove("hidden");
+        setTimeout(() => hochsitzPanel.classList.add("open"), 10);
+    };
+
+    const closeHochsitzPanel = () => {
+        if (!hochsitzPanel) return;
+        hochsitzPanel.classList.remove("open");
+        setTimeout(() => hochsitzPanel.classList.add("hidden"), 300);
+    };
+
+    const closePanelBtn = document.getElementById("close-hochsitz-panel");
+    if (closePanelBtn) closePanelBtn.addEventListener("click", closeHochsitzPanel);
+
+    if (panelContent) {
+        hochsitzeCollection.onSnapshot(snapshot => {
+            panelContent.innerHTML = "";
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                const entry = document.createElement("div");
+                entry.className = "panel-entry";
+                entry.innerHTML = `
+                    <strong>${data.name || "Ohne Namen"}</strong>
+                    ${data.datum ? `<small>Datum: ${new Date(data.datum).toLocaleDateString()}</small>` : ""}
+                    ${data.bemerkung ? `<small>${data.bemerkung}</small>` : ""}
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : ""}
+                `;
+                panelContent.appendChild(entry);
+            });
+        });
+    }
     const entriesCollection = db.collection("entries");
 
     const entryList = document.getElementById("entry-list");
@@ -117,15 +164,15 @@ async function initializeApp() {
     const cancelBtn = document.getElementById("cancel-entry");
     const wildSelect = document.getElementById("wildart");
     const subcategoryContainer = document.getElementById("subcategory-container");
+    const fabAddBtn = document.getElementById("fab-add-btn");
 
     let entries = [];
-const fabBtn = document.getElementById("fab-add-btn");
 
-if(fabBtn){
-   fabBtn.addEventListener("click", () => {
-      modal.classList.remove("hidden");
-   });
-}
+    if (fabAddBtn) {
+        fabAddBtn.addEventListener("click", () => {
+            modal.classList.remove("hidden");
+        });
+    }
 
 
     entriesCollection.orderBy("datum", "desc")
@@ -138,17 +185,27 @@ if(fabBtn){
         entryList.innerHTML = "";
         entries.forEach((entry, idx) => {
             const li = document.createElement("li");
-            li.innerHTML = `
-                ${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""}
-                <button class="entry-delete-btn" data-idx="${idx}">Löschen</button>
-            `;
+            li.className = "flex items-center justify-between rounded-[var(--radius)] bg-[var(--primary-light)] px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#d6e6dc] hover:shadow-md";
+
+            const text = document.createElement("span");
+            text.className = "flex items-center gap-2 text-[var(--text)]";
+            text.innerHTML = `<span class="text-lg">🦌</span>
+                ${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) - ${entry.bemerkung || ""}`;
+
+            const btn = document.createElement("button");
+            btn.className = "rounded-[var(--radius)] bg-[var(--danger)] px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#c0392b]";
+            btn.dataset.idx = idx;
+            btn.textContent = "Löschen";
+
+            li.appendChild(text);
+            li.appendChild(btn);
             entryList.appendChild(li);
         });
         attachDeleteEvents();
     }
 
     function attachDeleteEvents() {
-        document.querySelectorAll(".entry-delete-btn").forEach(btn => {
+        document.querySelectorAll("#entry-list button").forEach(btn => {
             btn.addEventListener("click", async () => {
                 const entry = entries[btn.dataset.idx];
                 if (!entry.id) return;
@@ -197,26 +254,100 @@ if(fabBtn){
         }
     });
 
-    initializeMap();
+    initializeMap(db, hochsitzeCollection, openHochsitzPanel);
 }
 
 // ==============================
 // MAP
 // ==============================
-function initializeMap() {
-    const map = L.map("map", { center: [49.180, 13.065], zoom: 15 });
+function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
+    const map = L.map("map", { 
+        center: [49.180, 13.065], 
+        zoom: 15,
+        zoomAnimation: true,
+        zoomAnimationThreshold: 4,
+        fadeAnimation: true,
+        markerZoomAnimation: true
+    });
     window.mapInstance = map;
+    const hochsitzeMarkers = {};
+    let settingHochsitz = false;
 
-    // TileLayer
+    // TileLayer mit Performance-Optimierungen
     const tileLayer = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        { attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others", maxZoom: 20 }
+        { 
+            attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and others", 
+            maxZoom: 18, // Reduziert von 20 für bessere Performance
+            minZoom: 12,
+            updateWhenZooming: false, // Keine Updates während Zoom-Animation
+            updateWhenIdle: true, // Nur Updates wenn keine Interaktion
+            keepBuffer: 4, // Mehr Tiles im Speicher für schnelleres Panning
+            maxNativeZoom: 18,
+            tileSize: 256,
+            crossOrigin: true
+        }
     ).addTo(map);
 
     // Polygone
     reviere.forEach(r => {
-        L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
-         .addTo(map).bindPopup(r.name);
+        const polygon = L.polygon(r.coords, { color: r.color, fillColor: r.fillColor, fillOpacity: 0.3 })
+            .addTo(map)
+            .bindPopup(r.name);
+
+        polygon.on("click", async e => {
+            if (!settingHochsitz) return;
+            const modal = document.getElementById("hochsitz-modal");
+            const input = document.getElementById("hochsitz-name-input");
+            const saveBtn = document.getElementById("hochsitz-save-btn");
+            const cancelBtn = document.getElementById("hochsitz-cancel-btn");
+
+            if (!modal || !input || !saveBtn || !cancelBtn) return;
+
+            modal.style.display = "block";
+            input.value = "";
+            input.focus();
+
+            const closeModal = () => { modal.style.display = "none"; };
+
+            saveBtn.onclick = async () => {
+                const name = input.value.trim();
+                if (!name) return alert("Bitte einen Namen eingeben");
+                try {
+                    await hochsitzeCollection.add({
+                        lat: e.latlng.lat,
+                        lng: e.latlng.lng,
+                        name,
+                        imageUrl: null
+                    });
+                    showToast("Hochsitz gesetzt ✅");
+                } catch (err) {
+                    console.error(err);
+                    showToast("Fehler beim Setzen des Hochsitzes ⚠️", "error");
+                }
+                closeModal();
+                settingHochsitz = false;
+                const btn = document.querySelector(".hoch-sitz-btn");
+                if (btn) {
+                    btn.style.background = "#2f2f2f";
+                    btn.style.border = "1px solid rgba(255,255,255,0.25)";
+                    btn.style.color = "white";
+                    btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
+                }
+            };
+
+            cancelBtn.onclick = () => {
+                closeModal();
+                settingHochsitz = false;
+                const btn = document.querySelector(".hoch-sitz-btn");
+                if (btn) {
+                    btn.style.background = "#2f2f2f";
+                    btn.style.border = "1px solid rgba(255,255,255,0.25)";
+                    btn.style.color = "white";
+                    btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
+                }
+            };
+        });
     });
 
     // Statusdot
@@ -261,6 +392,179 @@ function initializeMap() {
             { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
         );
     } else console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
+
+    // ==========================
+    // Hochsitz + Button
+    // ==========================
+    const markerButton = L.control({ position: "topright" });
+    markerButton.onAdd = function () {
+        const btn = L.DomUtil.create("button", "hoch-sitz-btn");
+        btn.innerHTML = "+";
+        btn.title = "Hochsitz hinzufügen";
+
+        const normalStyle = `
+            background: #2f2f2f;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 1.6rem;
+            font-weight: bold;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+        `;
+
+        const activeStyle = `
+            background: #3fa96b;
+            border: 1px solid #3fa96b;
+            color: white;
+            box-shadow:
+                0 0 0 2px rgba(63,169,107,0.4),
+                0 6px 16px rgba(0,0,0,0.6);
+        `;
+
+        btn.style.cssText = normalStyle;
+
+        btn.onmouseenter = () => {
+            if (!settingHochsitz) btn.style.background = "#3f3f3f";
+        };
+        btn.onmouseleave = () => {
+            if (!settingHochsitz) btn.style.background = "#2f2f2f";
+        };
+
+        L.DomEvent.on(btn, "click", () => {
+            settingHochsitz = !settingHochsitz;
+            if (settingHochsitz) {
+                btn.style.cssText = normalStyle + activeStyle;
+                showToast("Klicke auf die Karte um eine Jagdeinrichtung zu setzen");
+            } else {
+                btn.style.cssText = normalStyle;
+                showToast("Markieren abgebrochen");
+            }
+        });
+
+        return btn;
+    };
+    markerButton.addTo(map);
+
+    // ==========================
+    // Hochsitz LISTEN Button
+    // ==========================
+    const listButton = L.control({ position: "topright" });
+    listButton.onAdd = function () {
+        const btn = L.DomUtil.create("button", "hochsitz-list-btn");
+        btn.innerHTML = "☰";
+        btn.title = "Hochsitze anzeigen";
+        btn.style.cssText = `
+            background: #2f2f2f;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 1.4rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+        `;
+        btn.onmouseenter = () => { btn.style.background = "#3f3f3f"; };
+        btn.onmouseleave = () => { btn.style.background = "#2f2f2f"; };
+
+        L.DomEvent.on(btn, "click", () => {
+            if (typeof openHochsitzPanel === "function") openHochsitzPanel();
+        });
+        return btn;
+    };
+    listButton.addTo(map);
+
+    // ==========================
+    // Firebase Marker laden und verwalten
+    // ==========================
+    hochsitzeCollection.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+            const data = change.doc.data();
+            const id = change.doc.id;
+
+            if (hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
+
+            if (change.type === "added" || change.type === "modified") {
+                const marker = L.marker([data.lat, data.lng], {
+                    icon: L.divIcon({
+                        className: "hochsitz-emoji-marker",
+                        html: "🪜",
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    })
+                }).addTo(map);
+
+                const popupContent = `<div style="text-align:center;">
+                    <strong>${data.name || ""}</strong><br>
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ""}
+                    <br>
+                    <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
+                    <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
+                </div>`;
+                marker.bindPopup(popupContent);
+                hochsitzeMarkers[id] = marker;
+            }
+
+            if (change.type === "removed" && hochsitzeMarkers[id]) {
+                map.removeLayer(hochsitzeMarkers[id]);
+                delete hochsitzeMarkers[id];
+            }
+        });
+    });
+
+    // ==========================
+    // Bild hochladen / Marker löschen
+    // ==========================
+    document.addEventListener("click", async (evt) => {
+        const target = evt.target;
+        const id = target.dataset?.id;
+        if (!id) return;
+        const docRef = hochsitzeCollection.doc(id);
+
+        if (target.classList.contains("add-photo-btn")) {
+            try {
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*";
+                fileInput.click();
+                fileInput.onchange = async () => {
+                    const file = fileInput.files[0];
+                    if (!file || !firebase.storage) return;
+                    const storageRef = firebase.storage().ref();
+                    const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
+                    await fileRef.put(file);
+                    const url = await fileRef.getDownloadURL();
+                    await docRef.update({ imageUrl: url });
+                    showToast("Bild hochgeladen ✅");
+                };
+            } catch (err) {
+                console.error(err);
+                showToast("Fehler beim Upload ⚠️", "error");
+            }
+        }
+
+        if (target.classList.contains("delete-marker-btn")) {
+            if (confirm("Hochsitz wirklich löschen?")) {
+                await docRef.delete();
+                showToast("Hochsitz gelöscht 🗑️");
+            }
+        }
+    });
 
     // Tab-Fix
     tabButtons.forEach(btn => {

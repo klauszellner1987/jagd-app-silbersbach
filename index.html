@@ -9,8 +9,8 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="style/main.css">
+    <!-- Styles (Vite) -->
+    <script type="module" src="/main.js"></script>
 
     <!-- Leaflet CSS (für Karte) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -78,51 +78,63 @@
         </div>
     </div>
 
-    <header>
-        <div class="header-bg">
-            <div class="header-overlay">
-                <h1>Jagdfreunde Silbersbach</h1>
-            </div>
+    <header
+        class="relative h-[180px] w-full overflow-hidden rounded-b-[var(--radius)] bg-cover bg-center pt-[env(safe-area-inset-top)] shadow-[var(--shadow)] sm:h-[220px] -mt-[env(safe-area-inset-top)]"
+        style="background-image: url('assets/images/Header.jpg');">
+        <div class="absolute inset-0 bg-black/35"></div>
+        <div class="relative z-10 flex h-full items-center justify-center">
+            <h1
+                class="m-0 whitespace-nowrap rounded-lg bg-black/35 px-4 py-2 text-[clamp(1.3rem,4vw,2rem)] leading-[1.1] text-[var(--text)]">
+                Jagdfreunde Silbersbach
+            </h1>
         </div>
     </header>
+
+    <div id="hochsitz-modal">
+        <h3>Hochsitz Name</h3>
+        <input type="text" id="hochsitz-name-input" placeholder="Name eingeben..." />
+        <div class="hoch-buttons">
+            <button id="hochsitz-save-btn">Speichern</button>
+            <button id="hochsitz-cancel-btn">Abbrechen</button>
+        </div>
+    </div>
 
 
     <main>
         <!-- Revier Tab -->
-        <div class="tab-content active" id="revier">
-            <div id="map-container">
-                <h2>
+        <div class="tab-content active px-3 sm:px-4" id="revier">
+            <div id="map-container" class="flex flex-col gap-2">
+                <h2 class="text-lg font-semibold tracking-wide">
                     LIVE REVIERMAP STATUS
-
                 </h2>
-                <div id="map"></div>
+                <div id="map" class="rounded-[var(--radius)] shadow-[var(--shadow)]"></div>
             </div>
         </div>
 
         <!-- Streckenliste Tab -->
-        <div class="tab-content" id="streckenliste-tab">
+        <div class="tab-content px-3 sm:px-4" id="streckenliste-tab">
             <button id="add-entry-btn">+</button>
-            <div class="card">
-                <h2>Streckenliste</h2>
-                <ul id="entry-list"></ul>
+            <div class="rounded-[var(--radius)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow)]">
+                <h2 class="mb-3 text-lg font-semibold">Streckenliste</h2>
+                <ul id="entry-list" class="space-y-2"></ul>
             </div>
         </div>
 
         <!-- Wetter Tab -->
-        <div class="tab-content" id="wetter-tab">
-            <div class="card weather-widget" id="widget-weather">
+        <div class="tab-content space-y-4 px-3 sm:px-4" id="wetter-tab">
+            <div class="weather-widget rounded-[var(--radius)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow)] flex flex-col gap-2" id="widget-weather">
                 <h3>🌡 Wetter</h3>
                 <p>Temperatur: -- °C</p>
                 <p>Luftfeuchtigkeit: -- %</p>
             </div>
 
-            <div class="card wind-widget" id="widget-wind">
+            <div class="wind-widget rounded-[var(--radius)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow)] flex flex-col gap-2" id="widget-wind">
                 <h3>💨 Wind</h3>
                 <p>Richtung: --</p>
                 <p>Geschwindigkeit: -- km/h</p>
             </div>
 
-            <div class="card moon-widget" id="widget-moon">
+            <div class="moon-widget rounded-[var(--radius)] bg-[var(--surface)] p-4 text-[var(--text)] shadow-[var(--shadow)] flex flex-col gap-2" id="widget-moon">
                 <h3>🌙 Mondphase</h3>
                 <p>Heute: --</p>
                 <p>Nächste Vollmond: --</p>
@@ -131,16 +143,17 @@
 
     </main>
 
-<footer class="floating-nav">
-    <button class="tab-button active" data-tab="revier">
+<footer
+    class="floating-nav fixed bottom-4 left-1/2 z-[2000] flex w-[calc(100%-32px)] max-w-[460px] -translate-x-1/2 gap-2 rounded-[24px] bg-white/10 p-2 pb-[calc(8px+env(safe-area-inset-bottom))] backdrop-blur-[14px] shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
+    <button class="tab-button active flex-1 rounded-[18px] bg-transparent py-3 text-[0.95rem] font-medium text-[var(--text)] shadow-none transition hover:bg-white/15" data-tab="revier">
         Revier
     </button>
 
-    <button class="tab-button" data-tab="streckenliste-tab">
+    <button class="tab-button flex-1 rounded-[18px] bg-transparent py-3 text-[0.95rem] font-medium text-[var(--text)] shadow-none transition hover:bg-white/15" data-tab="streckenliste-tab">
         Streckenliste
     </button>
 
-    <button class="tab-button" data-tab="wetter-tab">
+    <button class="tab-button flex-1 rounded-[18px] bg-transparent py-3 text-[0.95rem] font-medium text-[var(--text)] shadow-none transition hover:bg-white/15" data-tab="wetter-tab">
         Wetter
     </button>
 </footer>
@@ -207,6 +220,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <!-- Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Storage -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <!-- Hochsitz Listen Panel -->
+    <div id="hochsitz-panel" class="hochsitz-panel hidden">
+        <div class="panel-header">
+            <span>Hochsitze</span>
+            <button id="close-hochsitz-panel">✖</button>
+        </div>
+
+        <div class="panel-content"></div>
+    </div>
 </body>
 
 </html>

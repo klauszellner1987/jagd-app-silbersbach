@@ -17,7 +17,39 @@
 }
 
 /* ============================================
-   BODY & HEADER
+   SCROLLBAR VERSTECKEN
+============================================ */
+/* Scrollleisten verstecken, aber Scrollen erlauben */
+html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+}
+
+body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+}
+
+/* Alle anderen scrollbaren Elemente */
+* {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+}
+
+/* ============================================
+   BODY
 ============================================ */
 body {
     font-family: 'Inter', sans-serif;
@@ -26,51 +58,6 @@ body {
     margin: 0;
     line-height: 1.5;
     overflow-x: hidden;
-}
-
-header {
-    position: relative;
-    width: 100%;
-    height: 180px;
-
-    background-image: url("../assets/images/Header.jpg");
-    background-color: transparent;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: initial;
-    background-color: #2f6f4e;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-bottom-left-radius: var(--radius);
-    border-bottom-right-radius: var(--radius);
-    box-shadow: var(--shadow);
-
-    /* SAFE AREA FIX */
-    padding-top: env(safe-area-inset-top);
-    margin-top: calc(env(safe-area-inset-top) * -1);
-}
-
-
-@media (min-width: 700px) {
-    header {
-        height: 220px;
-        /* größer auf Desktop */
-    }
-}
-
-header h1 {
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-
-    font-size: clamp(1.3rem, 4vw, 2rem);
-    margin: 0;
-    line-height: 1.1;
-    white-space: nowrap;
 }
 
 
@@ -100,7 +87,29 @@ main {
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     margin-top: 0.5rem;
-    transition: all var(--transition);
+    /* Performance-Optimierungen für Karte */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Leaflet Tile Performance */
+.leaflet-tile-container {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+.leaflet-tile {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Leaflet Zoom Animation Performance */
+.leaflet-zoom-animated {
+    will-change: transform;
 }
 
 /* ============================================
@@ -174,22 +183,8 @@ main {
 }
 
 /* ============================================
-   CARDS & STRECKENLISTE
+   STRECKENLISTE
 ============================================ */
-.card {
-    background: var(--surface);
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    transition: transform var(--transition), box-shadow var(--transition);
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-}
-
 ul {
     padding-left: 1.5rem;
 }
@@ -198,48 +193,7 @@ li {
     margin-bottom: 0.5rem;
 }
 
-#entry-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--primary-light);
-    border-left: 5px solid var(--primary);
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    border-radius: var(--radius);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition), background var(--transition), box-shadow var(--transition);
-    animation: fadeIn 0.4s ease forwards;
-}
-
-#entry-list li:hover {
-    background-color: #d6e6dc;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-#entry-list li::before {
-    content: "🦌";
-    margin-right: 0.5rem;
-    font-size: 1.2rem;
-}
-
-.entry-delete-btn {
-    background: var(--danger);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: background var(--transition), transform var(--transition);
-}
-
-.entry-delete-btn:hover {
-    background: #c0392b;
-    transform: translateY(-1px);
-}
+ 
 
 /* ============================================
    BUTTONS (GLOBAL)
@@ -506,52 +460,6 @@ button:hover {
     font-size: 0.9rem;
 }
 
-/* ============================================
-   FOOTER & TABS
-============================================ */
-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #f0f4f2;
-    display: flex;
-    justify-content: center;
-    padding: 0.5rem 0;
-    z-index: 1000;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.tabs {
-    display: flex;
-    width: 100%;
-    max-width: 500px;
-    gap: 8px;
-    margin: 0 8px;
-}
-
-.tab-button {
-    flex: 1;
-    border: none;
-    background: #ffffff;
-    color: var(--primary);
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.75rem 0;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tab-button:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-}
-
 .tab-button.active {
     background: var(--primary);
     color: #fff;
@@ -587,18 +495,6 @@ footer {
    MOBILE ANPASSUNGEN
 ============================================ */
 @media (max-width: 600px) {
-    header {
-        height: 140px;
-    }
-}
-
-
-
-    .tab-button {
-        font-size: 0.95rem;
-        padding: 0.5rem 0;
-    }
-
     main {
         padding: 0.75rem;
     }
@@ -630,6 +526,7 @@ footer {
         font-size: 1.3rem;
         padding: 0.8rem;
     }
+}
 
 
 /* MOBILE LOGIN */
@@ -743,6 +640,7 @@ footer {
    MODERN FLOATING TEXT NAV
 ============================ */
 
+/* Fallback, falls Tailwind nicht lädt */
 .floating-nav {
     position: fixed;
     bottom: 16px;
@@ -750,18 +648,14 @@ footer {
     transform: translateX(-50%);
     width: calc(100% - 32px);
     max-width: 460px;
-
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-
     border-radius: 24px;
     padding: 8px;
-
     display: flex;
     gap: 8px;
-
-    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     z-index: 2000;
 }
 
@@ -770,35 +664,26 @@ footer {
     background: transparent;
     box-shadow: none;
     border-radius: 18px;
-
     color: var(--text);
     font-size: 0.95rem;
     font-weight: 500;
-
     padding: 12px 0;
-
     transition: all 0.25s ease;
 }
 
-/* ACTIVE */
-
 .floating-nav .tab-button.active {
-    background: rgba(95,161,117,0.95);
+    background: rgba(95, 161, 117, 0.95);
     color: white;
     font-weight: 600;
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
-
-/* HOVER (DESKTOP) */
 
 .floating-nav .tab-button:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
 }
 
-/* SAFE AREA */
-
-@supports(padding: env(safe-area-inset-bottom)) {
+@supports (padding: env(safe-area-inset-bottom)) {
     .floating-nav {
         padding-bottom: calc(8px + env(safe-area-inset-bottom));
     }
@@ -837,7 +722,7 @@ footer {
     font-size: 2.2rem;
     font-weight: bold;
 
-    display: flex;
+    display: none; /* Standardmäßig versteckt */
     align-items: center;
     justify-content: center;
 
@@ -851,6 +736,10 @@ footer {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.fab-add.visible {
+    display: flex; /* Sichtbar wenn Streckenlisten-Tab aktiv */
+}
+
 .fab-add:hover {
     transform: translateX(-50%) scale(1.08);
     box-shadow:
@@ -860,4 +749,166 @@ footer {
 
 .fab-add:active {
     transform: translateX(-50%) scale(0.95);
+}
+
+/* =============================
+   Hochsitz Modal
+============================= */
+#hochsitz-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1c2b1c;
+    border-radius: 16px;
+    padding: 24px 28px;
+    width: 280px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+    color: #ffffff;
+    z-index: 10000;
+    display: none;
+    transition: all 0.25s ease-in-out;
+}
+
+#hochsitz-modal h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #8ce6a3;
+}
+
+#hochsitz-modal input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    background: #2a3b2a;
+    color: #fff;
+    outline: none;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+
+#hochsitz-modal .hoch-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#hochsitz-modal button {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#hochsitz-save-btn {
+    background: linear-gradient(135deg, #9ff0b7, #5edc96);
+    color: #1c2b1c;
+    box-shadow: 0 5px 15px rgba(94,220,150,0.35);
+}
+
+#hochsitz-cancel-btn {
+    background: #f66b6b;
+    color: #fff;
+    box-shadow: 0 5px 12px rgba(246,107,107,0.3);
+}
+
+#hochsitz-modal button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.hochsitz-emoji-marker {
+    font-size: 28px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+}
+
+/* ==========================
+   Hochsitz Slide Panel
+========================== */
+.hochsitz-panel {
+    position: fixed;
+    top: 12%;
+    right: -340px;
+    width: 320px;
+    height: 75%;
+    background: rgba(30, 30, 30, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 18px 0 0 18px;
+    box-shadow:
+        -6px 0 20px rgba(0,0,0,0.6),
+        inset 0 0 0 1px rgba(255,255,255,0.08);
+    transition: right 0.3s ease;
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+}
+
+.hochsitz-panel.open {
+    right: 0;
+}
+
+.hochsitz-panel.hidden {
+    display: none;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    background: #2c2c2c;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.panel-header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.panel-content {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.panel-entry {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    color: #faf7f7;
+}
+
+.panel-entry strong {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.panel-entry small {
+    font-size: 0.8rem;
+    color: #ddd;
+}
+
+.panel-entry img {
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 6px;
+    object-fit: cover;
 }
