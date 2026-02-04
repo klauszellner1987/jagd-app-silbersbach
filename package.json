@@ -1,7 +1,7 @@
 {
   "name": "jagd-app-silbersbach",
   "version": "1.0.0",
-  "description": "Dies ist eine kleine Web-App für euer Jagd-Revier.  \r Jeder Nutzer kann die Seite auf dem Handy öffnen.",
+  "description": "Dies ist eine kleine Web-App für euer Jagd-Revier. Jeder Nutzer kann die Seite auf dem Handy öffnen.",
   "main": "service-worker.js",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "autoprefixer": "^10.4.24",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
