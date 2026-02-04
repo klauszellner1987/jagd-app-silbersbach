@@ -244,15 +244,16 @@
     <!-- Reviere Daten -->
     <script src="assets/data/reviere.js"></script>
 
+    <!-- External Libraries (load FIRST) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- App JS -->
-    <script src="js/app.js"></script>
     <!-- Firebase App (Core) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <!-- Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <!-- Storage -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- App JS (load LAST after all dependencies) -->
+    <script src="js/app.js"></script>
 
     <!-- Hochsitz Listen Panel -->
     <div id="hochsitz-panel" class="hochsitz-panel hidden">
