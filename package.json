@@ -4,9 +4,9 @@
   "description": "Dies ist eine kleine Web-App für euer Jagd-Revier. Jeder Nutzer kann die Seite auf dem Handy öffnen.",
   "main": "service-worker.js",
   "scripts": {
-    "dev": "npx vite",
-    "build": "npx vite build",
-    "preview": "npx vite preview"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",

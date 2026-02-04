@@ -29,7 +29,8 @@ jobs:
           
       - name: Install dependencies
         run: |
-          npm install
+          rm -f package-lock.json
+          npm install --registry https://registry.npmjs.org/
           echo "=== Checking node_modules ==="
           ls node_modules/.bin/ | head -20
         
