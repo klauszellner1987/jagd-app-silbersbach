@@ -28,7 +28,10 @@ jobs:
           node-version: '20'
           
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm install
+          echo "=== Checking node_modules ==="
+          ls node_modules/.bin/ | head -20
         
       - name: Build
         run: npm run build
