@@ -1,11 +1,101 @@
-# Revier App
+# GJR Silbersbach - Jagd-Revier App
 
-Dies ist eine kleine Web-App für euer Jagd-Revier.  
-Jeder Nutzer kann die Seite auf dem Handy öffnen.  
+Eine moderne Web-App für das Jagd-Revier Silbersbach mit Karte, Streckenliste und Wetterdaten.
 
-**Ordnerstruktur:**
-- index.html → Startseite
-- style/main.css → Styles
-- js/app.js → JavaScript-Logik
-- assets/images/ → Bilder
-- assets/data/ → Daten (z. B. JSON-Dateien)
+## Features
+
+- **Dashboard**: Übersichtliche Startseite mit Uhr, Wetter-Widgets und Navigation
+- **Revier-Karte**: Interaktive Leaflet-Karte mit Reviergebieten und Hochsitz-Markierungen
+- **Streckenliste**: Erfassung und Verwaltung erlegter Strecke mit Firebase-Backend
+- **Wetterdaten**: Live-Wetter mit Temperatur, Wind und Mondphase
+- **PIN-Login**: Sicherer Zugang mit PIN-Eingabe im iPhone-Lockscreen-Style
+- **PWA**: Installierbar auf Handy und Desktop
+
+## Tech Stack
+
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Styling**: Tailwind CSS, Glassmorphism-Design
+- **Build Tool**: Vite
+- **Backend**: Firebase (Firestore, Storage)
+- **Karte**: Leaflet.js
+- **Deployment**: GitHub Pages
+
+## Installation & Development
+
+### Voraussetzungen
+
+- Node.js (v18 oder höher)
+- npm
+
+### Setup
+
+```bash
+# Repository klonen
+git clone https://github.com/klauszellner1987/jagd-app-silbersbach.git
+cd jagd-app-silbersbach
+
+# Dependencies installieren
+npm install
+
+# Development Server starten
+npm run dev
+```
+
+Der Dev-Server startet unter: `http://localhost:5176/jagd-app-silbersbach/`
+
+### Build für Production
+
+```bash
+npm run build
+```
+
+Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
+
+## Ordnerstruktur
+
+```
+├── index.html          # Hauptseite
+├── style/
+│   ├── main.css        # Haupt-Styles
+│   └── tailwind.css    # Tailwind Imports
+├── js/
+│   └── app.js          # JavaScript-Logik
+├── assets/
+│   ├── images/         # Bilder (Hintergründe, etc.)
+│   └── data/           # Daten (Reviere, Einträge)
+├── docs/               # Production Build (GitHub Pages)
+├── vite.config.js      # Vite Konfiguration
+├── tailwind.config.js  # Tailwind Konfiguration
+└── package.json        # Dependencies
+```
+
+## Changelog
+
+### v1.1.0 - Glassmorphism Redesign
+
+**Komplettes UI-Redesign mit modernem Glassmorphism-Style:**
+
+- Neues Dashboard als Startseite nach Login
+- Glasmorphism-Widgets für Uhr, Wetter und Navigation
+- Neuer atmosphärischer Wald-Hintergrund mit Rothirsch
+- Transparenter Login-Screen mit Blur-Effekt
+- Entfernung der Tab-Navigation zugunsten von Widget-Navigation
+- "Zurück"-Buttons in Unterseiten (Karte, Streckenliste)
+- Responsive Design für Mobile und Desktop
+- Verbesserte Karten-Performance (Tile-Caching, optimierte Zoom-Einstellungen)
+- Service Worker mit Network-First-Strategie
+- Build-System auf Vite mit Tailwind CSS umgestellt
+
+### v1.0.0 - Initial Release
+
+- Basis-Funktionalität mit Karte, Streckenliste und Wetter
+- Firebase-Integration
+- PWA-Support
+
+## Live Demo
+
+[https://klauszellner1987.github.io/jagd-app-silbersbach/](https://klauszellner1987.github.io/jagd-app-silbersbach/)
+
+## Lizenz
+
+Private Nutzung - GJR Silbersbach
