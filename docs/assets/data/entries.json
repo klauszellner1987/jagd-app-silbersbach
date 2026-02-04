@@ -1,0 +1,20 @@
+[
+  {
+    "user": "Max",
+    "date": "23.01.2026",
+    "description": "Reh gesichtet",
+    "location": "Wald Nord"
+  },
+  {
+    "user": "Anna",
+    "date": "22.01.2026",
+    "description": "Fuchs auf der Wiese",
+    "location": "Wiese Ost"
+  },
+  {
+    "user": "Tom",
+    "date": "21.01.2026",
+    "description": "Hasen beobachtet",
+    "location": "Bachufer"
+  }
+]

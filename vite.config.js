@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: '/jagd-app-silbersbach/',
   build: {
-    outDir: 'dist',
+    outDir: 'docs',
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'esbuild',
