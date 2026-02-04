@@ -79,9 +79,20 @@ function initNavigation() {
 
     // Event Listeners for Back Buttons
     backButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             navigateToDashboard();
         });
+    });
+    
+    // Also use event delegation for dynamically added buttons
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".back-to-home")) {
+            e.preventDefault();
+            e.stopPropagation();
+            navigateToDashboard();
+        }
     });
     
     console.log("Navigation initialized:", navWidgets.length, "widgets,", backButtons.length, "back buttons");
@@ -533,7 +544,12 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
             }
         };
 
-        L.DomEvent.on(btn, "click", () => {
+        // Prevent click propagation to map
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
+        
+        L.DomEvent.on(btn, "click", (e) => {
+            L.DomEvent.stopPropagation(e);
             settingHochsitz = !settingHochsitz;
             if (settingHochsitz) {
                 btn.style.cssText = normalStyle + activeStyle;
@@ -583,7 +599,12 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
             btn.style.transform = "scale(1)";
         };
 
-        L.DomEvent.on(btn, "click", () => {
+        // Prevent click propagation to map
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
+        
+        L.DomEvent.on(btn, "click", (e) => {
+            L.DomEvent.stopPropagation(e);
             if (typeof openHochsitzPanel === "function") openHochsitzPanel();
         });
         return btn;
