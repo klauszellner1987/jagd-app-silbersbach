@@ -22,84 +22,135 @@ function showToast(message, type = "info") {
 }
 
 // ==============================
-// TAB SWITCHING
+// PAGE NAVIGATION (Dashboard -> Pages -> Back)
 // ==============================
-const tabButtons = document.querySelectorAll(".tab-button");
-const tabContents = document.querySelectorAll(".tab-content");
-const fabBtn = document.getElementById("fab-add-btn");
 
-tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        tabButtons.forEach(b => b.classList.remove("active"));
-        tabContents.forEach(c => c.classList.remove("active"));
-
-        btn.classList.add("active");
-        document.getElementById(btn.dataset.tab).classList.add("active");
-
-        if (btn.dataset.tab === "revier" && window.mapInstance) {
+// Navigate to a page
+function navigateToPage(targetId) {
+    const allPages = document.querySelectorAll(".page");
+    const fabBtn = document.getElementById("fab-add-btn");
+    
+    allPages.forEach(p => p.classList.remove("active"));
+    const targetPage = document.getElementById(targetId);
+    if (targetPage) {
+        targetPage.classList.add("active");
+        
+        // Map resize fix
+        if (targetId === "revier" && window.mapInstance) {
             setTimeout(() => window.mapInstance.invalidateSize(), 200);
         }
-
-        // Wetter laden, wenn Wetter-Tab
-        if (btn.dataset.tab === "wetter-tab") fetchLiveWeather();
-
-        // FAB-Button nur im Streckenlisten-Tab anzeigen
+        
+        // FAB-Button nur in Streckenliste sichtbar
         if (fabBtn) {
-            if (btn.dataset.tab === "streckenliste-tab") {
+            if (targetId === "streckenliste") {
                 fabBtn.classList.add("visible");
             } else {
                 fabBtn.classList.remove("visible");
             }
         }
+    }
+}
+
+// Navigate back to dashboard
+function navigateToDashboard() {
+    const allPages = document.querySelectorAll(".page");
+    const fabBtn = document.getElementById("fab-add-btn");
+    
+    allPages.forEach(p => p.classList.remove("active"));
+    const dashboard = document.getElementById("dashboard");
+    if (dashboard) dashboard.classList.add("active");
+    
+    // Hide FAB
+    if (fabBtn) fabBtn.classList.remove("visible");
+}
+
+// Initialize Navigation when DOM is ready
+function initNavigation() {
+    const navWidgets = document.querySelectorAll(".nav-widget");
+    const backButtons = document.querySelectorAll(".back-to-home");
+    
+    // Event Listeners for Navigation Widgets
+    navWidgets.forEach(widget => {
+        widget.addEventListener("click", () => {
+            const target = widget.dataset.target;
+            if (target) navigateToPage(target);
+        });
     });
-});
+
+    // Event Listeners for Back Buttons
+    backButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            navigateToDashboard();
+        });
+    });
+    
+    console.log("Navigation initialized:", navWidgets.length, "widgets,", backButtons.length, "back buttons");
+}
+
 
 // ==============================
 // LOCKSCREEN / LOGIN
 // ==============================
-const pinInput = document.getElementById("pin-input");
-const pinDisplay = document.getElementById("pin-display");
-const pinButtons = document.querySelectorAll(".pin-btn");
-const overlay = document.getElementById("login-overlay");
-const pinError = document.getElementById("pin-error");
-const correctPinHash = CryptoJS.SHA256("1939").toString();
+let pinInput, overlay, pinError, correctPinHash;
 
 function updatePinDisplay() {
     const dots = document.querySelectorAll("#pin-display span");
+    if (!pinInput) return;
     const val = pinInput.value;
     dots.forEach((dot, idx) => dot.classList.toggle("active", idx < val.length));
 }
 
 function checkPin() {
+    if (!pinInput || !overlay) return;
     const enteredHash = CryptoJS.SHA256(pinInput.value).toString();
     if (enteredHash === correctPinHash) {
         overlay.style.display = "none";
         initializeApp();
     } else {
-        pinError.classList.remove("hidden");
+        if (pinError) pinError.classList.remove("hidden");
         pinInput.value = "";
         updatePinDisplay();
-        setTimeout(() => pinError.classList.add("hidden"), 1500);
+        setTimeout(() => { if (pinError) pinError.classList.add("hidden"); }, 1500);
     }
 }
 
-pinButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        if (btn.classList.contains("delete")) pinInput.value = pinInput.value.slice(0, -1);
-        else if (btn.classList.contains("ok")) checkPin();
-        else if (pinInput.value.length < 4) pinInput.value += btn.textContent.trim();
+function initLogin() {
+    pinInput = document.getElementById("pin-input");
+    overlay = document.getElementById("login-overlay");
+    pinError = document.getElementById("pin-error");
+    
+    // CryptoJS muss geladen sein
+    if (typeof CryptoJS !== 'undefined') {
+        correctPinHash = CryptoJS.SHA256("1939").toString();
+    } else {
+        console.error("CryptoJS nicht geladen!");
+        return;
+    }
+    
+    const pinButtons = document.querySelectorAll(".pin-btn");
+    
+    pinButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (!pinInput) return;
+            if (btn.classList.contains("delete")) pinInput.value = pinInput.value.slice(0, -1);
+            else if (btn.classList.contains("ok")) checkPin();
+            else if (pinInput.value.length < 4) pinInput.value += btn.textContent.trim();
+            updatePinDisplay();
+        });
+    });
+
+    document.addEventListener("keydown", e => {
+        if (!overlay || overlay.style.display === "none") return;
+        if (!pinInput) return;
+        if (e.key >= "0" && e.key <= "9" && pinInput.value.length < 4) pinInput.value += e.key;
+        else if (e.key === "Backspace") pinInput.value = pinInput.value.slice(0, -1);
+        else if (e.key === "Enter") checkPin();
         updatePinDisplay();
     });
-});
-
-document.addEventListener("keydown", e => {
-    if (!overlay || overlay.style.display === "none") return;
-    if (e.key >= "0" && e.key <= "9" && pinInput.value.length < 4) pinInput.value += e.key;
-    else if (e.key === "Backspace") pinInput.value = pinInput.value.slice(0, -1);
-    else if (e.key === "Enter") checkPin();
+    
     updatePinDisplay();
-});
-updatePinDisplay();
+    console.log("Login initialized");
+}
 
 // ==============================
 // CLOCK
@@ -109,20 +160,29 @@ function updateClock() {
     const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
     const dateStr = now.getDate().toString().padStart(2,'0') + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getFullYear();
     
+    // Wochentag für Dashboard
+    const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const dashboardDateStr = `${weekdays[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+    
     // Login Screen Clock
     const loginTime = document.getElementById('time');
     const loginDate = document.getElementById('date');
     if (loginTime) loginTime.textContent = timeStr;
     if (loginDate) loginDate.textContent = dateStr;
     
-    // Header Clock
-    const headerTime = document.getElementById('header-time');
-    const headerDate = document.getElementById('header-date');
-    if (headerTime) headerTime.textContent = timeStr;
-    if (headerDate) headerDate.textContent = dateStr;
+    // Dashboard Clock
+    const dashboardTime = document.getElementById('dashboard-time');
+    const dashboardDate = document.getElementById('dashboard-date');
+    if (dashboardTime) dashboardTime.textContent = timeStr;
+    if (dashboardDate) dashboardDate.textContent = dashboardDateStr;
 }
-setInterval(updateClock, 1000);
-updateClock();
+
+function initClock() {
+    updateClock();
+    setInterval(updateClock, 1000);
+    console.log("Clock initialized");
+}
 
 // ==============================
 // INITIALIZE APP
@@ -268,21 +328,32 @@ async function initializeApp() {
     });
 
     initializeMap(db, hochsitzeCollection, openHochsitzPanel);
+    
+    // Wetter beim App-Start laden
+    fetchLiveWeather();
 }
 
 // ==============================
 // MAP
 // ==============================
 function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
-    const map = L.map("map", { 
-        center: [49.180, 13.065], 
-        zoom: 15,
-        zoomAnimation: true,
-        zoomAnimationThreshold: 4,
-        fadeAnimation: true,
-        markerZoomAnimation: true
-    });
-    window.mapInstance = map;
+    // Pruefen ob Map-Element existiert
+    const mapElement = document.getElementById("map");
+    if (!mapElement) {
+        console.warn("Map element not found, skipping map initialization");
+        return;
+    }
+    
+    try {
+        const map = L.map("map", { 
+            center: [49.180, 13.065], 
+            zoom: 15,
+            zoomAnimation: true,
+            zoomAnimationThreshold: 4,
+            fadeAnimation: true,
+            markerZoomAnimation: true
+        });
+        window.mapInstance = map;
     const hochsitzeMarkers = {};
     let settingHochsitz = false;
 
@@ -363,13 +434,16 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         });
     });
 
-    // Statusdot
-    const mapStatusDot = document.createElement("span");
-    mapStatusDot.id = "map-status-dot";
-    mapStatusDot.classList.add("offline");
-    document.querySelector("#map-container h2").appendChild(mapStatusDot);
-    tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline","online"));
-    tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
+    // Statusdot (optional - nur wenn Container existiert)
+    const mapContainer = document.getElementById("map-container");
+    if (mapContainer) {
+        const mapStatusDot = document.createElement("span");
+        mapStatusDot.id = "map-status-dot";
+        mapStatusDot.classList.add("offline");
+        mapContainer.appendChild(mapStatusDot);
+        tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline","online"));
+        tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
+    }
 
     // GPS Marker
     let gpsMarker = null;
@@ -596,12 +670,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         }
     });
 
-    // Tab-Fix
-    tabButtons.forEach(btn => {
-        if (btn.dataset.tab === "map-container") {
-            btn.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 200));
-        }
-    });
+    } catch(err) {
+        console.error("Map initialization error:", err);
+        showToast("Fehler beim Laden der Karte", "error");
+    }
 }
 
 // ==============================
@@ -617,33 +689,61 @@ async function fetchLiveWeather() {
         if(!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
 
-        document.getElementById("widget-weather").innerHTML = `
-            <h3>🌡 Wetter</h3>
-            <p>Temperatur: ${data.currentConditions.temp.toFixed(1)} °C</p>
-            <p>Luftfeuchtigkeit: ${data.currentConditions.humidity} %</p>
-        `;
+        // Temperatur Widget
+        const tempWidget = document.getElementById("widget-weather");
+        if (tempWidget) {
+            tempWidget.innerHTML = `
+                <span class="widget-icon">🌡️</span>
+                <p class="widget-value">${data.currentConditions.temp.toFixed(0)}°C</p>
+                <p class="widget-label">Temperatur</p>
+            `;
+        }
+        
+        // Wind Widget
         const windDirText = getWindDirection(data.currentConditions.winddir);
-        document.getElementById("widget-wind").innerHTML = `
-            <h3>💨 Wind</h3>
-            <p>Richtung: ${windDirText} (${data.currentConditions.winddir}°)</p>
-            <p>Geschwindigkeit: ${data.currentConditions.windspeed} km/h</p>
-        `;
+        const windWidget = document.getElementById("widget-wind");
+        if (windWidget) {
+            windWidget.innerHTML = `
+                <span class="widget-icon">💨</span>
+                <p class="widget-value">${windDirText}</p>
+                <p class="widget-label">${data.currentConditions.windspeed.toFixed(0)} km/h</p>
+            `;
+        }
+        
+        // Mond Widget
         const phaseNum = data.currentConditions.moonphase;
         let moonPhaseName = "";
-        if (phaseNum === 0) moonPhaseName = "Neumond";
-        else if (phaseNum <0.25) moonPhaseName = "Zunehmender Sichelmond";
-        else if (phaseNum ===0.25) moonPhaseName = "Erstes Viertel";
-        else if (phaseNum <0.5) moonPhaseName = "Zunehmender Mond";
-        else if (phaseNum ===0.5) moonPhaseName = "Vollmond";
-        else if (phaseNum <0.75) moonPhaseName = "Abnehmender Mond";
-        else if (phaseNum ===0.75) moonPhaseName = "Letztes Viertel";
-        else moonPhaseName = "Abnehmender Sichelmond";
-        document.getElementById("widget-moon").innerHTML = `<h3>🌙 Mondphase</h3><p>Heute: ${moonPhaseName}</p>`;
+        let moonEmoji = "🌙";
+        if (phaseNum === 0) { moonPhaseName = "Neumond"; moonEmoji = "🌑"; }
+        else if (phaseNum < 0.25) { moonPhaseName = "Zunehmend"; moonEmoji = "🌒"; }
+        else if (phaseNum === 0.25) { moonPhaseName = "Erstes Viertel"; moonEmoji = "🌓"; }
+        else if (phaseNum < 0.5) { moonPhaseName = "Zunehmend"; moonEmoji = "🌔"; }
+        else if (phaseNum === 0.5) { moonPhaseName = "Vollmond"; moonEmoji = "🌕"; }
+        else if (phaseNum < 0.75) { moonPhaseName = "Abnehmend"; moonEmoji = "🌖"; }
+        else if (phaseNum === 0.75) { moonPhaseName = "Letztes Viertel"; moonEmoji = "🌗"; }
+        else { moonPhaseName = "Abnehmend"; moonEmoji = "🌘"; }
+        
+        const moonWidget = document.getElementById("widget-moon");
+        if (moonWidget) {
+            moonWidget.innerHTML = `
+                <span class="widget-icon">${moonEmoji}</span>
+                <p class="widget-value">${moonPhaseName}</p>
+                <p class="widget-label">Mondphase</p>
+            `;
+        }
     } catch(err) {
         console.error("Wetter Fehler:", err);
-        document.getElementById("widget-weather").innerHTML = "<p>Fehler beim Laden</p>";
-        document.getElementById("widget-wind").innerHTML = "<p>Fehler beim Laden</p>";
-        document.getElementById("widget-moon").innerHTML = "<p>Fehler beim Laden</p>";
+        const errorHTML = `
+            <span class="widget-icon">⚠️</span>
+            <p class="widget-value">--</p>
+            <p class="widget-label">Fehler</p>
+        `;
+        const weatherWidget = document.getElementById("widget-weather");
+        const windWidget = document.getElementById("widget-wind");
+        const moonWidget = document.getElementById("widget-moon");
+        if (weatherWidget) weatherWidget.innerHTML = errorHTML;
+        if (windWidget) windWidget.innerHTML = errorHTML;
+        if (moonWidget) moonWidget.innerHTML = errorHTML;
     }
 }
 
@@ -657,4 +757,41 @@ function getWindDirection(deg) {
 // ==============================
 if("serviceWorker" in navigator){
     window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+}
+
+// ==============================
+// MAIN INITIALIZATION
+// ==============================
+function initAll() {
+    try {
+        initNavigation();
+        console.log("Navigation OK");
+    } catch(e) {
+        console.error("Navigation init error:", e);
+    }
+    
+    try {
+        initLogin();
+        console.log("Login OK");
+    } catch(e) {
+        console.error("Login init error:", e);
+    }
+    
+    try {
+        initClock();
+        console.log("Clock OK");
+    } catch(e) {
+        console.error("Clock init error:", e);
+    }
+    
+    console.log("All initializations complete");
+}
+
+// Wait for DOM and external scripts to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+} else {
+    // DOM already ready, but CryptoJS might not be loaded yet
+    // Small delay to ensure all scripts are loaded
+    setTimeout(initAll, 100);
 }
