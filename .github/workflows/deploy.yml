@@ -25,14 +25,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           
       - name: Install dependencies
-        run: npm ci
+        run: npm install
         
-      - name: Build
-        run: npm run build
+      - name: Build with Vite
+        run: npx vite build
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
