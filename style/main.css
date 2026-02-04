@@ -1331,3 +1331,224 @@ button:hover {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================
+   DASHBOARD & PAGE NAVIGATION
+============================================ */
+
+/* Page Display Logic */
+.page {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.page.active {
+    display: block;
+}
+
+/* ============================================
+   WIDGET BASE STYLE (Glassmorphism)
+============================================ */
+.widget {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 1.25rem;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.widget:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   CLOCK WIDGET
+============================================ */
+.clock-widget {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+}
+
+.clock-time {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.clock-date {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    margin-top: 0.25rem;
+    text-transform: capitalize;
+}
+
+/* ============================================
+   WIDGET GRIDS
+============================================ */
+.widget-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.widget-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* Mobile: Stack widgets vertically */
+@media (max-width: 480px) {
+    .widget-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .widget-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   WEATHER WIDGETS
+============================================ */
+.weather-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem 0.75rem;
+    min-height: 120px;
+}
+
+.widget-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.widget-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.widget-label {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    margin: 0;
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   NAVIGATION WIDGETS
+============================================ */
+.nav-widget {
+    cursor: pointer;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.nav-widget:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.nav-widget:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.nav-widget-icon {
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.nav-widget-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 0.25rem;
+}
+
+.nav-widget-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin: 0;
+}
+
+/* ============================================
+   BACK TO HOME BUTTON
+============================================ */
+.back-to-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.back-to-home:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateX(-4px);
+}
+
+.back-to-home svg {
+    opacity: 0.8;
+}
+
+/* ============================================
+   STRECKENLISTE CONTAINER
+============================================ */
+.streckenliste-container {
+    padding: 1.5rem;
+}
+
+.streckenliste-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.streckenliste-title span:first-child {
+    font-size: 1.5rem;
+}
+
+.entry-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
