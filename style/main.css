@@ -73,15 +73,41 @@ body::-webkit-scrollbar {
 }
 
 /* ============================================
-   BODY
+   BODY - MIT WALDHINTERGRUND
 ============================================ */
 body {
     font-family: 'Inter', sans-serif;
-    background: var(--bg);
+    background-image: url('../assets/images/app-background-rothirsch.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: var(--text);
     margin: 0;
     line-height: 1.5;
     overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Minimaler Header - wie Mockup */
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 0;
+    text-align: center;
+    z-index: 1000;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
+}
+
+.app-header h1 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
 }
 
 
@@ -90,6 +116,8 @@ body {
 ============================================ */
 main {
     margin-bottom: 140px;
+    margin-top: 60px;
+    padding-top: env(safe-area-inset-top);
 }
 
 .container {
