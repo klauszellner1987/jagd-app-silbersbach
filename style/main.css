@@ -2,6 +2,7 @@
    VARIABLES & GRUNDLAYOUT
 ============================================ */
 :root {
+    /* Base Colors */
     --bg: #3b5240;
     --surface: #4a6a55;
     --primary: #5fa175;
@@ -11,9 +12,32 @@
     --text: #f0f8f0;
     --muted: #c8d8c2;
 
+    /* Glassmorphism Colors */
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-bg-hover: rgba(255, 255, 255, 0.12);
+    --glass-bg-active: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --glass-shadow-lg: 0 12px 48px 0 rgba(31, 38, 135, 0.25);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, rgba(95, 161, 117, 0.9) 0%, rgba(59, 82, 64, 0.9) 100%);
+    --gradient-overlay: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
+    --gradient-fab: linear-gradient(135deg, rgba(124, 255, 155, 0.3), rgba(61, 190, 106, 0.3));
+    
+    /* Blur Strength */
+    --blur-sm: 8px;
+    --blur-md: 16px;
+    --blur-lg: 24px;
+    --blur-xl: 32px;
+
+    /* Spacing & Effects */
     --radius: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
     --shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-    --transition: 0.25s ease;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: 0.15s ease-out;
 }
 
 /* ============================================
@@ -263,11 +287,14 @@ button:hover {
 .modal {
     position: fixed;
     inset: 0;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 10000;
+    padding: 1rem;
 }
 
 .hidden {
@@ -275,13 +302,16 @@ button:hover {
 }
 
 .modal-content {
-    background: var(--surface);
-    width: 90%;
-    max-width: 420px;
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-    animation: modalFade 0.25s ease-out;
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    max-width: 460px;
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--glass-shadow-lg);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes modalFade {
@@ -298,25 +328,53 @@ button:hover {
 
 .modal-content h2 {
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     text-align: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
 }
 
 #entry-form label {
     display: flex;
     flex-direction: column;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
 }
 
 #entry-form input,
 #entry-form select,
 #entry-form textarea {
-    margin-top: 0.3rem;
-    padding: 0.5rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    /* EXAKT nach Sheet: 8px Normal Blur */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
     font-size: 1rem;
+    transition: all var(--transition);
+}
+
+#entry-form input::placeholder,
+#entry-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#entry-form input:focus,
+#entry-form select:focus,
+#entry-form textarea:focus {
+    outline: none;
+    /* EXAKT nach Sheet: 24px Hover Blur */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(124, 255, 155, 0.5);
+    box-shadow: 0 0 0 3px rgba(124, 255, 155, 0.2);
 }
 
 #entry-form textarea {
@@ -325,35 +383,44 @@ button:hover {
 
 .modal-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
 }
 
 .modal-actions button {
     flex: 1;
-    padding: 0.6rem;
-    border-radius: var(--radius);
-    border: none;
+    padding: 0.875rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all var(--transition);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
 }
 
 #cancel-entry {
-    background: #ccc;
+    background: rgba(150, 150, 150, 0.5);
+    color: white;
 }
 
 #cancel-entry:hover {
-    background: #b5b5b5;
+    background: rgba(120, 120, 120, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .modal-actions button[type="submit"] {
-    background: var(--primary);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.85), rgba(129, 199, 132, 0.85));
+    border-color: rgba(129, 199, 132, 0.5);
+    color: white;
 }
 
 .modal-actions button[type="submit"]:hover {
-    background: #4a704a;
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.95), rgba(129, 199, 132, 0.95));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(95, 161, 117, 0.4);
 }
 
 /* ============================================
@@ -362,49 +429,74 @@ button:hover {
 #login-overlay {
     position: fixed;
     inset: 0;
-    background: linear-gradient(160deg, #2f6f4e, #1f4d36);
+    background-image: url('../assets/images/login-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 3000;
     color: white;
+    animation: fadeIn 0.4s ease-out;
+}
+
+#login-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: -1;
 }
 
 .login-box {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--glass-shadow-lg);
+    border-radius: var(--radius-xl);
     width: 100%;
-    max-width: 400px;
-    padding: 2rem;
+    max-width: 420px;
+    padding: 3rem 2rem;
     text-align: center;
+    animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-box h2 {
     font-size: 1.8rem;
-    margin-bottom: 2rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 #pin-display {
     font-size: 3rem;
     letter-spacing: 1rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     display: flex;
     justify-content: center;
+    gap: 1rem;
 }
 
 #pin-display span {
     display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    margin: 0 0.5rem;
-    background: rgba(255, 255, 255, 0.5);
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #pin-display span.active {
-    background: #fff;
-    transform: scale(1.3);
+    /* EXAKT nach Sheet: Green Glow Effect */
+    background: rgb(129, 199, 132);
+    border-color: rgb(129, 199, 132);
+    transform: scale(1.4);
+    box-shadow: 
+        0 0 16px rgba(129, 199, 132, 0.8),
+        0 0 24px rgba(129, 199, 132, 0.4);
 }
 
 .pin-dot {
@@ -412,7 +504,7 @@ button:hover {
     height: 18px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.9);
-    transition: .2s ease;
+    transition: all 0.2s ease;
 }
 
 .pin-dot.filled {
@@ -428,36 +520,60 @@ button:hover {
 .pin-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 12px;
 }
 
 .pin-btn {
     padding: 1.5rem;
-    font-size: 1.6rem;
-    border-radius: 16px;
+    font-size: 1.7rem;
+    font-weight: 600;
+    border-radius: 20px;
     background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    backdrop-filter: blur(5px);
-    transition: 0.2s ease;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
 .pin-btn:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.pin-btn:active {
+    transform: translateY(-1px) scale(0.98);
 }
 
 .pin-btn.delete {
-    background: rgba(231, 76, 60, 0.7);
+    background: rgba(231, 76, 60, 0.8);
+    border-color: rgba(231, 76, 60, 0.6);
+}
+
+.pin-btn.delete:hover {
+    background: rgba(231, 76, 60, 0.95);
 }
 
 .pin-btn.ok {
-    background: rgba(0, 123, 255, 0.8);
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.85), rgba(129, 199, 132, 0.85));
+    border-color: rgba(129, 199, 132, 0.6);
+    font-weight: 700;
+}
+
+.pin-btn.ok:hover {
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.95), rgba(129, 199, 132, 0.95));
+    box-shadow: 0 8px 24px rgba(95, 161, 117, 0.4);
 }
 
 #pin-error {
-    margin-top: 1rem;
-    color: #ffb4b4;
-    font-size: 0.9rem;
+    margin-top: 1.5rem;
+    color: #ffcccc;
+    font-size: 1rem;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .tab-button.active {
@@ -672,15 +788,21 @@ button:hover {
 }
 
 .floating-nav .tab-button.active {
-    background: rgba(95, 161, 117, 0.95);
+    /* EXAKT nach Sheet: Green Gradient with Glow */
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.6), rgba(129, 199, 132, 0.6));
     color: white;
-    font-weight: 600;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+    font-weight: 700;
+    transform: translateY(-2px) scale(1.05);
+    /* Active Glow wie im Sheet */
+    box-shadow: 
+        0 0 20px rgba(129, 199, 132, 0.5),
+        0 8px 18px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(129, 199, 132, 0.4);
 }
 
-.floating-nav .tab-button:hover {
+.floating-nav .tab-button:hover:not(.active) {
     background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px) scale(1.02);
 }
 
 @supports (padding: env(safe-area-inset-bottom)) {
@@ -708,32 +830,50 @@ button:hover {
 
 .fab-add {
     position: fixed;
-    bottom: 72px; /* über der Floating Nav */
+    bottom: 75px;
     left: 50%;
     transform: translateX(-50%);
 
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
 
-    background: linear-gradient(135deg, #7CFF9B, #3DBE6A);
-    color: #0f3b25;
+    /* EXAKT nach Sheet: Green Gradient (124,255,155 to 61,190,106) */
+    background: linear-gradient(135deg, rgb(124, 255, 155), rgb(61, 190, 106));
+    border: none;
+    color: white;
 
     font-size: 2.2rem;
     font-weight: bold;
 
-    display: none; /* Standardmäßig versteckt */
+    display: none;
     align-items: center;
     justify-content: center;
 
+    /* Glow & Semi-Transparent Effect wie im Sheet */
     box-shadow:
-        0 10px 25px rgba(0,0,0,0.35),
-        0 0 18px rgba(124,255,155,0.8);
+        0 8px 24px rgba(61, 190, 106, 0.4),
+        0 0 20px rgba(124, 255, 155, 0.6);
 
     cursor: pointer;
     z-index: 3000;
 
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-add.visible {
+    display: flex;
+}
+
+.fab-add:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow:
+        0 12px 32px rgba(61, 190, 106, 0.5),
+        0 0 28px rgba(124, 255, 155, 0.8);
+}
+
+.fab-add:active {
+    transform: translateX(-50%) scale(0.95);
 }
 
 .fab-add.visible {
@@ -741,14 +881,18 @@ button:hover {
 }
 
 .fab-add:hover {
-    transform: translateX(-50%) scale(1.08);
+    transform: translateX(-50%) scale(1.15) rotate(90deg);
+    background: linear-gradient(135deg, rgba(124, 255, 155, 0.4), rgba(61, 190, 106, 0.4));
     box-shadow:
-        0 14px 30px rgba(0,0,0,0.45),
-        0 0 28px rgba(124,255,155,1);
+        0 16px 40px rgba(0,0,0,0.4),
+        0 0 36px rgba(124,255,155,0.8);
 }
 
 .fab-add:active {
-    transform: translateX(-50%) scale(0.95);
+    transform: translateX(-50%) scale(0.95) rotate(90deg);
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.3),
+        0 0 16px rgba(124,255,155,0.4);
 }
 
 /* =============================
@@ -759,71 +903,101 @@ button:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #1c2b1c;
-    border-radius: 16px;
-    padding: 24px 28px;
-    width: 280px;
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    padding: 28px 32px;
+    width: 320px;
     max-width: 90%;
     text-align: center;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+    box-shadow: var(--glass-shadow-lg);
     color: #ffffff;
     z-index: 10000;
     display: none;
-    transition: all 0.25s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #hochsitz-modal h3 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 16px;
-    color: #8ce6a3;
+    margin-bottom: 20px;
+    color: var(--primary-light);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 #hochsitz-modal input {
     width: 100%;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: none;
-    font-size: 1rem;
-    margin-bottom: 16px;
-    background: #2a3b2a;
+    padding: 12px 14px;
+    border-radius: 14px;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 1.05rem;
+    margin-bottom: 20px;
     color: #fff;
     outline: none;
-    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    transition: all var(--transition);
+}
+
+#hochsitz-modal input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#hochsitz-modal input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(124, 255, 155, 0.5);
+    box-shadow: 0 0 0 3px rgba(124, 255, 155, 0.2);
 }
 
 #hochsitz-modal .hoch-buttons {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
 }
 
 #hochsitz-modal button {
     flex: 1;
-    padding: 10px 0;
-    border-radius: 12px;
-    border: none;
-    font-weight: 600;
-    font-size: 0.95rem;
+    padding: 12px 0;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #hochsitz-save-btn {
-    background: linear-gradient(135deg, #9ff0b7, #5edc96);
-    color: #1c2b1c;
-    box-shadow: 0 5px 15px rgba(94,220,150,0.35);
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.85), rgba(129, 199, 132, 0.85));
+    border-color: rgba(129, 199, 132, 0.5);
+    color: white;
+}
+
+#hochsitz-save-btn:hover {
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.95), rgba(129, 199, 132, 0.95));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(95, 161, 117, 0.4);
 }
 
 #hochsitz-cancel-btn {
-    background: #f66b6b;
+    background: rgba(231, 76, 60, 0.8);
+    border-color: rgba(231, 76, 60, 0.6);
     color: #fff;
-    box-shadow: 0 5px 12px rgba(246,107,107,0.3);
 }
 
-#hochsitz-modal button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+#hochsitz-cancel-btn:hover {
+    background: rgba(231, 76, 60, 0.95);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+#hochsitz-modal button:active {
+    transform: translateY(-1px) scale(0.98);
 }
 
 .hochsitz-emoji-marker {
@@ -837,17 +1011,17 @@ button:hover {
 .hochsitz-panel {
     position: fixed;
     top: 12%;
-    right: -340px;
-    width: 320px;
+    right: -360px;
+    width: 340px;
     height: 75%;
-    background: rgba(30, 30, 30, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 18px 0 0 18px;
-    box-shadow:
-        -6px 0 20px rgba(0,0,0,0.6),
-        inset 0 0 0 1px rgba(255,255,255,0.08);
-    transition: right 0.3s ease;
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: none;
+    border-radius: 24px 0 0 24px;
+    box-shadow: var(--glass-shadow-lg);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 4000;
     display: flex;
     flex-direction: column;
@@ -865,40 +1039,72 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px;
-    background: #2c2c2c;
+    padding: 18px 16px;
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    background: rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px 0 0 0;
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .panel-header button {
-    background: none;
-    border: none;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 6px 10px;
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.panel-header button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
 }
 
 .panel-content {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .panel-entry {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 10px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 14px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
+    gap: 6px;
     font-size: 0.95rem;
-    color: #faf7f7;
+    color: white;
+    transition: all var(--transition);
+}
+
+.panel-entry:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateX(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
 .panel-entry strong {
-    font-size: 1rem;
-    margin-bottom: 4px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: var(--primary-light);
 }
 
 .panel-entry small {
@@ -911,4 +1117,150 @@ button:hover {
     border-radius: 6px;
     margin-top: 6px;
     object-fit: cover;
+}
+
+/* ============================================
+   GLASSMORPHISM UTILITIES
+============================================ */
+
+/* Glass Card Base - EXAKT nach Design Sheet */
+.glass-card {
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    background: var(--glass-bg);
+    border: 1px solid rgba(255, 255, 255, 0.18); /* 18% Opacity wie im Sheet */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Glass Shadow */
+    border-radius: var(--radius-xl);
+    transition: all var(--transition);
+}
+
+.glass-card:hover {
+    background: var(--glass-bg-hover);
+    box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5); /* Glass-lg Shadow */
+    transform: translateY(-2px);
+}
+
+/* Glass Button */
+.glass-btn {
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    background: rgba(255, 255, 255, 0.1); /* 10% wie im Sheet */
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all var(--transition-fast);
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.18); /* 18% auf Hover */
+    transform: scale(1.05);
+}
+
+.glass-btn:active {
+    background: rgba(255, 255, 255, 0.3); /* 30% aktiv */
+    transform: scale(0.98);
+}
+
+/* ============================================
+   ANIMATIONS & KEYFRAMES
+============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(124, 255, 155, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(124, 255, 155, 0.6);
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.slide-up {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Tab Content Animations */
+.tab-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.tab-content.active {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* ============================================
+   RESPONSIVE GLASSMORPHISM
+============================================ */
+
+/* Mobile: Reduced blur for better performance */
+@media (max-width: 768px) {
+    :root {
+        --blur-md: 12px;
+        --blur-lg: 16px;
+        --blur-xl: 20px;
+    }
+    
+    .glass-card {
+        backdrop-filter: blur(var(--blur-sm));
+        -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
