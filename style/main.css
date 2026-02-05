@@ -2119,14 +2119,21 @@ button:hover {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px); /* Viewport minus Header */
-    height: calc(100dvh - 60px); /* Dynamic viewport für Mobile */
+    height: calc(100vh - 60px); /* Viewport minus Header - Desktop */
+    height: calc(100dvh - 60px);
     overflow: hidden;
     padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
     touch-action: none; /* Verhindert Touch-Scroll auf Dashboard */
     -webkit-overflow-scrolling: auto;
+}
+
+/* Dashboard Mobile - mehr Platz für Home-Bar */
+@media (max-width: 600px) {
+    #dashboard {
+        height: calc(100vh - 130px) !important; /* Header + Home-Bar */
+        height: calc(100dvh - 130px) !important;
+    }
 }
 
 #dashboard::before {
@@ -2484,10 +2491,10 @@ button:hover {
 
 /* Sehr kleine Bildschirme - etwas kompakter */
 @media (max-width: 480px) {
-    /* Dashboard noch kompakter auf kleinen Bildschirmen */
+    /* Dashboard - auch hier Platz für Home-Bar */
     #dashboard {
-        height: calc(100vh - 45px);
-        height: calc(100dvh - 45px);
+        height: calc(100vh - 130px) !important;
+        height: calc(100dvh - 130px) !important;
         padding: 0.35rem;
         gap: 0.3rem;
     }
