@@ -260,6 +260,44 @@ function navigateToDashboard() {
     }
 }
 
+// iOS Bounce/Overscroll Prevention
+function preventIOSBounce() {
+    // Nur auf iOS/Touch-Geräten
+    if (!('ontouchstart' in window)) return;
+    
+    let startY = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].pageY;
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', function(e) {
+        const scrollableEl = document.scrollingElement || document.documentElement;
+        const currentY = e.touches[0].pageY;
+        const isAtTop = scrollableEl.scrollTop <= 0;
+        const isAtBottom = scrollableEl.scrollTop + scrollableEl.clientHeight >= scrollableEl.scrollHeight;
+        const isScrollingDown = currentY > startY;
+        const isScrollingUp = currentY < startY;
+        
+        // Verhindere Bounce wenn am oberen oder unteren Ende
+        if ((isAtTop && isScrollingDown) || (isAtBottom && isScrollingUp)) {
+            // Prüfe ob es ein scrollbares Element innerhalb gibt
+            let target = e.target;
+            while (target && target !== document.body) {
+                if (target.scrollHeight > target.clientHeight) {
+                    const targetAtTop = target.scrollTop <= 0;
+                    const targetAtBottom = target.scrollTop + target.clientHeight >= target.scrollHeight;
+                    if (!((targetAtTop && isScrollingDown) || (targetAtBottom && isScrollingUp))) {
+                        return; // Erlaube Scroll im inneren Element
+                    }
+                }
+                target = target.parentElement;
+            }
+            e.preventDefault();
+        }
+    }, { passive: false });
+}
+
 // Initialize Navigation when DOM is ready
 function initNavigation() {
     const navWidgets = document.querySelectorAll(".nav-widget");
@@ -1459,6 +1497,14 @@ if("serviceWorker" in navigator){
 // MAIN INITIALIZATION
 // ==============================
 function initAll() {
+    // iOS Bounce/Overscroll Fix
+    try {
+        preventIOSBounce();
+        console.log("iOS Bounce Fix OK");
+    } catch(e) {
+        console.error("iOS Bounce Fix error:", e);
+    }
+    
     try {
         initNavigation();
         console.log("Navigation OK");
