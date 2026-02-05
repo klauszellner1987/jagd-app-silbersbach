@@ -1070,18 +1070,31 @@ button:hover {
 
 .toast {
     min-width: 220px;
-    padding: 12px 18px;
-    border-radius: 12px;
+    padding: 14px 20px;
+    border-radius: 14px;
     color: white;
     font-size: 0.95rem;
-    font-weight: 500;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    font-weight: 600;
+    text-align: center;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     animation: toastSlide 0.3s ease, toastFade 0.3s ease 2.7s forwards;
 }
 
-.toast.success { background: #2ecc71; }
-.toast.error { background: #e74c3c; }
-.toast.info { background: #3498db; }
+.toast.success { 
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.9), rgba(46, 204, 113, 0.9));
+    border-color: rgba(129, 199, 132, 0.4);
+}
+.toast.error { 
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
+    border-color: rgba(231, 76, 60, 0.4);
+}
+.toast.info { 
+    background: linear-gradient(135deg, rgba(47, 111, 78, 0.9), rgba(59, 82, 64, 0.9));
+    border-color: rgba(95, 161, 117, 0.4);
+}
 
 @keyframes toastSlide {
     from { opacity: 0; transform: translateY(20px); }
@@ -1368,9 +1381,124 @@ button:hover {
     transform: translateY(-1px) scale(0.98);
 }
 
-.hochsitz-emoji-marker {
-    font-size: 28px;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+/* =============================
+   Confirm Modal
+============================= */
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 15000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-modal.hidden {
+    display: none;
+}
+
+.confirm-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.confirm-modal-content {
+    position: relative;
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    padding: 32px;
+    width: 320px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: var(--glass-shadow-lg);
+    color: #ffffff;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confirm-modal-icon {
+    color: #f39c12;
+    margin-bottom: 16px;
+}
+
+.confirm-modal-icon svg {
+    filter: drop-shadow(0 2px 8px rgba(243, 156, 18, 0.4));
+}
+
+.confirm-modal-content h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--primary-light);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.confirm-modal-content p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.confirm-buttons button {
+    flex: 1;
+    padding: 14px 0;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#confirm-cancel-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+#confirm-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+#confirm-ok-btn {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.85), rgba(192, 57, 43, 0.85));
+    border-color: rgba(231, 76, 60, 0.5);
+    color: white;
+}
+
+#confirm-ok-btn:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.95), rgba(192, 57, 43, 0.95));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
+}
+
+.confirm-buttons button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.hochsitz-marker {
+    color: #2f6f4e;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+}
+
+.hochsitz-marker svg {
+    background: white;
+    border-radius: 50%;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 /* ==========================
@@ -1378,10 +1506,10 @@ button:hover {
 ========================== */
 .hochsitz-panel {
     position: fixed;
-    top: 12%;
+    top: 180px;
     right: -360px;
     width: 340px;
-    height: 75%;
+    max-height: calc(100% - 260px);
     backdrop-filter: blur(var(--blur-lg));
     -webkit-backdrop-filter: blur(var(--blur-lg));
     background: rgba(255, 255, 255, 0.08);
@@ -1466,6 +1594,15 @@ button:hover {
     background: rgba(255, 255, 255, 0.18);
     transform: translateX(-4px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.panel-entry-clickable {
+    cursor: pointer;
+}
+
+.panel-entry-clickable:active {
+    transform: scale(0.97);
+    background: rgba(47, 111, 78, 0.3);
 }
 
 .panel-entry strong {

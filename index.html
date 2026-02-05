@@ -328,6 +328,26 @@
     <!-- App JS (load LAST after all dependencies) -->
     <script src="js/app.js?v=20260205"></script>
 
+    <!-- Confirm Dialog -->
+    <div id="confirm-modal" class="confirm-modal hidden">
+        <div class="confirm-modal-backdrop"></div>
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h3 id="confirm-title">Bestätigung</h3>
+            <p id="confirm-message">Möchten Sie fortfahren?</p>
+            <div class="confirm-buttons">
+                <button id="confirm-cancel-btn">Abbrechen</button>
+                <button id="confirm-ok-btn">Löschen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Hochsitz Listen Panel -->
     <div id="hochsitz-panel" class="hochsitz-panel hidden">
         <div class="panel-header">

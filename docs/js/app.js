@@ -163,6 +163,43 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 3000);
 }
 
+// Custom Confirm Dialog
+function showConfirm(message, title = "Bestätigung", okText = "Löschen") {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("confirm-modal");
+        const titleEl = document.getElementById("confirm-title");
+        const messageEl = document.getElementById("confirm-message");
+        const okBtn = document.getElementById("confirm-ok-btn");
+        const cancelBtn = document.getElementById("confirm-cancel-btn");
+        
+        if (!modal) {
+            resolve(confirm(message)); // Fallback
+            return;
+        }
+        
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        okBtn.textContent = okText;
+        modal.classList.remove("hidden");
+        
+        const cleanup = () => {
+            modal.classList.add("hidden");
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+        };
+        
+        okBtn.onclick = () => {
+            cleanup();
+            resolve(true);
+        };
+        
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(false);
+        };
+    });
+}
+
 // ==============================
 // PAGE NAVIGATION (Dashboard -> Pages -> Back)
 // ==============================
@@ -648,13 +685,24 @@ async function initializeApp() {
             snapshot.docs.forEach(doc => {
                 const data = doc.data();
                 const entry = document.createElement("div");
-                entry.className = "panel-entry";
+                entry.className = "panel-entry panel-entry-clickable";
+                entry.dataset.lat = data.lat;
+                entry.dataset.lng = data.lng;
+                entry.dataset.id = doc.id;
                 entry.innerHTML = `
                     <strong>${data.name || "Ohne Namen"}</strong>
                     ${data.datum ? `<small>Datum: ${new Date(data.datum).toLocaleDateString()}</small>` : ""}
                     ${data.bemerkung ? `<small>${data.bemerkung}</small>` : ""}
                     ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : ""}
                 `;
+                
+                // Klick-Handler: Zur Position auf der Karte springen
+                entry.addEventListener("click", () => {
+                    if (window.mapInstance && data.lat && data.lng) {
+                        window.mapInstance.flyTo([data.lat, data.lng], 18, { duration: 0.5 });
+                    }
+                });
+                
                 panelContent.appendChild(entry);
             });
         });
@@ -808,7 +856,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
             markerZoomAnimation: true
         });
         window.mapInstance = map;
-    const hochsitzeMarkers = {};
+    window.hochsitzeMarkers = {};
     let settingHochsitz = false;
 
     // TileLayer mit Performance-Optimierungen
@@ -1055,6 +1103,59 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
     listButton.addTo(map);
 
     // ==========================
+    // GPS-Fokus Button
+    // ==========================
+    const gpsButton = L.control({ position: "topright" });
+    gpsButton.onAdd = function () {
+        const btn = L.DomUtil.create("button", "gps-center-btn");
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <circle cx="12" cy="12" r="8" opacity="0.3"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+        </svg>`;
+        btn.title = "Zur aktuellen Position";
+        btn.style.cssText = `
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
+
+        btn.onmouseenter = () => {
+            btn.style.background = "rgba(255, 255, 255, 0.18)";
+            btn.style.transform = "scale(1.08)";
+        };
+        btn.onmouseleave = () => {
+            btn.style.background = "rgba(255, 255, 255, 0.12)";
+            btn.style.transform = "scale(1)";
+        };
+
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.on(btn, "click", (e) => {
+            L.DomEvent.stopPropagation(e);
+            if (gpsMarker) {
+                const pos = gpsMarker.getLatLng();
+                map.flyTo([pos.lat, pos.lng], 17, { duration: 0.5 });
+                showToast("Zur aktuellen Position");
+            } else {
+                showToast("GPS-Position nicht verfügbar", "error");
+            }
+        });
+        return btn;
+    };
+    gpsButton.addTo(map);
+
+    // ==========================
     // Firebase Marker laden und verwalten
     // ==========================
     hochsitzeCollection.onSnapshot(snapshot => {
@@ -1062,18 +1163,35 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
             const data = change.doc.data();
             const id = change.doc.id;
 
-            if (hochsitzeMarkers[id]) {
-                map.removeLayer(hochsitzeMarkers[id]);
-                delete hochsitzeMarkers[id];
+            if (window.hochsitzeMarkers[id]) {
+                map.removeLayer(window.hochsitzeMarkers[id]);
+                delete window.hochsitzeMarkers[id];
             }
 
             if (change.type === "added" || change.type === "modified") {
                 const marker = L.marker([data.lat, data.lng], {
                     icon: L.divIcon({
-                        className: "hochsitz-emoji-marker",
-                        html: "🪜",
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 30]
+                        className: "hochsitz-marker",
+                        html: `<svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Hintergrund-Kreis -->
+                            <circle cx="16" cy="16" r="15" fill="white" stroke="#2f6f4e" stroke-width="2"/>
+                            <!-- Dach -->
+                            <path d="M8 12 L16 6 L24 12" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Kabine -->
+                            <rect x="9" y="12" width="14" height="8" rx="1" fill="#2f6f4e"/>
+                            <!-- Fenster -->
+                            <rect x="11" y="14" width="4" height="3" rx="0.5" fill="white" opacity="0.8"/>
+                            <rect x="17" y="14" width="4" height="3" rx="0.5" fill="white" opacity="0.8"/>
+                            <!-- Stelzen -->
+                            <line x1="11" y1="20" x2="9" y2="26" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="21" y1="20" x2="23" y2="26" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round"/>
+                            <!-- Leiter -->
+                            <line x1="16" y1="20" x2="16" y2="26" stroke="#2f6f4e" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="14.5" y1="22" x2="17.5" y2="22" stroke="#2f6f4e" stroke-width="1" stroke-linecap="round"/>
+                            <line x1="14.5" y1="24" x2="17.5" y2="24" stroke="#2f6f4e" stroke-width="1" stroke-linecap="round"/>
+                        </svg>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40]
                     })
                 }).addTo(map);
 
@@ -1085,12 +1203,12 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
                     <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
                 </div>`;
                 marker.bindPopup(popupContent);
-                hochsitzeMarkers[id] = marker;
+                window.hochsitzeMarkers[id] = marker;
             }
 
-            if (change.type === "removed" && hochsitzeMarkers[id]) {
-                map.removeLayer(hochsitzeMarkers[id]);
-                delete hochsitzeMarkers[id];
+            if (change.type === "removed" && window.hochsitzeMarkers[id]) {
+                map.removeLayer(window.hochsitzeMarkers[id]);
+                delete window.hochsitzeMarkers[id];
             }
         });
     });
@@ -1127,9 +1245,14 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         }
 
         if (target.classList.contains("delete-marker-btn")) {
-            if (confirm("Hochsitz wirklich löschen?")) {
+            const confirmed = await showConfirm(
+                "Möchten Sie diesen Hochsitz wirklich löschen?",
+                "Hochsitz löschen",
+                "Löschen"
+            );
+            if (confirmed) {
                 await docRef.delete();
-                showToast("Hochsitz gelöscht 🗑️");
+                showToast("Hochsitz gelöscht", "success");
             }
         }
     });
