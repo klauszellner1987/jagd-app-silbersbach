@@ -8,7 +8,7 @@ Eine moderne Web-App für das Jagd-Revier Silbersbach mit Karte, Streckenliste u
 - **Revier-Karte**: Interaktive Leaflet-Karte mit Reviergebieten und Hochsitz-Markierungen
 - **Streckenliste**: Erfassung und Verwaltung erlegter Strecke mit Firebase-Backend
 - **Wetterdaten**: Live-Wetter mit Temperatur, Wind und Mondphase
-- **PIN-Login**: Sicherer Zugang mit PIN-Eingabe im iPhone-Lockscreen-Style
+- **Firebase Authentication**: Sicherer Login mit E-Mail und Passwort
 - **PWA**: Installierbar auf Handy und Desktop
 
 ## Tech Stack
@@ -16,7 +16,7 @@ Eine moderne Web-App für das Jagd-Revier Silbersbach mit Karte, Streckenliste u
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
 - **Styling**: Tailwind CSS, Glassmorphism-Design
 - **Build Tool**: Vite
-- **Backend**: Firebase (Firestore, Storage)
+- **Backend**: Firebase (Authentication, Firestore, Storage)
 - **Karte**: Leaflet.js
 - **Deployment**: GitHub Pages
 
@@ -70,6 +70,17 @@ Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
 ```
 
 ## Changelog
+
+### v1.2.0 - Firebase Authentication
+
+**Sicherer Login mit Firebase Email/Password Authentication:**
+
+- PIN-Login durch Firebase E-Mail/Passwort-Authentifizierung ersetzt
+- Logout-Button im Dashboard hinzugefügt
+- "Jagdrevier Silbersbach" Branding im Login-Screen
+- Flash-of-Content beim Laden verhindert
+- Session-Management mit Firebase Auth State Listener
+- Verbesserte Fehlerbehandlung mit deutschen Fehlermeldungen
 
 ### v1.1.0 - Glassmorphism Redesign
 
