@@ -2131,9 +2131,9 @@ button:hover {
 /* Dashboard Mobile - Platz für Header */
 @media (max-width: 600px) {
     #dashboard {
-        height: calc(100vh - 70px) !important; /* Header */
-        height: calc(100dvh - 70px) !important;
-        padding-bottom: 20px !important;
+        height: calc(100vh - 50px) !important; /* Header */
+        height: calc(100dvh - 50px) !important;
+        padding-bottom: 10px !important;
     }
 }
 
@@ -2494,10 +2494,10 @@ button:hover {
 @media (max-width: 480px) {
     /* Dashboard */
     #dashboard {
-        height: calc(100vh - 70px) !important;
-        height: calc(100dvh - 70px) !important;
+        height: calc(100vh - 50px) !important;
+        height: calc(100dvh - 50px) !important;
         padding: 0.35rem;
-        padding-bottom: 20px !important;
+        padding-bottom: 10px !important;
         gap: 0.3rem;
     }
     
