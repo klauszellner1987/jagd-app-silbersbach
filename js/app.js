@@ -786,17 +786,19 @@ async function fetchLiveWeather() {
         const data = await response.json();
 
         // SVG Icons
-        const thermometerSvg = `<svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>`;
-        const windSvg = `<svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>`;
-        const moonSvg = `<svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        const thermometerSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>`;
+        const windSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>`;
+        const moonSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
         // Temperatur Widget
         const tempWidget = document.getElementById("widget-weather");
         if (tempWidget) {
             tempWidget.innerHTML = `
-                ${thermometerSvg}
-                <p class="widget-value">${data.currentConditions.temp.toFixed(0)}°C</p>
-                <p class="widget-label">Temperatur</p>
+                <div class="widget-icon-container">${thermometerSvg}</div>
+                <div class="widget-content">
+                    <p class="widget-value">${data.currentConditions.temp.toFixed(0)}°C</p>
+                    <p class="widget-label">Temperatur</p>
+                </div>
             `;
         }
         
@@ -805,9 +807,11 @@ async function fetchLiveWeather() {
         const windWidget = document.getElementById("widget-wind");
         if (windWidget) {
             windWidget.innerHTML = `
-                ${windSvg}
-                <p class="widget-value">${windDirText}</p>
-                <p class="widget-label">${data.currentConditions.windspeed.toFixed(0)} km/h</p>
+                <div class="widget-icon-container">${windSvg}</div>
+                <div class="widget-content">
+                    <p class="widget-value">${windDirText}</p>
+                    <p class="widget-label">${data.currentConditions.windspeed.toFixed(0)} km/h</p>
+                </div>
             `;
         }
         
@@ -826,18 +830,22 @@ async function fetchLiveWeather() {
         const moonWidget = document.getElementById("widget-moon");
         if (moonWidget) {
             moonWidget.innerHTML = `
-                ${moonSvg}
-                <p class="widget-value">${moonPhaseName}</p>
-                <p class="widget-label">Mondphase</p>
+                <div class="widget-icon-container">${moonSvg}</div>
+                <div class="widget-content">
+                    <p class="widget-value">${moonPhaseName}</p>
+                    <p class="widget-label">Mondphase</p>
+                </div>
             `;
         }
     } catch(err) {
         console.error("Wetter Fehler:", err);
-        const errorSvg = `<svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+        const errorSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
         const errorHTML = `
-            ${errorSvg}
-            <p class="widget-value">--</p>
-            <p class="widget-label">Fehler</p>
+            <div class="widget-icon-container">${errorSvg}</div>
+            <div class="widget-content">
+                <p class="widget-value">--</p>
+                <p class="widget-label">Fehler</p>
+            </div>
         `;
         const weatherWidget = document.getElementById("widget-weather");
         const windWidget = document.getElementById("widget-wind");

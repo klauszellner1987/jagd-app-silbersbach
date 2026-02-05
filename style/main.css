@@ -1614,6 +1614,23 @@ button:hover {
     z-index: 1500; /* Above header (1000) */
 }
 
+/* Dashboard dark overlay for better contrast */
+#dashboard {
+    position: relative;
+}
+
+#dashboard::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, 
+        rgba(0, 0, 0, 0.4) 0%, 
+        rgba(0, 0, 0, 0.2) 50%,
+        rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+    z-index: -1;
+}
+
 /* ============================================
    WIDGET BASE STYLE (Glassmorphism)
 ============================================ */
@@ -1686,42 +1703,61 @@ button:hover {
 }
 
 /* ============================================
-   WEATHER WIDGETS
+   WEATHER WIDGETS - Modern Horizontal Design
 ============================================ */
 .weather-widget {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(40, 80, 60, 0.6), rgba(30, 60, 45, 0.4));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    min-height: auto;
+}
+
+.widget-icon-container {
+    flex-shrink: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 1rem 0.75rem;
-    min-height: 120px;
+}
+
+.widget-icon-svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.85;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.widget-content {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
 }
 
 .widget-icon {
     font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.widget-icon-svg {
-    margin-bottom: 0.5rem;
-    opacity: 0.9;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .widget-value {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
     line-height: 1.2;
 }
 
 .widget-label {
-    font-size: 0.75rem;
-    opacity: 0.75;
+    font-size: 0.85rem;
+    opacity: 0.7;
     margin: 0;
-    margin-top: 0.25rem;
 }
 
 /* ============================================

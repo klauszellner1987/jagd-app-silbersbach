@@ -29,8 +29,8 @@
     <!-- iOS Safari: App vollbild -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-B_WQ5LzJ.js"></script>
-  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-DvDpLdGt.css">
+  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-CjnkD6yO.js"></script>
+  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-TXuweJ2a.css">
 </head>
 <div id="toast-container"></div>
 <div class="fab-add" id="fab-add-btn">+</div>
@@ -97,29 +97,41 @@
             <div class="widget-grid-3">
                 <!-- Temperatur Widget -->
                 <div class="widget weather-widget" id="widget-weather">
-                    <svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                    </svg>
-                    <p class="widget-value" id="temp-value">-- °C</p>
-                    <p class="widget-label">Temperatur</p>
+                    <div class="widget-icon-container">
+                        <svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="widget-content">
+                        <p class="widget-value" id="temp-value">-- °C</p>
+                        <p class="widget-label">Temperatur</p>
+                    </div>
                 </div>
 
                 <!-- Wind Widget -->
                 <div class="widget weather-widget" id="widget-wind">
-                    <svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
-                    </svg>
-                    <p class="widget-value" id="wind-direction">--</p>
-                    <p class="widget-label" id="wind-speed">-- km/h</p>
+                    <div class="widget-icon-container">
+                        <svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+                        </svg>
+                    </div>
+                    <div class="widget-content">
+                        <p class="widget-value" id="wind-direction">--</p>
+                        <p class="widget-label" id="wind-speed">-- km/h</p>
+                    </div>
                 </div>
 
                 <!-- Mond Widget -->
                 <div class="widget weather-widget" id="widget-moon">
-                    <svg class="widget-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <p class="widget-value" id="moon-phase">--</p>
-                    <p class="widget-label">Mondphase</p>
+                    <div class="widget-icon-container">
+                        <svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </div>
+                    <div class="widget-content">
+                        <p class="widget-value" id="moon-phase">--</p>
+                        <p class="widget-label">Mondphase</p>
+                    </div>
                 </div>
             </div>
 
