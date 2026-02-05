@@ -15,85 +15,142 @@ const firebaseConfig = {
 // JAGDZEITEN BAYERN - Daten
 // ==============================
 const jagdzeitenBayern = [
-    {
-        id: "rotwild",
-        name: "Rotwild",
-        jagdzeitStart: "01.08",
-        jagdzeitEnde: "31.01",
-        iconClass: "ti ti-deer"
-    },
-    {
-        id: "rehbock",
-        name: "Rehwild Böcke",
-        jagdzeitStart: "01.05",
-        jagdzeitEnde: "15.10",
-        iconClass: "ti ti-deer"
-    },
-    {
-        id: "rehwild-schmalreh",
-        name: "Rehwild Schmalrehe",
-        jagdzeitStart: "01.05",
-        jagdzeitEnde: "15.01",
-        iconClass: "ti ti-deer"
-    },
-    {
-        id: "rehwild-geiss-kitz",
-        name: "Rehwild Geißen/Kitze",
-        jagdzeitStart: "01.09",
-        jagdzeitEnde: "15.01",
-        iconClass: "ti ti-deer"
-    },
-    {
-        id: "schwarzwild",
-        name: "Schwarzwild",
-        jagdzeitStart: "01.01",
-        jagdzeitEnde: "31.12",
-        ganzjaehrig: true,
-        iconClass: "ti ti-pig"
-    },
-    {
-        id: "feldhase",
-        name: "Feldhase",
-        jagdzeitStart: "01.10",
-        jagdzeitEnde: "31.12",
-        iconClass: "ti ti-paw"
-    },
-    {
-        id: "rotfuchs",
-        name: "Rotfuchs",
-        jagdzeitStart: "01.01",
-        jagdzeitEnde: "31.12",
-        ganzjaehrig: true,
-        iconClass: "ti ti-paw"
-    },
-    {
-        id: "dachs",
-        name: "Dachs",
-        jagdzeitStart: "01.08",
-        jagdzeitEnde: "31.10",
-        iconClass: "ti ti-paw"
-    },
-    {
-        id: "wildente",
-        name: "Wildenten",
-        jagdzeitStart: "01.09",
-        jagdzeitEnde: "15.01",
-        iconClass: "ti ti-feather"
-    },
-    {
-        id: "wildgans",
-        name: "Wildgänse",
-        jagdzeitStart: "01.08",
-        jagdzeitEnde: "15.01",
-        iconClass: "ti ti-feather"
-    },
-    {
-        id: "fasan",
-        name: "Fasane (Hähne)",
-        jagdzeitStart: "01.10",
-        jagdzeitEnde: "15.01",
-        iconClass: "ti ti-feather"
-    }
+    // ===== SCHALENWILD =====
+    // Rotwild
+    { id: "rotwild-hirsche", name: "Rotwild (Hirsche)", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "rotwild-alttiere", name: "Rotwild (Alttiere)", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "rotwild-kaelber", name: "Rotwild (Kälber)", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "rotwild-schmalspiess", name: "Rotwild (Schmalspießer)", jagdzeitStart: "01.06", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "rotwild-schmaltiere", name: "Rotwild (Schmaltiere)", jagdzeitStart: "01.06", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    
+    // Damwild
+    { id: "damwild-hirsche", name: "Damwild (Hirsche)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "damwild-alttiere", name: "Damwild (Alttiere)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "damwild-kaelber", name: "Damwild (Kälber)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "damwild-schmalspiess", name: "Damwild (Schmalspießer)", jagdzeitStart: "01.07", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "damwild-schmaltiere", name: "Damwild (Schmaltiere)", jagdzeitStart: "01.07", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    
+    // Sikawild
+    { id: "sikawild-hirsche", name: "Sikawild (Hirsche)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "sikawild-alttiere", name: "Sikawild (Alttiere)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "sikawild-kaelber", name: "Sikawild (Kälber)", jagdzeitStart: "01.09", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "sikawild-schmalspiess", name: "Sikawild (Schmalspießer)", jagdzeitStart: "01.07", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "sikawild-schmaltiere", name: "Sikawild (Schmaltiere)", jagdzeitStart: "01.07", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    
+    // Rehwild
+    { id: "rehwild-boecke", name: "Rehwild (Böcke)", jagdzeitStart: "01.05", jagdzeitEnde: "15.10", iconClass: "ti ti-deer" },
+    { id: "rehwild-geissen", name: "Rehwild (Geißen)", jagdzeitStart: "01.09", jagdzeitEnde: "15.01", iconClass: "ti ti-deer" },
+    { id: "rehwild-kitze", name: "Rehwild (Kitze)", jagdzeitStart: "01.09", jagdzeitEnde: "15.01", iconClass: "ti ti-deer" },
+    { id: "rehwild-schmalrehe", name: "Rehwild (Schmalrehe)", jagdzeitStart: "01.05", jagdzeitEnde: "15.01", iconClass: "ti ti-deer" },
+    
+    // Schwarzwild
+    { id: "schwarzwild-keiler", name: "Schwarzwild (Keiler)", ganzjaehrig: true, iconClass: "ti ti-pig" },
+    { id: "schwarzwild-bachen", name: "Schwarzwild (Bachen)", ganzjaehrig: true, iconClass: "ti ti-pig" },
+    { id: "schwarzwild-frischlinge", name: "Schwarzwild (Frischlinge)", ganzjaehrig: true, iconClass: "ti ti-pig" },
+    { id: "schwarzwild-ueberlaeufer", name: "Schwarzwild (Überläufer)", ganzjaehrig: true, iconClass: "ti ti-pig" },
+    
+    // Weiteres Schalenwild
+    { id: "gamswild", name: "Gamswild", jagdzeitStart: "01.08", jagdzeitEnde: "15.12", iconClass: "ti ti-deer" },
+    { id: "muffelwild", name: "Muffelwild", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "ti ti-deer" },
+    { id: "elchwild", name: "Elchwild", keineJagdzeit: true, iconClass: "ti ti-deer" },
+    { id: "steinwild", name: "Steinwild", keineJagdzeit: true, iconClass: "ti ti-deer" },
+    { id: "wisent", name: "Wisent", keineJagdzeit: true, iconClass: "ti ti-deer" },
+    
+    // ===== RAUBWILD =====
+    { id: "fuchs", name: "Fuchs", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    { id: "dachs", name: "Dachs", jagdzeitStart: "01.08", jagdzeitEnde: "31.10", iconClass: "ti ti-paw" },
+    { id: "baummarder", name: "Baummarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "ti ti-paw" },
+    { id: "steinmarder", name: "Steinmarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "ti ti-paw" },
+    { id: "iltis", name: "Iltis", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "ti ti-paw" },
+    { id: "hermelin", name: "Hermelin", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "ti ti-paw" },
+    { id: "mauswiesel", name: "Mauswiesel", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "ti ti-paw" },
+    { id: "luchs", name: "Luchs", keineJagdzeit: true, iconClass: "ti ti-paw" },
+    { id: "wildkatze", name: "Wildkatze", keineJagdzeit: true, iconClass: "ti ti-paw" },
+    { id: "fischotter", name: "Fischotter", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    
+    // Neozoen (Raubwild)
+    { id: "waschbaer", name: "Waschbär", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    { id: "marderhund", name: "Marderhund", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    { id: "nutria", name: "Nutria", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    
+    // ===== HASEN =====
+    { id: "feldhase", name: "Feldhase", jagdzeitStart: "16.10", jagdzeitEnde: "31.12", iconClass: "ti ti-paw" },
+    { id: "schneehase", name: "Schneehase", keineJagdzeit: true, iconClass: "ti ti-paw" },
+    { id: "wildkaninchen", name: "Wildkaninchen", ganzjaehrig: true, iconClass: "ti ti-paw" },
+    
+    // ===== NAGETIERE =====
+    { id: "biber", name: "Biber", jagdzeitStart: "01.09", jagdzeitEnde: "15.03", iconClass: "ti ti-paw" },
+    { id: "murmeltier", name: "Murmeltier", keineJagdzeit: true, iconClass: "ti ti-paw" },
+    
+    // ===== WASSERVÖGEL =====
+    // Wildenten
+    { id: "stockente", name: "Wildenten (Stockente)", jagdzeitStart: "01.09", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "krickente", name: "Wildenten (Krickente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "pfeifente", name: "Wildenten (Pfeifente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "spiesssente", name: "Wildenten (Spießente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "reiherente", name: "Wildenten (Reiherente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "tafelente", name: "Wildenten (Tafelente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "bergente", name: "Wildenten (Bergente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "samtente", name: "Wildenten (Samtente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "trauerente", name: "Wildenten (Trauerente)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    
+    // Wildgänse
+    { id: "graugans", name: "Wildgänse (Graugans)", jagdzeitStart: "01.08", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "blaessgans", name: "Wildgänse (Blässgans)", jagdzeitStart: "01.11", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "saatgans", name: "Wildgänse (Saatgans)", jagdzeitStart: "01.11", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "kanadagans", name: "Wildgänse (Kanadagans)", jagdzeitStart: "01.08", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "nilgans", name: "Wildgänse (Nilgans)", jagdzeitStart: "01.08", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "ringelgans", name: "Wildgänse (Ringelgans)", jagdzeitStart: "01.11", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    
+    // Sonstige Wasservögel
+    { id: "blaesshuhn", name: "Blässhuhn", jagdzeitStart: "11.09", jagdzeitEnde: "20.02", iconClass: "ti ti-feather" },
+    { id: "hoeckerschwan", name: "Höckerschwan", jagdzeitStart: "01.11", jagdzeitEnde: "20.02", iconClass: "ti ti-feather" },
+    { id: "haubentaucher", name: "Haubentaucher", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "saeger", name: "Säger", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "kormoran", name: "Kormoran", jagdzeitStart: "16.08", jagdzeitEnde: "14.03", iconClass: "ti ti-feather" },
+    { id: "graureiher", name: "Graureiher", jagdzeitStart: "16.09", jagdzeitEnde: "31.10", iconClass: "ti ti-feather" },
+    
+    // Möwen
+    { id: "lachmoewe", name: "Möwen (Lachmöwe)", jagdzeitStart: "01.10", jagdzeitEnde: "10.02", iconClass: "ti ti-feather" },
+    { id: "sturmmoewe", name: "Möwen (Sturmmöwe)", jagdzeitStart: "01.10", jagdzeitEnde: "10.02", iconClass: "ti ti-feather" },
+    { id: "silbermoewe", name: "Möwen (Silbermöwe)", jagdzeitStart: "01.10", jagdzeitEnde: "10.02", iconClass: "ti ti-feather" },
+    { id: "heringsmoewe", name: "Möwen (Heringsmöwe)", jagdzeitStart: "01.10", jagdzeitEnde: "10.02", iconClass: "ti ti-feather" },
+    { id: "mantelmoewe", name: "Möwen (Mantelmöwe)", jagdzeitStart: "01.10", jagdzeitEnde: "10.02", iconClass: "ti ti-feather" },
+    
+    // ===== FEDERWILD (Land) =====
+    { id: "fasan", name: "Fasan", jagdzeitStart: "01.10", jagdzeitEnde: "31.12", iconClass: "ti ti-feather" },
+    { id: "rebhuhn", name: "Rebhuhn", jagdzeitStart: "01.09", jagdzeitEnde: "31.10", iconClass: "ti ti-feather" },
+    { id: "wachtel", name: "Wachtel", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "waldschnepfe", name: "Waldschnepfe", jagdzeitStart: "16.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    
+    // Wildtauben
+    { id: "ringeltaube", name: "Wildtauben (Ringeltaube)", jagdzeitStart: "01.11", jagdzeitEnde: "20.02", iconClass: "ti ti-feather" },
+    { id: "tuerkentaube", name: "Wildtauben (Türkentaube)", jagdzeitStart: "01.11", jagdzeitEnde: "20.02", iconClass: "ti ti-feather" },
+    
+    // Wildtruthühner
+    { id: "wildtruthahn", name: "Wildtruthuhn (Hähne)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    { id: "wildtruthenne", name: "Wildtruthuhn (Hennen)", jagdzeitStart: "01.10", jagdzeitEnde: "15.01", iconClass: "ti ti-feather" },
+    
+    // Raufußhühner (alle geschützt)
+    { id: "auerwild", name: "Auerwild", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "birkwild", name: "Birkwild", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "rackelwild", name: "Rackelwild", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "haselwild", name: "Haselwild", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "alpenschneehuhn", name: "Alpenschneehuhn", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    
+    // ===== RABENVÖGEL =====
+    { id: "rabenkraehe", name: "Rabenkrähe", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "ti ti-feather" },
+    { id: "elster", name: "Elster", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "ti ti-feather" },
+    { id: "eichelhaeler", name: "Eichelhäher", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "ti ti-feather" },
+    { id: "kolkrabe", name: "Kolkrabe", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    
+    // ===== GREIFVÖGEL (alle geschützt) =====
+    { id: "greife", name: "Greife", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "falken", name: "Falken", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    
+    // ===== SONSTIGE =====
+    { id: "grosstrappe", name: "Großtrappe", keineJagdzeit: true, iconClass: "ti ti-feather" },
+    { id: "seehund", name: "Seehund", keineJagdzeit: true, iconClass: "ti ti-paw" }
 ];
 
 function showToast(message, type = "info") {
@@ -378,6 +435,11 @@ function parseJagdzeit(dateStr) {
 }
 
 function istSchonzeit(wildart) {
+    // Keine Jagdzeit = ganzjährige Schonzeit
+    if (wildart.keineJagdzeit) {
+        return true;
+    }
+    
     // Ganzjährig bejagbar = nie Schonzeit
     if (wildart.ganzjaehrig) {
         return false;
@@ -400,6 +462,10 @@ function istSchonzeit(wildart) {
 }
 
 function getSchonzeitDatum(wildart) {
+    if (wildart.keineJagdzeit) {
+        return "Ganzjährige Schonzeit";
+    }
+    
     if (wildart.ganzjaehrig) {
         return "Ganzjährig bejagbar";
     }
@@ -519,10 +585,12 @@ function renderSchonzeitListe() {
         const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
         
         let zeitInfo;
-        if (wildart.ganzjaehrig) {
+        if (wildart.keineJagdzeit) {
+            zeitInfo = 'Ganzjährige Schonzeit';
+        } else if (wildart.ganzjaehrig) {
             zeitInfo = 'Ganzjährig bejagbar';
         } else {
-            zeitInfo = `${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
+            zeitInfo = `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
         }
         
         return `
