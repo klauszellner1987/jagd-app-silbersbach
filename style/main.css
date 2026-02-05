@@ -1103,11 +1103,16 @@ button:hover {
         font-size: 1.1rem;
     }
     
-    /* Logout Button kompakter */
+    /* Logout Button kompakter und mit Abstand zur Home-Bar */
     .logout-btn {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
         max-width: 140px;
+    }
+    
+    #dashboard .logout-btn {
+        margin-bottom: 25px; /* Abstand zur iPhone Home-Bar */
+        margin-bottom: calc(env(safe-area-inset-bottom, 15px) + 10px);
     }
 
     /* Dashboard fixiert auf Mobile - kein Scrollen */
@@ -1115,6 +1120,7 @@ button:hover {
         height: calc(100vh - 50px);
         height: calc(100dvh - 50px);
         padding: 0.5rem;
+        padding-bottom: 0;
         gap: 0.4rem;
         justify-content: space-between;
     }
@@ -2149,6 +2155,7 @@ button:hover {
 
 #dashboard .logout-btn {
     margin-top: auto;
+    margin-bottom: calc(env(safe-area-inset-bottom) + 10px);
     flex-shrink: 0;
 }
 
