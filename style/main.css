@@ -2230,3 +2230,124 @@ button:hover {
 #schonzeit-page.page {
     padding-bottom: 100px;
 }
+
+/* ============================================
+   INSTALL BANNER
+============================================ */
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(0deg, 
+        rgba(45, 90, 65, 1) 0%,
+        rgba(40, 80, 60, 0.98) 50%,
+        rgba(35, 70, 55, 0.95) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideUp 0.3s ease-out;
+}
+
+.install-banner.hidden {
+    display: none;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.install-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.install-banner-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-banner-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.install-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.install-banner-text strong {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.install-banner-text span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+.install-banner-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.install-btn-dismiss {
+    flex: 1;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.install-btn-dismiss:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.install-btn-accept {
+    flex: 2;
+    padding: 0.75rem;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    color: #2d5a41;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.install-btn-accept:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.02);
+}
+
+.install-btn-accept:active {
+    transform: scale(0.98);
+}

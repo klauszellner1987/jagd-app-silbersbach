@@ -1,8 +1,9 @@
 {
-  "name": "GJR Silbersbach",
-  "short_name": "RevierApp",
-  "description": "App für Revierkarten, Streckenliste und Wetterinfos",
+  "name": "Jagdrevier Silbersbach",
+  "short_name": "Silbersbach",
+  "description": "App für Revierkarten, Streckenliste, Schonzeiten und Wetterinfos",
   "start_url": ".",
+  "id": "/jagd-app-silbersbach/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#2f6f4e",
@@ -14,7 +15,7 @@
       "type": "image/png"
     },
     {
-      "src": "icons/icon-maskable-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },

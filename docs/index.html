@@ -26,14 +26,16 @@
     <!-- Icons für Android / iOS -->
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
     <!-- iOS Safari: App vollbild -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-Ddn1oCrr.js"></script>
-  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-C8dPO66M.css">
+    <meta name="apple-mobile-web-app-title" content="Silbersbach">
+  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-MczyqZ_0.js"></script>
+  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-CyOTj3d2.css">
 </head>
 <div id="toast-container"></div>
 <div class="fab-add" id="fab-add-btn">+</div>
@@ -70,6 +72,23 @@
                 <div class="spinner"></div>
                 <span>Anmelden...</span>
             </div>
+        </div>
+    </div>
+
+    <!-- INSTALL BANNER -->
+    <div id="install-banner" class="install-banner hidden">
+        <div class="install-banner-content">
+            <div class="install-banner-icon">
+                <i class="ti ti-download"></i>
+            </div>
+            <div class="install-banner-text">
+                <strong>App installieren</strong>
+                <span>Für schnellen Zugriff auf dem Homescreen</span>
+            </div>
+        </div>
+        <div class="install-banner-actions">
+            <button id="install-dismiss" class="install-btn-dismiss">Später</button>
+            <button id="install-accept" class="install-btn-accept">Installieren</button>
         </div>
     </div>
 

@@ -308,6 +308,9 @@ function initAuthListener() {
                 initializeApp().catch((error) => {
                     console.error("App initialization error:", error);
                 });
+                
+                // Show install banner after login
+                showInstallBannerAfterLogin();
             }
         } else {
             // User is signed out
@@ -1130,6 +1133,88 @@ function getWindDirection(deg) {
 }
 
 // ==============================
+// PWA INSTALL PROMPT
+// ==============================
+let deferredPrompt = null;
+
+function initInstallPrompt() {
+    const banner = document.getElementById('install-banner');
+    const acceptBtn = document.getElementById('install-accept');
+    const dismissBtn = document.getElementById('install-dismiss');
+    
+    if (!banner || !acceptBtn || !dismissBtn) return;
+    
+    // Check if already installed (standalone mode)
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        console.log('App already installed');
+        return;
+    }
+    
+    // Check if user dismissed recently (24h cooldown)
+    const dismissed = localStorage.getItem('installDismissed');
+    if (dismissed) {
+        const dismissedTime = parseInt(dismissed, 10);
+        const now = Date.now();
+        const cooldown = 24 * 60 * 60 * 1000; // 24 hours
+        if (now - dismissedTime < cooldown) {
+            console.log('Install prompt in cooldown');
+            return;
+        }
+    }
+    
+    // Listen for beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show banner after short delay (after login)
+        setTimeout(() => {
+            if (deferredPrompt && !document.getElementById('login-overlay').classList.contains('hidden') === false) {
+                banner.classList.remove('hidden');
+            }
+        }, 2000);
+    });
+    
+    // Accept button
+    acceptBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        banner.classList.add('hidden');
+        deferredPrompt.prompt();
+        
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Install prompt outcome:', outcome);
+        
+        deferredPrompt = null;
+    });
+    
+    // Dismiss button
+    dismissBtn.addEventListener('click', () => {
+        banner.classList.add('hidden');
+        localStorage.setItem('installDismissed', Date.now().toString());
+        deferredPrompt = null;
+    });
+    
+    // Hide banner if app gets installed
+    window.addEventListener('appinstalled', () => {
+        banner.classList.add('hidden');
+        deferredPrompt = null;
+        console.log('App was installed');
+    });
+}
+
+// Show install banner after successful login
+function showInstallBannerAfterLogin() {
+    const banner = document.getElementById('install-banner');
+    if (deferredPrompt && banner) {
+        setTimeout(() => {
+            banner.classList.remove('hidden');
+        }, 1500);
+    }
+}
+
+// ==============================
 // SERVICE WORKER
 // ==============================
 if("serviceWorker" in navigator){
@@ -1173,6 +1258,13 @@ function initAll() {
         console.log("Auth Listener OK");
     } catch(e) {
         console.error("Auth Listener init error:", e);
+    }
+    
+    try {
+        initInstallPrompt();
+        console.log("Install Prompt OK");
+    } catch(e) {
+        console.error("Install Prompt init error:", e);
     }
     
     console.log("All initializations complete");
