@@ -770,10 +770,10 @@ button:hover {
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
     font-weight: 500;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 80, 80, 0.3); /* ROT zum Testen */
+    border: 2px solid rgba(255, 100, 100, 0.5);
     border-radius: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 200, 200, 1);
     cursor: pointer;
     transition: all 0.2s ease;
 }
