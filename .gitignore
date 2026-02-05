@@ -16,3 +16,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Vite cache
+.vite/
