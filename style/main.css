@@ -1111,8 +1111,7 @@ button:hover {
     }
     
     #dashboard .logout-btn {
-        margin-bottom: 50px; /* Abstand zur iPhone Home-Bar */
-        margin-bottom: calc(env(safe-area-inset-bottom, 35px) + 20px);
+        margin-bottom: 0; /* Padding ist auf Dashboard */
     }
 
     /* Dashboard fixiert auf Mobile - kein Scrollen */
@@ -1120,7 +1119,8 @@ button:hover {
         height: calc(100vh - 50px);
         height: calc(100dvh - 50px);
         padding: 0.5rem;
-        padding-bottom: 0;
+        padding-bottom: 60px; /* Platz für iPhone Home-Bar */
+        padding-bottom: calc(env(safe-area-inset-bottom, 30px) + 35px);
         gap: 0.4rem;
         justify-content: space-between;
     }
@@ -2155,7 +2155,7 @@ button:hover {
 
 #dashboard .logout-btn {
     margin-top: auto;
-    margin-bottom: calc(env(safe-area-inset-bottom, 30px) + 25px);
+    margin-bottom: 0;
     flex-shrink: 0;
 }
 
