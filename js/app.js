@@ -100,67 +100,142 @@ function initNavigation() {
 
 
 // ==============================
-// LOCKSCREEN / LOGIN
+// FIREBASE AUTHENTICATION
 // ==============================
-let pinInput, overlay, pinError, correctPinHash;
+let loginOverlay, loginForm, loginError, loginLoading;
+let isAppInitialized = false;
 
-function updatePinDisplay() {
-    const dots = document.querySelectorAll("#pin-display span");
-    if (!pinInput) return;
-    const val = pinInput.value;
-    dots.forEach((dot, idx) => dot.classList.toggle("active", idx < val.length));
+function showLoginError(message) {
+    if (loginError) {
+        loginError.textContent = message;
+        loginError.classList.remove("hidden");
+    }
 }
 
-function checkPin() {
-    if (!pinInput || !overlay) return;
-    const enteredHash = CryptoJS.SHA256(pinInput.value).toString();
-    if (enteredHash === correctPinHash) {
-        overlay.style.display = "none";
-        initializeApp();
-    } else {
-        if (pinError) pinError.classList.remove("hidden");
-        pinInput.value = "";
-        updatePinDisplay();
-        setTimeout(() => { if (pinError) pinError.classList.add("hidden"); }, 1500);
+function hideLoginError() {
+    if (loginError) {
+        loginError.classList.add("hidden");
+    }
+}
+
+function setLoginLoading(isLoading) {
+    const submitBtn = loginForm?.querySelector('button[type="submit"]');
+    if (loginLoading) {
+        loginLoading.classList.toggle("hidden", !isLoading);
+    }
+    if (submitBtn) {
+        submitBtn.disabled = isLoading;
+        submitBtn.textContent = isLoading ? "Wird angemeldet..." : "Einloggen";
+    }
+}
+
+async function handleLogin(email, password) {
+    hideLoginError();
+    setLoginLoading(true);
+    
+    try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        // Auth state listener will handle the rest
+    } catch (error) {
+        console.error("Login error:", error);
+        let errorMessage = "Login fehlgeschlagen. Bitte prüfe deine Zugangsdaten.";
+        
+        switch (error.code) {
+            case 'auth/user-not-found':
+                errorMessage = "Kein Benutzer mit dieser E-Mail gefunden.";
+                break;
+            case 'auth/wrong-password':
+                errorMessage = "Falsches Passwort.";
+                break;
+            case 'auth/invalid-email':
+                errorMessage = "Ungültige E-Mail-Adresse.";
+                break;
+            case 'auth/too-many-requests':
+                errorMessage = "Zu viele Versuche. Bitte warte einen Moment.";
+                break;
+            case 'auth/network-request-failed':
+                errorMessage = "Netzwerkfehler. Bitte prüfe deine Verbindung.";
+                break;
+        }
+        
+        showLoginError(errorMessage);
+        setLoginLoading(false);
     }
 }
 
 function initLogin() {
-    pinInput = document.getElementById("pin-input");
-    overlay = document.getElementById("login-overlay");
-    pinError = document.getElementById("pin-error");
+    loginOverlay = document.getElementById("login-overlay");
+    loginForm = document.getElementById("login-form");
+    loginError = document.getElementById("login-error");
+    loginLoading = document.getElementById("login-loading");
     
-    // CryptoJS muss geladen sein
-    if (typeof CryptoJS !== 'undefined') {
-        correctPinHash = CryptoJS.SHA256("1939").toString();
-    } else {
-        console.error("CryptoJS nicht geladen!");
+    if (!loginForm) {
+        console.error("Login form not found!");
         return;
     }
     
-    const pinButtons = document.querySelectorAll(".pin-btn");
-    
-    pinButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (!pinInput) return;
-            if (btn.classList.contains("delete")) pinInput.value = pinInput.value.slice(0, -1);
-            else if (btn.classList.contains("ok")) checkPin();
-            else if (pinInput.value.length < 4) pinInput.value += btn.textContent.trim();
-            updatePinDisplay();
-        });
-    });
-
-    document.addEventListener("keydown", e => {
-        if (!overlay || overlay.style.display === "none") return;
-        if (!pinInput) return;
-        if (e.key >= "0" && e.key <= "9" && pinInput.value.length < 4) pinInput.value += e.key;
-        else if (e.key === "Backspace") pinInput.value = pinInput.value.slice(0, -1);
-        else if (e.key === "Enter") checkPin();
-        updatePinDisplay();
+    // Handle form submission
+    loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("login-email")?.value?.trim();
+        const password = document.getElementById("login-password")?.value;
+        
+        if (!email || !password) {
+            showLoginError("Bitte E-Mail und Passwort eingeben.");
+            return;
+        }
+        
+        handleLogin(email, password);
     });
     
-    updatePinDisplay();
     console.log("Login initialized");
+}
+
+function initAuthListener() {
+    // Initialize Firebase if not already done
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Listen for auth state changes
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            // User is signed in
+            document.body.classList.add("authenticated");
+            
+            if (loginOverlay) {
+                loginOverlay.style.display = "none";
+            }
+            
+            // Initialize app only once
+            if (!isAppInitialized) {
+                isAppInitialized = true;
+                initializeApp().catch((error) => {
+                    console.error("App initialization error:", error);
+                });
+            }
+        } else {
+            // User is signed out
+            document.body.classList.remove("authenticated");
+            
+            if (loginOverlay) {
+                loginOverlay.style.display = "flex";
+            }
+            
+            setLoginLoading(false);
+        }
+    });
+}
+
+function logout() {
+    firebase.auth().signOut().then(() => {
+        console.log("User logged out");
+        showToast("Erfolgreich abgemeldet");
+        isAppInitialized = false;
+    }).catch((error) => {
+        console.error("Logout error:", error);
+        showToast("Fehler beim Abmelden", "error");
+    });
 }
 
 // ==============================
@@ -803,6 +878,13 @@ function initAll() {
         console.log("Clock OK");
     } catch(e) {
         console.error("Clock init error:", e);
+    }
+    
+    try {
+        initAuthListener();
+        console.log("Auth Listener OK");
+    } catch(e) {
+        console.error("Auth Listener init error:", e);
     }
     
     console.log("All initializations complete");

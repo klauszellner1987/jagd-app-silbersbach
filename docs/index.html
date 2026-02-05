@@ -9,7 +9,7 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Styles (Vite) -->
+    <!-- Styles (Vite) -->
 
     <!-- Leaflet CSS (für Karte) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -29,53 +29,44 @@
     <!-- iOS Safari: App vollbild -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-D06h1m_6.js"></script>
-  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-h5WGnqZE.css">
+  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-CDx3AXvy.js"></script>
+  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-Dusb0mI0.css">
 </head>
 <div id="toast-container"></div>
 <div class="fab-add" id="fab-add-btn">+</div>
 
 <body>
-    <!-- LOGIN OVERLAY (iPhone Lockscreen) -->
+    <!-- LOGIN OVERLAY -->
     <div id="login-overlay">
         <div class="login-box">
+            <!-- Branding -->
+            <div class="login-branding">Jagdrevier Silbersbach</div>
+
             <!-- Uhrzeit & Datum -->
             <div id="clock">
                 <div id="time">--:--</div>
                 <div id="date">-- -- ----</div>
             </div>
 
-            <h2>Gib deinen PIN ein</h2>
+            <h2>Anmelden</h2>
 
-            <!-- Unsichtbares Input für Tastatur -->
-            <input type="password" id="pin-input" autocomplete="off"
-                style="opacity:0; position:absolute; pointer-events:none;">
+            <!-- Login Formular -->
+            <form id="login-form" class="login-form">
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="E-Mail" autocomplete="email" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Passwort" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="login-btn">Einloggen</button>
+            </form>
 
-            <!-- PIN Dots -->
-            <div id="pin-display">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+            <p id="login-error" class="hidden">Login fehlgeschlagen. Bitte prüfe deine Zugangsdaten.</p>
+            
+            <div class="login-loading hidden" id="login-loading">
+                <div class="spinner"></div>
+                <span>Anmelden...</span>
             </div>
-
-            <!-- PIN Buttons -->
-            <div class="pin-buttons">
-                <button class="pin-btn">1</button>
-                <button class="pin-btn">2</button>
-                <button class="pin-btn">3</button>
-                <button class="pin-btn">4</button>
-                <button class="pin-btn">5</button>
-                <button class="pin-btn">6</button>
-                <button class="pin-btn">7</button>
-                <button class="pin-btn">8</button>
-                <button class="pin-btn">9</button>
-                <button class="pin-btn delete">⌫</button>
-                <button class="pin-btn">0</button>
-                <button class="pin-btn ok">OK</button>
-            </div>
-
-            <p id="pin-error" class="hidden">Falsche PIN, versuche es erneut.</p>
         </div>
     </div>
 
@@ -153,6 +144,16 @@
                     <p class="nav-widget-subtitle">Erlegte Strecke</p>
                 </div>
             </div>
+
+            <!-- Logout Button -->
+            <button class="logout-btn" id="logout-btn" onclick="logout()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Abmelden
+            </button>
         </div>
 
         <!-- REVIER PAGE -->
@@ -245,16 +246,16 @@
     <!-- Reviere Daten -->
     <script src="assets/data/reviere.js"></script>
 
-    <!-- External Libraries (load FIRST) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- Firebase App (Core) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <!-- Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <!-- Storage -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <!-- App JS (load LAST after all dependencies) -->
-    <script src="js/app.js?v=20260204"></script>
+    <script src="js/app.js?v=20260205"></script>
 
     <!-- Hochsitz Listen Panel -->
     <div id="hochsitz-panel" class="hochsitz-panel hidden">
