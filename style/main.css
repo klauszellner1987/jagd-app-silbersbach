@@ -182,8 +182,8 @@ body:has(.fullscreen-map.active) .app-header {
     aspect-ratio: unset;
 }
 
-/* Floating Back Button on Map */
-.fullscreen-map .back-to-home.map-overlay {
+/* Floating Back Button - unified style for all pages */
+.back-to-home.map-overlay {
     position: fixed;
     bottom: 2rem;
     left: 50%;
@@ -204,12 +204,12 @@ body:has(.fullscreen-map.active) .app-header {
     cursor: pointer;
 }
 
-.fullscreen-map .back-to-home.map-overlay:hover {
+.back-to-home.map-overlay:hover {
     background: rgba(0, 0, 0, 0.8);
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
 }
 
-.fullscreen-map .back-to-home.map-overlay:active {
+.back-to-home.map-overlay:active {
     background: rgba(0, 0, 0, 0.9);
 }
 
@@ -1701,6 +1701,12 @@ button:hover {
 .widget-icon {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.widget-icon-svg {
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
