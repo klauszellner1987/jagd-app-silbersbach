@@ -1116,11 +1116,9 @@ button:hover {
 
     /* Dashboard fixiert auf Mobile - kein Scrollen */
     #dashboard {
-        height: calc(100vh - 50px);
-        height: calc(100dvh - 50px);
+        height: calc(100vh - 120px); /* 50px Header + 70px Home-Bar Abstand */
+        height: calc(100dvh - 120px);
         padding: 0.5rem;
-        padding-bottom: 60px; /* Platz für iPhone Home-Bar */
-        padding-bottom: calc(env(safe-area-inset-bottom, 30px) + 35px);
         gap: 0.4rem;
         justify-content: space-between;
     }
