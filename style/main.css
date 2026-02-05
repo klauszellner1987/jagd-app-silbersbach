@@ -45,6 +45,9 @@
 ============================================ */
 /* Scrollleisten verstecken, aber Scrollen erlauben */
 html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
 }
@@ -54,6 +57,9 @@ html::-webkit-scrollbar {
 }
 
 body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
 }
@@ -604,6 +610,28 @@ button:hover {
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.7);
     margin-bottom: 1.5rem;
+}
+
+/* Clock on Login Screen */
+#clock {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+#time {
+    font-size: 4rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    line-height: 1;
+}
+
+#date {
+    font-size: 1.2rem;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .login-box h2 {
