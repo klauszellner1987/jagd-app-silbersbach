@@ -766,14 +766,14 @@ button:hover {
     gap: 0.5rem;
     width: 100%;
     max-width: 200px;
-    margin: 2rem auto 0;
+    margin: 1rem auto 0;
     padding: 0.75rem 1.5rem;
     font-size: 0.9rem;
     font-weight: 500;
-    background: rgba(255, 80, 80, 0.3); /* ROT zum Testen */
-    border: 2px solid rgba(255, 100, 100, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 10px;
-    color: rgba(255, 200, 200, 1);
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -2128,11 +2128,12 @@ button:hover {
     -webkit-overflow-scrolling: auto;
 }
 
-/* Dashboard Mobile - mehr Platz für Home-Bar */
+/* Dashboard Mobile - Platz für Header */
 @media (max-width: 600px) {
     #dashboard {
-        height: calc(100vh - 130px) !important; /* Header + Home-Bar */
-        height: calc(100dvh - 130px) !important;
+        height: calc(100vh - 70px) !important; /* Header */
+        height: calc(100dvh - 70px) !important;
+        padding-bottom: 20px !important;
     }
 }
 
@@ -2491,11 +2492,12 @@ button:hover {
 
 /* Sehr kleine Bildschirme - etwas kompakter */
 @media (max-width: 480px) {
-    /* Dashboard - auch hier Platz für Home-Bar */
+    /* Dashboard */
     #dashboard {
-        height: calc(100vh - 130px) !important;
-        height: calc(100dvh - 130px) !important;
+        height: calc(100vh - 70px) !important;
+        height: calc(100dvh - 70px) !important;
         padding: 0.35rem;
+        padding-bottom: 20px !important;
         gap: 0.3rem;
     }
     
