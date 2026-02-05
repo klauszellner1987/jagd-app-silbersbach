@@ -557,8 +557,20 @@ function getSchonzeitDatum(wildart) {
 }
 
 function getWildartenMitSchonzeit() {
-    // Filtere Wildarten die aktuell Schonzeit haben (nicht ganzjährig bejagbar)
+    // Filtere Wildarten die aktuell Schonzeit haben
     return jagdzeitenBayern.filter(w => istSchonzeit(w));
+}
+
+function getWildartenMitJagdzeit() {
+    // Filtere Wildarten die aktuell Jagdzeit haben (nicht in Schonzeit)
+    return jagdzeitenBayern.filter(w => !istSchonzeit(w) && !w.keineJagdzeit);
+}
+
+function getJagdzeitDatum(wildart) {
+    if (wildart.keineJagdzeit) {
+        return "Keine Jagdzeit";
+    }
+    return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
 }
 
 function updateSchonzeitWidget() {
@@ -570,26 +582,26 @@ function updateSchonzeitWidget() {
     
     if (!iconContainer || !wildartEl || !datumEl) return;
     
-    const schonzeitWildarten = getWildartenMitSchonzeit();
+    const jagdzeitWildarten = getWildartenMitJagdzeit();
     
-    if (schonzeitWildarten.length === 0) {
-        // Keine Wildart hat aktuell Schonzeit
-        iconContainer.innerHTML = `<i class="ti ti-circle-check"></i>`;
-        wildartEl.textContent = "Keine aktiven Schonzeiten";
-        datumEl.textContent = "Alle Wildarten sind aktuell bejagbar";
-        indicatorEl.className = "schonzeit-indicator open";
-        statusTextEl.textContent = "Jagdzeit";
+    if (jagdzeitWildarten.length === 0) {
+        // Keine Wildart hat aktuell Jagdzeit
+        iconContainer.innerHTML = `<i class="ti ti-alert-circle"></i>`;
+        wildartEl.textContent = "Keine aktiven Jagdzeiten";
+        datumEl.textContent = "Alle Wildarten haben aktuell Schonzeit";
+        indicatorEl.className = "schonzeit-indicator closed";
+        statusTextEl.textContent = "Schonzeit";
         return;
     }
     
-    // Rotiere durch Wildarten mit Schonzeit
-    const wildart = schonzeitWildarten[schonzeitIndex % schonzeitWildarten.length];
+    // Rotiere durch Wildarten mit Jagdzeit
+    const wildart = jagdzeitWildarten[schonzeitIndex % jagdzeitWildarten.length];
     
     iconContainer.innerHTML = `<i class="${wildart.iconClass}"></i>`;
     wildartEl.textContent = wildart.name;
-    datumEl.textContent = getSchonzeitDatum(wildart);
-    indicatorEl.className = "schonzeit-indicator closed";
-    statusTextEl.textContent = "Schonzeit";
+    datumEl.textContent = getJagdzeitDatum(wildart);
+    indicatorEl.className = "schonzeit-indicator open";
+    statusTextEl.textContent = "Jagdzeit";
     
     schonzeitIndex++;
 }
