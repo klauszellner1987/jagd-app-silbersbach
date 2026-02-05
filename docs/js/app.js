@@ -1191,16 +1191,30 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
                             <line x1="14.5" y1="24" x2="17.5" y2="24" stroke="#2f6f4e" stroke-width="1" stroke-linecap="round"/>
                         </svg>`,
                         iconSize: [40, 40],
-                        iconAnchor: [20, 40]
+                        iconAnchor: [20, 40],
+                        popupAnchor: [0, -42]
                     })
                 }).addTo(map);
 
-                const popupContent = `<div style="text-align:center;">
-                    <strong>${data.name || ""}</strong><br>
-                    ${data.imageUrl ? `<img src="${data.imageUrl}" style="width:120px;border-radius:8px;margin-bottom:5px;">` : ""}
-                    <br>
-                    <button class="add-photo-btn" data-id="${id}">Bild hinzufügen</button>
-                    <button class="delete-marker-btn" data-id="${id}" style="margin-top:5px;background:#e74c3c;color:white;padding:4px 8px;border:none;border-radius:6px;cursor:pointer;">Löschen</button>
+                const popupContent = `<div class="hochsitz-popup">
+                    <div class="hochsitz-popup-title">${data.name || "Hochsitz"}</div>
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" class="hochsitz-popup-img">` : ""}
+                    <div class="hochsitz-popup-buttons">
+                        <button class="hochsitz-popup-btn add-photo-btn" data-id="${id}">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            Bild
+                        </button>
+                        <button class="hochsitz-popup-btn delete-btn delete-marker-btn" data-id="${id}">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/>
+                            </svg>
+                            Löschen
+                        </button>
+                    </div>
                 </div>`;
                 marker.bindPopup(popupContent);
                 window.hochsitzeMarkers[id] = marker;

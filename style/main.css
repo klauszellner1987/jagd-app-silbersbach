@@ -1502,6 +1502,115 @@ button:hover {
 }
 
 /* ==========================
+   Leaflet Popup Styling
+========================== */
+.leaflet-popup-content-wrapper {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(180deg, 
+        rgba(45, 90, 65, 0.98) 0%,
+        rgba(40, 80, 60, 0.96) 50%,
+        rgba(35, 70, 55, 0.94) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    color: white;
+}
+
+.leaflet-popup-tip {
+    background: rgba(35, 70, 55, 0.95) !important;
+    box-shadow: none !important;
+}
+
+.leaflet-popup-close-button {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 18px !important;
+    font-weight: normal !important;
+    padding: 0 !important;
+    width: 22px !important;
+    height: 22px !important;
+    line-height: 20px !important;
+    top: 6px !important;
+    right: 6px !important;
+    z-index: 10 !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+}
+
+.leaflet-popup-close-button:hover {
+    color: white !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.hochsitz-popup {
+    padding: 10px 12px;
+    padding-right: 32px;
+    text-align: center;
+    min-width: 120px;
+}
+
+.hochsitz-popup-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.hochsitz-popup-img {
+    width: 100%;
+    max-width: 100px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hochsitz-popup-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.hochsitz-popup-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 500;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+.hochsitz-popup-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.hochsitz-popup-btn.delete-btn {
+    background: rgba(231, 76, 60, 0.7);
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
+.hochsitz-popup-btn.delete-btn:hover {
+    background: rgba(231, 76, 60, 0.9);
+}
+
+.hochsitz-popup-btn svg {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================
    Hochsitz Slide Panel
 ========================== */
 .hochsitz-panel {
