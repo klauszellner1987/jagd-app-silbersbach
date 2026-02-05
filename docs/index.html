@@ -9,6 +9,9 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+
     <!-- Styles (Vite) -->
 
     <!-- Leaflet CSS (für Karte) -->
@@ -29,8 +32,8 @@
     <!-- iOS Safari: App vollbild -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-CjnkD6yO.js"></script>
-  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-TXuweJ2a.css">
+  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-Ddn1oCrr.js"></script>
+  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-C8dPO66M.css">
 </head>
 <div id="toast-container"></div>
 <div class="fab-add" id="fab-add-btn">+</div>
@@ -87,10 +90,20 @@
     <main class="pt-2 pb-2 px-3 sm:px-4">
         <!-- DASHBOARD (Home) - Standard nach Login -->
         <div id="dashboard" class="page active">
-            <!-- Uhr Widget -->
-            <div class="widget clock-widget" id="dashboard-clock">
-                <div class="clock-time" id="dashboard-time">--:--</div>
-                <div class="clock-date" id="dashboard-date">-- -- ----</div>
+            <!-- Schonzeit Widget -->
+            <div class="widget schonzeit-widget" id="schonzeit-widget">
+                <div class="schonzeit-icon-container" id="schonzeit-icon">
+                    <!-- Icon wird per JS gesetzt -->
+                </div>
+                <div class="schonzeit-content">
+                    <p class="schonzeit-wildart" id="schonzeit-wildart">--</p>
+                    <p class="schonzeit-datum" id="schonzeit-datum">Lade...</p>
+                </div>
+                <div class="schonzeit-status">
+                    <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
+                    <span class="schonzeit-status-text" id="schonzeit-status-text">--</span>
+                </div>
+                <button class="schonzeit-details-btn" id="schonzeit-details-btn">Details</button>
             </div>
 
             <!-- Wetter Widgets (3er Grid) -->
@@ -176,13 +189,6 @@
 
         <!-- REVIER PAGE -->
         <div id="revier" class="page fullscreen-map">
-            <button class="back-to-home map-overlay">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                </svg>
-                Zurück
-            </button>
             <div id="map-container">
                 <div id="map"></div>
             </div>
@@ -190,13 +196,6 @@
 
         <!-- STRECKENLISTE PAGE -->
         <div id="streckenliste" class="page">
-            <button class="back-to-home map-overlay">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                </svg>
-                Zurück
-            </button>
             <button id="add-entry-btn">+</button>
             <div class="widget streckenliste-container">
                 <h2 class="streckenliste-title">
@@ -206,6 +205,35 @@
                 <ul id="entry-list" class="entry-list"></ul>
             </div>
         </div>
+
+        <!-- SCHONZEIT DETAIL PAGE -->
+        <div id="schonzeit-page" class="page">
+            <div class="schonzeit-page-container">
+                <h2 class="schonzeit-page-title">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>Jagd- und Schonzeiten Bayern</span>
+                </h2>
+                <div class="schonzeit-filter-tabs">
+                    <button class="schonzeit-filter-btn active" data-filter="alle" onclick="filterSchonzeitListe('alle')">Alle</button>
+                    <button class="schonzeit-filter-btn" data-filter="schonzeit" onclick="filterSchonzeitListe('schonzeit')">Schonzeit</button>
+                    <button class="schonzeit-filter-btn" data-filter="jagdzeit" onclick="filterSchonzeitListe('jagdzeit')">Jagdzeit</button>
+                </div>
+                <div id="schonzeit-liste" class="schonzeit-liste">
+                    <!-- Wildarten werden per JS eingefügt -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav id="bottom-nav" class="bottom-nav hidden">
+            <button class="bottom-nav-btn" onclick="navigateToDashboard()">
+                <i class="ti ti-home"></i>
+                <span>Home</span>
+            </button>
+        </nav>
     </main>
 
 

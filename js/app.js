@@ -11,6 +11,91 @@ const firebaseConfig = {
     measurementId: "G-ETVC5YJFT9"
 };
 
+// ==============================
+// JAGDZEITEN BAYERN - Daten
+// ==============================
+const jagdzeitenBayern = [
+    {
+        id: "rotwild",
+        name: "Rotwild",
+        jagdzeitStart: "01.08",
+        jagdzeitEnde: "31.01",
+        iconClass: "ti ti-deer"
+    },
+    {
+        id: "rehbock",
+        name: "Rehwild Böcke",
+        jagdzeitStart: "01.05",
+        jagdzeitEnde: "15.10",
+        iconClass: "ti ti-deer"
+    },
+    {
+        id: "rehwild-schmalreh",
+        name: "Rehwild Schmalrehe",
+        jagdzeitStart: "01.05",
+        jagdzeitEnde: "15.01",
+        iconClass: "ti ti-deer"
+    },
+    {
+        id: "rehwild-geiss-kitz",
+        name: "Rehwild Geißen/Kitze",
+        jagdzeitStart: "01.09",
+        jagdzeitEnde: "15.01",
+        iconClass: "ti ti-deer"
+    },
+    {
+        id: "schwarzwild",
+        name: "Schwarzwild",
+        jagdzeitStart: "01.01",
+        jagdzeitEnde: "31.12",
+        ganzjaehrig: true,
+        iconClass: "ti ti-pig"
+    },
+    {
+        id: "feldhase",
+        name: "Feldhase",
+        jagdzeitStart: "01.10",
+        jagdzeitEnde: "31.12",
+        iconClass: "ti ti-paw"
+    },
+    {
+        id: "rotfuchs",
+        name: "Rotfuchs",
+        jagdzeitStart: "01.01",
+        jagdzeitEnde: "31.12",
+        ganzjaehrig: true,
+        iconClass: "ti ti-paw"
+    },
+    {
+        id: "dachs",
+        name: "Dachs",
+        jagdzeitStart: "01.08",
+        jagdzeitEnde: "31.10",
+        iconClass: "ti ti-paw"
+    },
+    {
+        id: "wildente",
+        name: "Wildenten",
+        jagdzeitStart: "01.09",
+        jagdzeitEnde: "15.01",
+        iconClass: "ti ti-feather"
+    },
+    {
+        id: "wildgans",
+        name: "Wildgänse",
+        jagdzeitStart: "01.08",
+        jagdzeitEnde: "15.01",
+        iconClass: "ti ti-feather"
+    },
+    {
+        id: "fasan",
+        name: "Fasane (Hähne)",
+        jagdzeitStart: "01.10",
+        jagdzeitEnde: "15.01",
+        iconClass: "ti ti-feather"
+    }
+];
+
 function showToast(message, type = "info") {
     const container = document.getElementById("toast-container");
     if (!container) return;
@@ -29,6 +114,7 @@ function showToast(message, type = "info") {
 function navigateToPage(targetId) {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const bottomNav = document.getElementById("bottom-nav");
     
     allPages.forEach(p => p.classList.remove("active"));
     const targetPage = document.getElementById(targetId);
@@ -48,6 +134,11 @@ function navigateToPage(targetId) {
                 fabBtn.classList.remove("visible");
             }
         }
+        
+        // Bottom Navigation einblenden (außer auf Dashboard)
+        if (bottomNav && targetId !== "dashboard") {
+            bottomNav.classList.remove("hidden");
+        }
     }
 }
 
@@ -55,6 +146,7 @@ function navigateToPage(targetId) {
 function navigateToDashboard() {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const bottomNav = document.getElementById("bottom-nav");
     
     allPages.forEach(p => p.classList.remove("active"));
     const dashboard = document.getElementById("dashboard");
@@ -62,6 +154,9 @@ function navigateToDashboard() {
     
     // Hide FAB
     if (fabBtn) fabBtn.classList.remove("visible");
+    
+    // Bottom Navigation ausblenden
+    if (bottomNav) bottomNav.classList.add("hidden");
 }
 
 // Initialize Navigation when DOM is ready
@@ -239,35 +334,208 @@ function logout() {
 }
 
 // ==============================
-// CLOCK
+// CLOCK (nur für Login Screen)
 // ==============================
 function updateClock() {
     const now = new Date();
     const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
     const dateStr = now.getDate().toString().padStart(2,'0') + "." + (now.getMonth()+1).toString().padStart(2,'0') + "." + now.getFullYear();
     
-    // Wochentag für Dashboard
-    const weekdays = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-    const dashboardDateStr = `${weekdays[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
-    
     // Login Screen Clock
     const loginTime = document.getElementById('time');
     const loginDate = document.getElementById('date');
     if (loginTime) loginTime.textContent = timeStr;
     if (loginDate) loginDate.textContent = dateStr;
-    
-    // Dashboard Clock
-    const dashboardTime = document.getElementById('dashboard-time');
-    const dashboardDate = document.getElementById('dashboard-date');
-    if (dashboardTime) dashboardTime.textContent = timeStr;
-    if (dashboardDate) dashboardDate.textContent = dashboardDateStr;
 }
 
 function initClock() {
     updateClock();
     setInterval(updateClock, 1000);
     console.log("Clock initialized");
+}
+
+// ==============================
+// SCHONZEIT WIDGET
+// ==============================
+let schonzeitIndex = 0;
+let schonzeitInterval = null;
+
+function parseJagdzeit(dateStr) {
+    // Parst "DD.MM" zu einem Date-Objekt im aktuellen Jahr
+    const [day, month] = dateStr.split('.').map(Number);
+    const year = new Date().getFullYear();
+    return new Date(year, month - 1, day);
+}
+
+function istSchonzeit(wildart) {
+    // Ganzjährig bejagbar = nie Schonzeit
+    if (wildart.ganzjaehrig) {
+        return false;
+    }
+    
+    const heute = new Date();
+    const start = parseJagdzeit(wildart.jagdzeitStart);
+    const ende = parseJagdzeit(wildart.jagdzeitEnde);
+    
+    // Falls die Jagdzeit über den Jahreswechsel geht (z.B. 01.08 - 31.01)
+    if (start > ende) {
+        // Jagdzeit: start bis 31.12 ODER 01.01 bis ende
+        // Schonzeit: ende+1 bis start-1
+        return heute > ende && heute < start;
+    } else {
+        // Normale Jagdzeit innerhalb eines Jahres
+        // Schonzeit: vor start ODER nach ende
+        return heute < start || heute > ende;
+    }
+}
+
+function getSchonzeitDatum(wildart) {
+    if (wildart.ganzjaehrig) {
+        return "Ganzjährig bejagbar";
+    }
+    
+    const istAktuelleSchonzeit = istSchonzeit(wildart);
+    
+    if (istAktuelleSchonzeit) {
+        // Schonzeit - zeige wann Jagdzeit beginnt
+        return `Schonzeit bis ${wildart.jagdzeitStart}`;
+    } else {
+        // Jagdzeit - zeige Jagdzeitraum
+        return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
+    }
+}
+
+function getWildartenMitSchonzeit() {
+    // Filtere Wildarten die aktuell Schonzeit haben (nicht ganzjährig bejagbar)
+    return jagdzeitenBayern.filter(w => istSchonzeit(w));
+}
+
+function updateSchonzeitWidget() {
+    const iconContainer = document.getElementById('schonzeit-icon');
+    const wildartEl = document.getElementById('schonzeit-wildart');
+    const datumEl = document.getElementById('schonzeit-datum');
+    const indicatorEl = document.getElementById('schonzeit-indicator');
+    const statusTextEl = document.getElementById('schonzeit-status-text');
+    
+    if (!iconContainer || !wildartEl || !datumEl) return;
+    
+    const schonzeitWildarten = getWildartenMitSchonzeit();
+    
+    if (schonzeitWildarten.length === 0) {
+        // Keine Wildart hat aktuell Schonzeit
+        iconContainer.innerHTML = `<i class="ti ti-circle-check"></i>`;
+        wildartEl.textContent = "Keine aktiven Schonzeiten";
+        datumEl.textContent = "Alle Wildarten sind aktuell bejagbar";
+        indicatorEl.className = "schonzeit-indicator open";
+        statusTextEl.textContent = "Jagdzeit";
+        return;
+    }
+    
+    // Rotiere durch Wildarten mit Schonzeit
+    const wildart = schonzeitWildarten[schonzeitIndex % schonzeitWildarten.length];
+    
+    iconContainer.innerHTML = `<i class="${wildart.iconClass}"></i>`;
+    wildartEl.textContent = wildart.name;
+    datumEl.textContent = getSchonzeitDatum(wildart);
+    indicatorEl.className = "schonzeit-indicator closed";
+    statusTextEl.textContent = "Schonzeit";
+    
+    schonzeitIndex++;
+}
+
+function initSchonzeitWidget() {
+    // Initial update
+    updateSchonzeitWidget();
+    
+    // Rotation alle 5 Sekunden
+    schonzeitInterval = setInterval(updateSchonzeitWidget, 5000);
+    
+    // Details-Button Event Listener
+    const detailsBtn = document.getElementById('schonzeit-details-btn');
+    if (detailsBtn) {
+        detailsBtn.addEventListener('click', () => {
+            showSchonzeitDetails();
+        });
+    }
+    
+    console.log("Schonzeit Widget initialized");
+}
+
+function showSchonzeitDetails() {
+    // Navigiere zur Detail-Seite mit dem bestehenden Navigationssystem
+    navigateToPage('schonzeit-page');
+    renderSchonzeitListe();
+}
+
+let aktuellerFilter = 'alle';
+
+function filterSchonzeitListe(filter) {
+    aktuellerFilter = filter;
+    
+    // Update active tab
+    document.querySelectorAll('.schonzeit-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
+    
+    renderSchonzeitListe();
+}
+
+function renderSchonzeitListe() {
+    const container = document.getElementById('schonzeit-liste');
+    if (!container) return;
+    
+    let wildarten = [...jagdzeitenBayern];
+    
+    // Filter anwenden
+    if (aktuellerFilter === 'schonzeit') {
+        wildarten = wildarten.filter(w => istSchonzeit(w));
+    } else if (aktuellerFilter === 'jagdzeit') {
+        wildarten = wildarten.filter(w => !istSchonzeit(w));
+    }
+    
+    if (wildarten.length === 0) {
+        container.innerHTML = `
+            <div class="schonzeit-empty">
+                <p>Keine Wildarten für diesen Filter gefunden.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = wildarten.map(wildart => {
+        const hatSchonzeit = istSchonzeit(wildart);
+        const statusClass = hatSchonzeit ? 'closed' : 'open';
+        const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
+        
+        let zeitInfo;
+        if (wildart.ganzjaehrig) {
+            zeitInfo = 'Ganzjährig bejagbar';
+        } else {
+            zeitInfo = `${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
+        }
+        
+        return `
+            <div class="wildart-card">
+                <div class="wildart-icon">
+                    <i class="${wildart.iconClass}"></i>
+                </div>
+                <div class="wildart-info">
+                    <h3 class="wildart-name">${wildart.name}</h3>
+                    <p class="wildart-zeit">${zeitInfo}</p>
+                </div>
+                <div class="wildart-status ${statusClass}">
+                    <div class="wildart-indicator"></div>
+                    <span>${statusText}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function closeSchonzeitPage() {
+    // Navigiere zurück zum Dashboard mit dem bestehenden Navigationssystem
+    navigateToDashboard();
 }
 
 // ==============================
@@ -891,6 +1159,13 @@ function initAll() {
         console.log("Clock OK");
     } catch(e) {
         console.error("Clock init error:", e);
+    }
+    
+    try {
+        initSchonzeitWidget();
+        console.log("Schonzeit Widget OK");
+    } catch(e) {
+        console.error("Schonzeit Widget init error:", e);
     }
     
     try {
