@@ -154,6 +154,14 @@ main {
     max-width: 100%;
 }
 
+/* Wenn Dashboard aktiv ist - kein Scrollen auf main */
+main:has(#dashboard.active) {
+    overflow: hidden;
+    height: calc(100vh - 60px);
+    height: calc(100dvh - 60px);
+    margin-bottom: 0;
+}
+
 .container {
     max-width: 1100px;
     margin: 0 auto;
@@ -2113,6 +2121,8 @@ button:hover {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
+    touch-action: none; /* Verhindert Touch-Scroll auf Dashboard */
+    -webkit-overflow-scrolling: auto;
 }
 
 #dashboard::before {
