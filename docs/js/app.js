@@ -157,6 +157,13 @@ function navigateToDashboard() {
     
     // Bottom Navigation ausblenden
     if (bottomNav) bottomNav.classList.add("hidden");
+    
+    // Hochsitz-Sidebar schliessen
+    const hochsitzPanel = document.getElementById("hochsitz-panel");
+    if (hochsitzPanel) {
+        hochsitzPanel.classList.remove("open");
+        setTimeout(() => hochsitzPanel.classList.add("hidden"), 300);
+    }
 }
 
 // Initialize Navigation when DOM is ready
@@ -614,21 +621,43 @@ async function initializeApp() {
         entryList.innerHTML = "";
         entries.forEach((entry, idx) => {
             const li = document.createElement("li");
-            li.className = "flex items-center justify-between rounded-xl backdrop-blur-sm bg-white/10 border border-white/10 px-4 py-3 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:bg-white/15 hover:border-white/20 hover:shadow-glass-lg animate-slide-in";
-            li.style.animationDelay = `${idx * 0.05}s`;
+            li.className = "entry-item";
 
-            const text = document.createElement("span");
-            text.className = "flex items-center gap-3 text-[var(--text)] font-medium";
-            text.innerHTML = `<span class="text-2xl">🦌</span>
-                <span>${entry.erleger} - ${entry.wildart} ${entry.unterart || ""} (${entry.datum || ""}) ${entry.bemerkung ? `- ${entry.bemerkung}` : ""}</span>`;
-
+            // Header: Name + Date + Delete Button
+            const header = document.createElement("div");
+            header.className = "entry-header";
+            header.innerHTML = `
+                <div class="entry-header-left">
+                    <span class="entry-name">${entry.erleger}</span>
+                </div>
+                <span class="entry-date">${entry.datum || ""}</span>
+            `;
+            
             const btn = document.createElement("button");
-            btn.className = "rounded-lg backdrop-blur-sm bg-red-500/80 border border-red-400/30 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-600 hover:scale-105 hover:shadow-lg active:scale-95";
+            btn.className = "entry-delete-btn";
             btn.dataset.idx = idx;
             btn.textContent = "Löschen";
+            header.appendChild(btn);
 
-            li.appendChild(text);
-            li.appendChild(btn);
+            // Wildart Row
+            const wildart = document.createElement("div");
+            wildart.className = "entry-wildart";
+            wildart.innerHTML = `
+                <span class="entry-wildart-icon">🦌</span>
+                <span>${entry.wildart} ${entry.unterart || ""}</span>
+            `;
+
+            li.appendChild(header);
+            li.appendChild(wildart);
+
+            // Notes (optional)
+            if (entry.bemerkung) {
+                const notes = document.createElement("div");
+                notes.className = "entry-notes";
+                notes.textContent = entry.bemerkung;
+                li.appendChild(notes);
+            }
+
             entryList.appendChild(li);
         });
         attachDeleteEvents();
