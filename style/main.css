@@ -1102,6 +1102,23 @@ button:hover {
         max-width: 140px;
     }
 
+    /* Dashboard fixiert auf Mobile - kein Scrollen */
+    #dashboard {
+        height: calc(100vh - 50px);
+        height: calc(100dvh - 50px);
+        padding: 0.5rem;
+        gap: 0.4rem;
+        justify-content: space-between;
+    }
+    
+    #dashboard .widget-grid-3 {
+        gap: 0.4rem;
+    }
+    
+    #dashboard .widget-grid-2 {
+        gap: 0.4rem;
+    }
+
     /* Fullscreen map overrides for mobile */
     .fullscreen-map #map-container {
         height: 100%;
@@ -2085,9 +2102,17 @@ button:hover {
     z-index: 1500; /* Above header (1000) */
 }
 
-/* Dashboard dark overlay for better contrast */
+/* Dashboard - Vollbild ohne Scrollen */
 #dashboard {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px); /* Viewport minus Header */
+    height: calc(100dvh - 60px); /* Dynamic viewport für Mobile */
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
 }
 
 #dashboard::before {
@@ -2100,6 +2125,21 @@ button:hover {
         rgba(0, 0, 0, 0.3) 100%);
     pointer-events: none;
     z-index: -1;
+}
+
+/* Dashboard Widgets flexibel verteilen */
+#dashboard .schonzeit-widget {
+    flex-shrink: 0;
+}
+
+#dashboard .widget-grid-3,
+#dashboard .widget-grid-2 {
+    flex-shrink: 0;
+}
+
+#dashboard .logout-btn {
+    margin-top: auto;
+    flex-shrink: 0;
 }
 
 /* ============================================
@@ -2429,21 +2469,30 @@ button:hover {
 
 /* Sehr kleine Bildschirme - etwas kompakter */
 @media (max-width: 480px) {
+    /* Dashboard noch kompakter auf kleinen Bildschirmen */
+    #dashboard {
+        height: calc(100vh - 45px);
+        height: calc(100dvh - 45px);
+        padding: 0.35rem;
+        gap: 0.3rem;
+    }
+    
     /* Grids bleiben gleich wie bei 600px */
     .widget-grid-3 {
         grid-template-columns: 1fr;
-        gap: 0.4rem;
+        gap: 0.3rem;
     }
     
     .widget-grid-2 {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.4rem;
+        gap: 0.3rem;
     }
     
     /* Schonzeit Widget */
     .schonzeit-widget {
-        padding: 0.6rem 0.75rem;
-        gap: 0.5rem;
+        padding: 0.5rem 0.6rem;
+        gap: 0.4rem;
+        min-height: 65px;
         min-height: 75px;
     }
     
