@@ -835,13 +835,43 @@ async function initializeApp() {
                 li.appendChild(notes);
             }
 
+            // Foto-Bereich
+            const fotoSection = document.createElement("div");
+            fotoSection.className = "entry-foto-section";
+            
+            // Bild anzeigen wenn vorhanden
+            if (entry.imageUrl) {
+                fotoSection.innerHTML = `
+                    <div class="entry-foto-container">
+                        <img src="${entry.imageUrl}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
+                    </div>
+                `;
+            }
+            
+            // Foto-Button (hinzufügen oder ändern)
+            const fotoBtn = document.createElement("button");
+            fotoBtn.className = "entry-foto-btn";
+            fotoBtn.dataset.id = entry.id;
+            fotoBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                ${entry.imageUrl ? "Foto ändern" : "Foto hinzufügen"}
+            `;
+            fotoSection.appendChild(fotoBtn);
+            
+            li.appendChild(fotoSection);
+
             entryList.appendChild(li);
         });
         attachDeleteEvents();
+        attachFotoEvents();
     }
 
     function attachDeleteEvents() {
-        document.querySelectorAll("#entry-list button").forEach(btn => {
+        document.querySelectorAll("#entry-list .entry-delete-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
                 const entry = entries[btn.dataset.idx];
                 if (!entry.id) return;
@@ -853,6 +883,81 @@ async function initializeApp() {
                     showToast("Fehler beim Löschen", "error");
                 }
             });
+        });
+    }
+
+    function attachFotoEvents() {
+        document.querySelectorAll(".entry-foto-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const entryId = btn.dataset.id;
+                if (!entryId) return;
+                
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*";
+                fileInput.click();
+                
+                fileInput.onchange = async () => {
+                    const file = fileInput.files[0];
+                    if (!file || !firebase.storage) {
+                        showToast("Fehler: Storage nicht verfügbar", "error");
+                        return;
+                    }
+                    
+                    try {
+                        // Loading-State anzeigen
+                        btn.disabled = true;
+                        btn.innerHTML = `
+                            <svg class="spin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" stroke-dasharray="30" stroke-dashoffset="10"/>
+                            </svg>
+                            Lädt...
+                        `;
+                        
+                        const storageRef = firebase.storage().ref();
+                        const fileRef = storageRef.child(`streckenliste/${entryId}_${file.name}`);
+                        await fileRef.put(file);
+                        const url = await fileRef.getDownloadURL();
+                        await entriesCollection.doc(entryId).update({ imageUrl: url });
+                        showToast("Foto hochgeladen", "success");
+                    } catch (err) {
+                        console.error("Foto-Upload Fehler:", err);
+                        showToast("Fehler beim Upload", "error");
+                        btn.disabled = false;
+                    }
+                };
+            });
+        });
+        
+        // Klick auf Bild öffnet Vollansicht
+        document.querySelectorAll(".entry-foto-img").forEach(img => {
+            img.addEventListener("click", () => {
+                openImageModal(img.src);
+            });
+        });
+    }
+    
+    // Bild-Vollansicht Modal
+    function openImageModal(src) {
+        const overlay = document.createElement("div");
+        overlay.className = "image-modal-overlay";
+        overlay.innerHTML = `
+            <div class="image-modal-content">
+                <img src="${src}" alt="Streckenfoto">
+                <button class="image-modal-close">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay || e.target.closest(".image-modal-close")) {
+                overlay.remove();
+            }
         });
     }
 
