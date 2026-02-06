@@ -367,6 +367,24 @@ body:has(.fullscreen-map.active) .app-header {
     }
 }
 
+/* GPS Button Lade-Animation */
+.gps-center-btn.gps-searching {
+    animation: gps-pulse-btn 1.2s ease-in-out infinite;
+    border-color: rgba(0, 123, 255, 0.6) !important;
+    box-shadow: 0 0 16px rgba(0, 123, 255, 0.4) !important;
+}
+
+@keyframes gps-pulse-btn {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+}
+
 /* ============================================
    STRECKENLISTE
 ============================================ */
