@@ -1231,29 +1231,71 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         if (el) el.classList.remove("offline");
     }
 
+    let gpsHighAccuracyFailed = false;
+
+    function stopGpsSearching() {
+        gpsSearching = false;
+        const gpsBtn = document.querySelector(".gps-center-btn");
+        if (gpsBtn) gpsBtn.classList.remove("gps-searching");
+    }
+
     function handleGpsError(err) {
         if (gpsMarker) {
             const el = gpsMarker.getElement();
             if (el) el.classList.add("offline");
         }
+        console.warn("GPS Fehler (code " + err.code + "):", err.message);
+
+        // Bei POSITION_UNAVAILABLE: Fallback ohne enableHighAccuracy versuchen
+        if (err.code === 2 && !gpsHighAccuracyFailed) {
+            gpsHighAccuracyFailed = true;
+            console.log("GPS: Fallback ohne enableHighAccuracy...");
+            showToast("GPS-Signal schwach, versuche alternative Ortung...", "info");
+
+            // Alten Watch stoppen falls aktiv
+            if (gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+            }
+
+            // Nochmal versuchen ohne High Accuracy (nutzt WiFi/Mobilfunk)
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    updateGpsMarker(latitude, longitude);
+                    map.flyTo([latitude, longitude], 17, { duration: 0.5 });
+                    showToast("Position gefunden (via Netzwerk)");
+                    stopGpsSearching();
+                    startGpsTracking();
+                },
+                err2 => {
+                    console.warn("GPS Fallback auch fehlgeschlagen:", err2);
+                    showGpsFinalError(err2);
+                    stopGpsSearching();
+                },
+                { enableHighAccuracy: false, maximumAge: 30000, timeout: 15000 }
+            );
+            return;
+        }
+
+        showGpsFinalError(err);
+        stopGpsSearching();
+    }
+
+    function showGpsFinalError(err) {
         switch (err.code) {
             case 1: // PERMISSION_DENIED
-                showToast("GPS-Berechtigung verweigert. Bitte in den Einstellungen aktivieren.", "error");
+                showToast("GPS-Berechtigung blockiert. Bitte in Browser-Einstellungen erlauben.", "error");
                 break;
             case 2: // POSITION_UNAVAILABLE
-                showToast("GPS-Position nicht verfügbar", "error");
+                showToast("Standort nicht verfügbar. Bitte GPS/Standort in den Handy-Einstellungen prüfen.", "error");
                 break;
             case 3: // TIMEOUT
-                showToast("GPS-Signal wird gesucht...", "info");
+                showToast("GPS-Zeitüberschreitung. Bitte erneut versuchen.", "error");
                 break;
             default:
                 showToast("GPS-Fehler aufgetreten", "error");
         }
-        console.warn("GPS Fehler:", err);
-        gpsSearching = false;
-        // Button-Animation stoppen
-        const gpsBtn = document.querySelector(".gps-center-btn");
-        if (gpsBtn) gpsBtn.classList.remove("gps-searching");
     }
 
     function startGpsTracking() {
@@ -1262,17 +1304,15 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
             showToast("GPS wird von diesem Gerät nicht unterstützt", "error");
             return;
         }
+        const useHighAccuracy = !gpsHighAccuracyFailed;
         gpsWatchId = navigator.geolocation.watchPosition(
             pos => {
                 const { latitude, longitude } = pos.coords;
                 updateGpsMarker(latitude, longitude);
-                gpsSearching = false;
-                // Button-Animation stoppen
-                const gpsBtn = document.querySelector(".gps-center-btn");
-                if (gpsBtn) gpsBtn.classList.remove("gps-searching");
+                stopGpsSearching();
             },
             err => handleGpsError(err),
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+            { enableHighAccuracy: useHighAccuracy, maximumAge: 10000, timeout: 15000 }
         );
     }
 
@@ -1458,28 +1498,42 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
                 return;
             }
 
-            // Erstmaliger Klick: Position holen + Tracking starten
+            // Erstmaliger Klick: Berechtigung pruefen, dann Position holen
             gpsSearching = true;
+            gpsHighAccuracyFailed = false;
             btn.classList.add("gps-searching");
-            showToast("GPS-Position wird gesucht...", "info");
 
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    const { latitude, longitude } = pos.coords;
-                    updateGpsMarker(latitude, longitude);
-                    map.flyTo([latitude, longitude], 17, { duration: 0.5 });
-                    showToast("GPS-Position gefunden");
-                    gpsSearching = false;
-                    btn.classList.remove("gps-searching");
-                    // Fortlaufendes Tracking starten
-                    startGpsTracking();
-                },
-                err => handleGpsError(err),
-                { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
-            );
+            // Permissions API nutzen um Status zu pruefen (falls verfuegbar)
+            const checkAndStart = () => {
+                showToast("GPS-Position wird gesucht...", "info");
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        const { latitude, longitude } = pos.coords;
+                        updateGpsMarker(latitude, longitude);
+                        map.flyTo([latitude, longitude], 17, { duration: 0.5 });
+                        showToast("GPS-Position gefunden");
+                        stopGpsSearching();
+                        startGpsTracking();
+                    },
+                    err => handleGpsError(err),
+                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+                );
+                startGpsTracking();
+            };
 
-            // Parallel watchPosition starten fuer fortlaufende Updates
-            startGpsTracking();
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: "geolocation" }).then(result => {
+                    console.log("GPS Berechtigung Status:", result.state);
+                    if (result.state === "denied") {
+                        showToast("GPS ist blockiert. Bitte in den Browser-Einstellungen unter 'Website-Berechtigungen' den Standort erlauben.", "error");
+                        stopGpsSearching();
+                    } else {
+                        checkAndStart();
+                    }
+                }).catch(() => checkAndStart());
+            } else {
+                checkAndStart();
+            }
         });
         return btn;
     };
