@@ -1513,10 +1513,77 @@ function showInstallBannerAfterLogin() {
 }
 
 // ==============================
-// SERVICE WORKER
+// SERVICE WORKER & AUTO-UPDATE
 // ==============================
-if("serviceWorker" in navigator){
-    window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").then(reg => {
+            console.log("Service Worker registriert");
+            
+            // Prüfe alle 60 Sekunden auf Updates
+            setInterval(() => {
+                reg.update();
+                console.log("Service Worker Update-Check...");
+            }, 60000);
+            
+            // Wenn neuer SW gefunden wird
+            reg.addEventListener("updatefound", () => {
+                const newWorker = reg.installing;
+                console.log("Neuer Service Worker gefunden...");
+                
+                newWorker.addEventListener("statechange", () => {
+                    if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                        // Neue Version verfügbar - User benachrichtigen
+                        console.log("Neue App-Version verfügbar!");
+                        showUpdateToast();
+                    }
+                });
+            });
+            
+            // Prüfe ob bereits ein wartender SW existiert
+            if (reg.waiting) {
+                showUpdateToast();
+            }
+        }).catch(err => {
+            console.error("Service Worker Registrierung fehlgeschlagen:", err);
+        });
+        
+        // Reload wenn neuer SW die Kontrolle übernimmt
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+            console.log("Service Worker hat gewechselt - Seite wird neu geladen");
+            window.location.reload();
+        });
+    });
+}
+
+// Update-Toast für neue App-Version
+function showUpdateToast() {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+    
+    // Verhindere doppelte Update-Toasts
+    if (document.querySelector(".toast.update")) return;
+    
+    const updateIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg>`;
+    
+    const toast = document.createElement("div");
+    toast.className = "toast update";
+    toast.innerHTML = `
+        <span class="toast-icon">${updateIcon}</span>
+        <span class="toast-message">Neue Version verfügbar</span>
+        <button class="update-btn">Aktualisieren</button>
+    `;
+    
+    toast.querySelector(".update-btn").addEventListener("click", () => {
+        navigator.serviceWorker.ready.then(reg => {
+            if (reg.waiting) {
+                reg.waiting.postMessage({ type: "SKIP_WAITING" });
+            }
+        });
+        toast.remove();
+    });
+    
+    container.appendChild(toast);
 }
 
 // ==============================

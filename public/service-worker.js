@@ -1,4 +1,4 @@
-const CACHE_NAME = "revier-app-v10";
+const CACHE_NAME = "revier-app-v11";
 
 const ASSETS = [
   "./",
@@ -8,9 +8,9 @@ const ASSETS = [
   "./manifest.json"
 ];
 
-// Install - cache new assets
+// Install - cache new assets (NICHT automatisch skipWaiting - warten auf User-Bestätigung)
 self.addEventListener("install", event => {
-  self.skipWaiting(); // Activate immediately
+  console.log("[SW] Neue Version wird installiert...");
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
@@ -18,6 +18,7 @@ self.addEventListener("install", event => {
 
 // Activate - delete old caches
 self.addEventListener("activate", event => {
+  console.log("[SW] Neue Version aktiviert!");
   event.waitUntil(
     caches.keys().then(keys => 
       Promise.all(
@@ -25,6 +26,14 @@ self.addEventListener("activate", event => {
       )
     ).then(() => self.clients.claim())
   );
+});
+
+// Message Handler - für Update-Trigger von der App
+self.addEventListener("message", event => {
+  if (event.data?.type === "SKIP_WAITING") {
+    console.log("[SW] SKIP_WAITING empfangen - aktiviere neue Version");
+    self.skipWaiting();
+  }
 });
 
 // Fetch - network first, fallback to cache (only for GET requests)
