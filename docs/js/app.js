@@ -1524,84 +1524,155 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
 // WEATHER
 // ==============================
 async function fetchLiveWeather() {
+    console.log("[Wetter] Starte Wetter-Abruf...");
     const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
     const LAT = 49.2, LON = 13.05;
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current`;
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current,days`;
 
     try {
         const response = await fetch(url);
+        console.log("[Wetter] Response Status:", response.status);
         if(!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
+        console.log("[Wetter] Daten erhalten:", data);
+        const current = data.currentConditions;
+        const today = data.days && data.days[0];
+        const tomorrow = data.days && data.days[1];
+        console.log("[Wetter] Current:", current, "Today:", today);
 
-        // SVG Icons
-        const thermometerSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>`;
-        const windSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>`;
-        const moonSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-
-        // Temperatur Widget
-        const tempWidget = document.getElementById("widget-weather");
-        if (tempWidget) {
-            tempWidget.innerHTML = `
-                <div class="widget-icon-container">${thermometerSvg}</div>
-                <div class="widget-content">
-                    <p class="widget-value">${data.currentConditions.temp.toFixed(0)}°C</p>
-                    <p class="widget-label">Temperatur</p>
-                </div>
-            `;
+        // Temperatur Karte
+        const tempCard = document.getElementById("wetter-temp");
+        if (tempCard) {
+            const conditionsText = current.conditions || "";
+            tempCard.querySelector(".wetter-card-value").textContent = `${current.temp.toFixed(0)}°C`;
+            tempCard.querySelector(".wetter-card-label").textContent = conditionsText.length > 12 
+                ? conditionsText.substring(0, 12) + "..." 
+                : conditionsText;
         }
         
-        // Wind Widget
-        const windDirText = getWindDirection(data.currentConditions.winddir);
-        const windWidget = document.getElementById("widget-wind");
-        if (windWidget) {
-            windWidget.innerHTML = `
-                <div class="widget-icon-container">${windSvg}</div>
-                <div class="widget-content">
-                    <p class="widget-value">${windDirText}</p>
-                    <p class="widget-label">${data.currentConditions.windspeed.toFixed(0)} km/h</p>
-                </div>
-            `;
+        // Wind Karte
+        const windCard = document.getElementById("wetter-wind");
+        if (windCard) {
+            const windDirText = getWindDirection(current.winddir);
+            windCard.querySelector(".wetter-card-value").textContent = windDirText;
+            windCard.querySelector(".wetter-card-label").textContent = `${current.windspeed.toFixed(0)} km/h`;
         }
         
-        // Mond Widget
-        const phaseNum = data.currentConditions.moonphase;
-        let moonPhaseName = "";
-        if (phaseNum === 0) { moonPhaseName = "Neumond"; }
-        else if (phaseNum < 0.25) { moonPhaseName = "Zunehmend"; }
-        else if (phaseNum === 0.25) { moonPhaseName = "Erstes Viertel"; }
-        else if (phaseNum < 0.5) { moonPhaseName = "Zunehmend"; }
-        else if (phaseNum === 0.5) { moonPhaseName = "Vollmond"; }
-        else if (phaseNum < 0.75) { moonPhaseName = "Abnehmend"; }
-        else if (phaseNum === 0.75) { moonPhaseName = "Letztes Viertel"; }
-        else { moonPhaseName = "Abnehmend"; }
-        
-        const moonWidget = document.getElementById("widget-moon");
-        if (moonWidget) {
-            moonWidget.innerHTML = `
-                <div class="widget-icon-container">${moonSvg}</div>
-                <div class="widget-content">
-                    <p class="widget-value">${moonPhaseName}</p>
-                    <p class="widget-label">Mondphase</p>
-                </div>
-            `;
+        // Mond Karte
+        const moonCard = document.getElementById("wetter-moon");
+        if (moonCard) {
+            const phaseNum = current.moonphase;
+            let moonPhaseName = "";
+            if (phaseNum === 0) { moonPhaseName = "Neumond"; }
+            else if (phaseNum < 0.25) { moonPhaseName = "Zunehmend"; }
+            else if (phaseNum === 0.25) { moonPhaseName = "1. Viertel"; }
+            else if (phaseNum < 0.5) { moonPhaseName = "Zunehmend"; }
+            else if (phaseNum === 0.5) { moonPhaseName = "Vollmond"; }
+            else if (phaseNum < 0.75) { moonPhaseName = "Abnehmend"; }
+            else if (phaseNum === 0.75) { moonPhaseName = "3. Viertel"; }
+            else { moonPhaseName = "Abnehmend"; }
+            
+            moonCard.querySelector(".wetter-card-value").textContent = moonPhaseName;
+            moonCard.querySelector(".wetter-card-label").textContent = "Mondphase";
         }
+        
+        // Sonnen-Leiste (Sunrise/Sunset)
+        updateSunBar(today, tomorrow);
+        
     } catch(err) {
         console.error("Wetter Fehler:", err);
-        const errorSvg = `<svg class="widget-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-        const errorHTML = `
-            <div class="widget-icon-container">${errorSvg}</div>
-            <div class="widget-content">
-                <p class="widget-value">--</p>
-                <p class="widget-label">Fehler</p>
-            </div>
-        `;
-        const weatherWidget = document.getElementById("widget-weather");
-        const windWidget = document.getElementById("widget-wind");
-        const moonWidget = document.getElementById("widget-moon");
-        if (weatherWidget) weatherWidget.innerHTML = errorHTML;
-        if (windWidget) windWidget.innerHTML = errorHTML;
-        if (moonWidget) moonWidget.innerHTML = errorHTML;
+        const sunText = document.getElementById("sun-text");
+        if (sunText) sunText.textContent = "Wetter nicht verfügbar";
     }
+}
+
+// Sonnen-Leiste aktualisieren
+function updateSunBar(today, tomorrow) {
+    const sunText = document.getElementById("sun-text");
+    const sunIcon = document.querySelector(".wetter-sun-icon");
+    if (!sunText || !today) return;
+    
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Sunrise und Sunset parsen (Format: "06:48:00")
+    const sunriseToday = today.sunrise ? parseTimeToMinutes(today.sunrise) : null;
+    const sunsetToday = today.sunset ? parseTimeToMinutes(today.sunset) : null;
+    const sunriseTomorrow = tomorrow && tomorrow.sunrise ? parseTimeToMinutes(tomorrow.sunrise) : null;
+    
+    // Sunrise Icon - Sonne geht auf (Pfeil nach oben)
+    const sunriseIconSvg = `<svg class="wetter-sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 18a5 5 0 0 0-10 0"/>
+        <line x1="12" y1="9" x2="12" y2="3"/>
+        <polyline points="9 6 12 3 15 6"/>
+        <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+        <line x1="1" y1="18" x2="3" y2="18"/>
+        <line x1="21" y1="18" x2="23" y2="18"/>
+        <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+        <line x1="23" y1="22" x2="1" y2="22"/>
+    </svg>`;
+    
+    // Sunset Icon - Sonne geht unter (Pfeil nach unten)
+    const sunsetIconSvg = `<svg class="wetter-sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 18a5 5 0 0 0-10 0"/>
+        <line x1="12" y1="3" x2="12" y2="9"/>
+        <polyline points="9 6 12 9 15 6"/>
+        <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+        <line x1="1" y1="18" x2="3" y2="18"/>
+        <line x1="21" y1="18" x2="23" y2="18"/>
+        <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+        <line x1="23" y1="22" x2="1" y2="22"/>
+    </svg>`;
+    
+    let text = "";
+    let icon = sunriseIconSvg;
+    
+    if (sunriseToday !== null && currentMinutes < sunriseToday) {
+        // Vor Sonnenaufgang heute
+        const diff = sunriseToday - currentMinutes;
+        text = `Sonnenaufgang in ${formatMinutes(diff)} (${formatTime(today.sunrise)})`;
+        icon = sunriseIconSvg;
+    } else if (sunsetToday !== null && currentMinutes < sunsetToday) {
+        // Nach Sonnenaufgang, vor Sonnenuntergang
+        const diff = sunsetToday - currentMinutes;
+        text = `Sonnenuntergang in ${formatMinutes(diff)} (${formatTime(today.sunset)})`;
+        icon = sunsetIconSvg;
+    } else if (sunriseTomorrow !== null) {
+        // Nach Sonnenuntergang - zeige morgen
+        text = `Sonnenaufgang morgen (${formatTime(tomorrow.sunrise)})`;
+        icon = sunriseIconSvg;
+    } else {
+        text = `Sonnenuntergang ${formatTime(today.sunset)}`;
+        icon = sunsetIconSvg;
+    }
+    
+    sunText.textContent = text;
+    if (sunIcon && sunIcon.parentNode) {
+        sunIcon.outerHTML = icon;
+    }
+}
+
+// Zeit-String "06:48:00" zu Minuten seit Mitternacht
+function parseTimeToMinutes(timeStr) {
+    if (!timeStr) return null;
+    const parts = timeStr.split(":");
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+// Minuten zu lesbarem Format
+function formatMinutes(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0) {
+        return `${h}h ${m}min`;
+    }
+    return `${m} min`;
+}
+
+// Zeit-String formatieren "06:48:00" -> "06:48"
+function formatTime(timeStr) {
+    if (!timeStr) return "--:--";
+    return timeStr.substring(0, 5);
 }
 
 function getWindDirection(deg) {

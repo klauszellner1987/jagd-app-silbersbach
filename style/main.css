@@ -2365,6 +2365,171 @@ button:hover {
 }
 
 /* ============================================
+   KOMBINIERTES WETTER WIDGET
+============================================ */
+.wetter-combined-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(180deg, 
+        rgba(45, 90, 65, 0.8) 0%,
+        rgba(40, 80, 60, 0.35) 40%,
+        rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.wetter-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.9;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.wetter-header-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.9;
+}
+
+.wetter-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.wetter-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.4rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.wetter-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.wetter-card-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+}
+
+.wetter-card-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.wetter-card-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+}
+
+.wetter-card-label {
+    font-size: 0.7rem;
+    opacity: 0.75;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.wetter-sun-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 160, 50, 0.35) 0%, 
+        rgba(255, 120, 30, 0.25) 50%,
+        rgba(255, 100, 20, 0.2) 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 160, 50, 0.4);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: inset 0 1px 0 rgba(255, 200, 100, 0.2);
+}
+
+.wetter-sun-icon {
+    width: 22px;
+    height: 22px;
+    color: #ffb347;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 3px rgba(255, 179, 71, 0.4));
+}
+
+#sun-text {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* Mobile Anpassungen für Wetter-Widget */
+@media (max-width: 480px) {
+    .wetter-combined-widget {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .wetter-header {
+        font-size: 0.8rem;
+        padding-bottom: 0.4rem;
+    }
+    
+    .wetter-cards {
+        gap: 0.4rem;
+    }
+    
+    .wetter-card {
+        padding: 0.5rem 0.3rem;
+    }
+    
+    .wetter-card-icon {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .wetter-card-value {
+        font-size: 0.85rem;
+    }
+    
+    .wetter-card-label {
+        font-size: 0.65rem;
+    }
+    
+    .wetter-sun-bar {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        gap: 0.4rem;
+    }
+    
+    .wetter-sun-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* ============================================
    SCHONZEIT DETAIL PAGE
 ============================================ */
 #schonzeit-page {
