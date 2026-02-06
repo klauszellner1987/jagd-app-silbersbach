@@ -788,6 +788,10 @@ button:hover {
     color: rgba(255, 255, 255, 0.8);
 }
 
+.login-loading.hidden {
+    display: none;
+}
+
 .login-loading .spinner {
     width: 20px;
     height: 20px;
