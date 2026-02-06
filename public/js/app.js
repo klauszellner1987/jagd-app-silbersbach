@@ -433,6 +433,24 @@ function initLogin() {
         handleLogin(email, password);
     });
     
+    // Password visibility toggle
+    const passwordToggle = document.getElementById("password-toggle");
+    const passwordInput = document.getElementById("login-password");
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener("click", () => {
+            const isPassword = passwordInput.type === "password";
+            passwordInput.type = isPassword ? "text" : "password";
+            
+            // Toggle icon visibility
+            const eyeOpen = passwordToggle.querySelector(".eye-open");
+            const eyeClosed = passwordToggle.querySelector(".eye-closed");
+            if (eyeOpen && eyeClosed) {
+                eyeOpen.classList.toggle("hidden");
+                eyeClosed.classList.toggle("hidden");
+            }
+        });
+    }
+    
     console.log("Login initialized");
 }
 
@@ -1523,6 +1541,8 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
 // ==============================
 // WEATHER
 // ==============================
+let cachedWeatherData = null;
+
 async function fetchLiveWeather() {
     console.log("[Wetter] Starte Wetter-Abruf...");
     const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
@@ -1535,6 +1555,10 @@ async function fetchLiveWeather() {
         if(!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
         console.log("[Wetter] Daten erhalten:", data);
+        
+        // Cache weather data for detail page
+        cachedWeatherData = data;
+        
         const current = data.currentConditions;
         const today = data.days && data.days[0];
         const tomorrow = data.days && data.days[1];
@@ -1678,6 +1702,237 @@ function formatTime(timeStr) {
 function getWindDirection(deg) {
     const dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
     return dirs[Math.floor((deg/22.5)+0.5)%16];
+}
+
+// Wetter-Widget Click Handler initialisieren
+function initWetterWidgetClick() {
+    const wetterWidget = document.getElementById('wetter-widget');
+    if (wetterWidget) {
+        wetterWidget.style.cursor = 'pointer';
+        wetterWidget.addEventListener('click', showWetterDetails);
+    }
+}
+
+// Wetter Detail-Seite anzeigen
+function showWetterDetails() {
+    navigateToPage('wetter-page');
+    renderWetterDetailPage();
+}
+
+// Wetter Detail-Seite rendern
+function renderWetterDetailPage() {
+    const container = document.getElementById('wetter-detail-grid');
+    if (!container) return;
+    
+    if (!cachedWeatherData) {
+        container.innerHTML = '<div class="wetter-detail-widget"><p>Wetterdaten werden geladen...</p></div>';
+        return;
+    }
+    
+    const current = cachedWeatherData.currentConditions;
+    const today = cachedWeatherData.days && cachedWeatherData.days[0];
+    
+    // Mondphase berechnen
+    const moonPhase = current.moonphase;
+    let moonPhaseName = "";
+    if (moonPhase === 0) { 
+        moonPhaseName = "Neumond"; 
+    } else if (moonPhase < 0.25) { 
+        moonPhaseName = "Zunehmende Sichel"; 
+    } else if (moonPhase === 0.25) { 
+        moonPhaseName = "Erstes Viertel"; 
+    } else if (moonPhase < 0.5) { 
+        moonPhaseName = "Zunehmender Mond"; 
+    } else if (moonPhase === 0.5) { 
+        moonPhaseName = "Vollmond"; 
+    } else if (moonPhase < 0.75) { 
+        moonPhaseName = "Abnehmender Mond"; 
+    } else if (moonPhase === 0.75) { 
+        moonPhaseName = "Letztes Viertel"; 
+    } else { 
+        moonPhaseName = "Abnehmende Sichel"; 
+    }
+    
+    // UV-Index Bewertung
+    const uvIndex = current.uvindex || 0;
+    let uvBewertung = "";
+    if (uvIndex <= 2) uvBewertung = "Niedrig";
+    else if (uvIndex <= 5) uvBewertung = "Moderat";
+    else if (uvIndex <= 7) uvBewertung = "Hoch";
+    else if (uvIndex <= 10) uvBewertung = "Sehr hoch";
+    else uvBewertung = "Extrem";
+    
+    // Niederschlagstyp formatieren
+    const precipType = current.preciptype ? current.preciptype.join(", ") : "Kein Niederschlag";
+    
+    // Windrichtung
+    const windDir = getWindDirection(current.winddir || 0);
+    
+    container.innerHTML = `
+        <!-- Temperatur Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                </svg>
+                <span>Temperatur</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${current.temp?.toFixed(1) || "--"}°C</div>
+                <div class="wetter-detail-row">
+                    <span>Gefühlt</span>
+                    <span>${current.feelslike?.toFixed(1) || "--"}°C</span>
+                </div>
+                <div class="wetter-detail-row">
+                    <span>Min / Max</span>
+                    <span>${today?.tempmin?.toFixed(0) || "--"}° / ${today?.tempmax?.toFixed(0) || "--"}°</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wind Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+                </svg>
+                <span>Wind</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${current.windspeed?.toFixed(0) || "--"} km/h</div>
+                <div class="wetter-detail-row">
+                    <span>Richtung</span>
+                    <span>${windDir} (${current.winddir?.toFixed(0) || "--"}°)</span>
+                </div>
+                <div class="wetter-detail-row">
+                    <span>Böen</span>
+                    <span>${current.windgust?.toFixed(0) || "--"} km/h</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Niederschlag Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                </svg>
+                <span>Niederschlag</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${current.precip?.toFixed(1) || "0"} mm</div>
+                <div class="wetter-detail-row">
+                    <span>Wahrscheinlichkeit</span>
+                    <span>${today?.precipprob?.toFixed(0) || "0"}%</span>
+                </div>
+                <div class="wetter-detail-row">
+                    <span>Typ</span>
+                    <span>${precipType}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Luftfeuchtigkeit Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                </svg>
+                <span>Luftfeuchtigkeit</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${current.humidity?.toFixed(0) || "--"}%</div>
+                <div class="wetter-detail-row">
+                    <span>Taupunkt</span>
+                    <span>${current.dew?.toFixed(1) || "--"}°C</span>
+                </div>
+                <div class="wetter-detail-row">
+                    <span>Luftdruck</span>
+                    <span>${current.pressure?.toFixed(0) || "--"} hPa</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sonne Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <span>Sonne</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-row highlight">
+                    <span>Sonnenaufgang</span>
+                    <span>${formatTime(today?.sunrise)}</span>
+                </div>
+                <div class="wetter-detail-row highlight">
+                    <span>Sonnenuntergang</span>
+                    <span>${formatTime(today?.sunset)}</span>
+                </div>
+                <div class="wetter-detail-row">
+                    <span>UV-Index</span>
+                    <span>${uvIndex} (${uvBewertung})</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mond Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <span>Mond</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${moonPhaseName}</div>
+                <div class="wetter-detail-row">
+                    <span>Beleuchtung</span>
+                    <span>${(moonPhase * 100).toFixed(0)}%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sichtweite Widget -->
+        <div class="wetter-detail-widget">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Sichtweite</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-main">${current.visibility?.toFixed(0) || "--"} km</div>
+                <div class="wetter-detail-row">
+                    <span>Bewölkung</span>
+                    <span>${current.cloudcover?.toFixed(0) || "--"}%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bedingungen Widget -->
+        <div class="wetter-detail-widget full-width">
+            <div class="wetter-detail-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                </svg>
+                <span>Aktuelle Bedingungen</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="wetter-detail-conditions">${current.conditions || "Keine Daten"}</div>
+            </div>
+        </div>
+    `;
 }
 
 // ==============================
@@ -1850,6 +2105,12 @@ async function checkForUpdates() {
         const data = await response.json();
         const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
         
+        // Update version display in login footer
+        const versionElement = document.getElementById("app-version");
+        if (versionElement) {
+            versionElement.textContent = `v${data.version}`;
+        }
+        
         console.log("[Version] Server:", data.version, "| Lokal:", localVersion);
         
         if (!localVersion) {
@@ -1972,6 +2233,13 @@ function initAll() {
         console.log("Schonzeit Widget OK");
     } catch(e) {
         console.error("Schonzeit Widget init error:", e);
+    }
+    
+    try {
+        initWetterWidgetClick();
+        console.log("Wetter Widget Click OK");
+    } catch(e) {
+        console.error("Wetter Widget Click init error:", e);
     }
     
     try {

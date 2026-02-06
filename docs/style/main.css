@@ -696,6 +696,49 @@ button:hover {
     box-shadow: 0 0 0 3px rgba(129, 199, 132, 0.2);
 }
 
+/* Password Toggle */
+.password-group {
+    position: relative;
+}
+
+.password-group input {
+    padding-right: 3rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    margin: 0;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    outline: none;
+}
+
+.password-toggle:hover,
+.password-toggle:focus {
+    color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-50%);
+}
+
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.password-toggle .hidden {
+    display: none;
+}
+
 .login-btn {
     width: 100%;
     padding: 1rem;
@@ -756,6 +799,23 @@ button:hover {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Login Footer (Version & Creator) */
+.login-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.login-footer-divider {
+    color: rgba(255, 255, 255, 0.2);
 }
 
 /* Logout Button */
@@ -1106,6 +1166,7 @@ button:hover {
     /* Detail-Seiten - oberer Abstand auf Mobile */
     #streckenliste.page,
     #schonzeit-page.page,
+    #wetter-page.page,
     #revier.page {
         padding-top: 1.5rem;
     }
@@ -2381,6 +2442,14 @@ button:hover {
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.wetter-combined-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .wetter-header {
@@ -3371,14 +3440,16 @@ button:hover {
 /* Padding für Detail-Seiten um Platz für Bottom Nav zu lassen */
 #revier.page,
 #streckenliste.page,
-#schonzeit-page.page {
+#schonzeit-page.page,
+#wetter-page.page {
     padding-bottom: 100px;
 }
 
 /* Solider Hintergrund für Detail-Seiten - komplett ohne Bild */
 #revier.page.active,
 #streckenliste.page.active,
-#schonzeit-page.page.active {
+#schonzeit-page.page.active,
+#wetter-page.page.active {
     position: fixed;
     inset: 0;
     background: linear-gradient(180deg, 
@@ -3507,4 +3578,162 @@ button:hover {
 
 .install-btn-accept:active {
     transform: scale(0.98);
+}
+
+/* ============================================
+   WETTER DETAIL PAGE
+============================================ */
+#wetter-page {
+    padding: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 6rem;
+}
+
+.wetter-page-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.wetter-page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: white;
+}
+
+.wetter-page-title svg {
+    opacity: 0.9;
+}
+
+.wetter-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+}
+
+.wetter-detail-widget {
+    background: linear-gradient(180deg, 
+        rgba(45, 90, 65, 0.8) 0%,
+        rgba(40, 80, 60, 0.35) 40%,
+        rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.wetter-detail-widget.full-width {
+    grid-column: span 2;
+}
+
+.wetter-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.wetter-detail-header svg {
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.wetter-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.wetter-detail-main {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.wetter-detail-main.moon-icon {
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+.wetter-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.wetter-detail-row span:last-child {
+    font-weight: 500;
+    color: white;
+}
+
+.wetter-detail-row.highlight {
+    padding: 0.35rem 0.5rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 160, 50, 0.25) 0%, 
+        rgba(255, 120, 30, 0.15) 100%);
+    border-radius: 6px;
+    margin: 0.1rem -0.5rem;
+}
+
+.wetter-detail-conditions {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: white;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 480px) {
+    #wetter-page {
+        padding: 0.75rem;
+        padding-top: 0.75rem;
+        padding-bottom: 5rem;
+    }
+    
+    .wetter-page-title {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .wetter-detail-grid {
+        gap: 0.5rem;
+    }
+    
+    .wetter-detail-widget {
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .wetter-detail-main {
+        font-size: 1.5rem;
+    }
+    
+    .wetter-detail-main.moon-icon {
+        font-size: 2rem;
+    }
+    
+    .wetter-detail-header {
+        font-size: 0.8rem;
+    }
+    
+    .wetter-detail-header svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .wetter-detail-row {
+        font-size: 0.75rem;
+    }
 }
