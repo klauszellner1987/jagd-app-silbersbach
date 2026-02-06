@@ -1103,6 +1103,13 @@ button:hover {
         font-size: 1.1rem;
     }
     
+    /* Detail-Seiten - oberer Abstand auf Mobile */
+    #streckenliste.page,
+    #schonzeit-page.page,
+    #revier.page {
+        padding-top: 1.5rem;
+    }
+    
     /* Logout Button kompakter und mit Abstand zur Home-Bar */
     .logout-btn {
         padding: 0.5rem 1rem;
