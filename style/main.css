@@ -1581,6 +1581,14 @@ button:hover {
     transform: translateY(-1px) scale(0.98);
 }
 
+/* Hochsitz Modal auf Mobile - höher positioniert */
+@media (max-width: 600px) {
+    #hochsitz-modal {
+        top: 25%;
+        transform: translate(-50%, 0);
+    }
+}
+
 /* =============================
    Confirm Modal
 ============================= */

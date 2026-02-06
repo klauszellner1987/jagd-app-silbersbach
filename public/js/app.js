@@ -942,7 +942,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
 
             modal.style.display = "block";
             input.value = "";
-            input.focus();
+            // Nur auf Desktop automatisch fokussieren (verhindert Tastatur-Problem auf Mobile)
+            if (window.innerWidth > 768) {
+                input.focus();
+            }
 
             const closeModal = () => { modal.style.display = "none"; };
 
