@@ -1582,13 +1582,14 @@ if ("serviceWorker" in navigator) {
 // ==============================
 // VERSION CHECK (Fallback für Mobile)
 // ==============================
-const APP_VERSION = "1.0.19";
+const LOCAL_VERSION_KEY = "app_version";
 
 async function checkForUpdates() {
     try {
         // Cache-Busting: Timestamp anhängen
         const response = await fetch(`./version.json?t=${Date.now()}`, {
-            cache: 'no-store'
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
         });
         
         if (!response.ok) {
@@ -1597,11 +1598,20 @@ async function checkForUpdates() {
         }
         
         const data = await response.json();
-        console.log("[Version] Server:", data.version, "| Lokal:", APP_VERSION);
+        const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
         
-        if (data.version !== APP_VERSION) {
+        console.log("[Version] Server:", data.version, "| Lokal:", localVersion);
+        
+        if (!localVersion) {
+            // Erste Installation - Version speichern
+            localStorage.setItem(LOCAL_VERSION_KEY, data.version);
+            console.log("[Version] Erste Installation, Version gespeichert:", data.version);
+            return;
+        }
+        
+        if (data.version !== localVersion) {
             console.log("[Version] Update verfügbar!");
-            showUpdateToast(true); // true = force reload statt SW message
+            showUpdateToast(true, data.version);
         }
     } catch (err) {
         console.log("[Version] Check fehlgeschlagen:", err);
@@ -1618,7 +1628,7 @@ window.addEventListener("load", () => {
 });
 
 // Update-Toast für neue App-Version
-function showUpdateToast(forceReload = false) {
+function showUpdateToast(forceReload = false, newVersion = null) {
     const container = document.getElementById("toast-container");
     if (!container) return;
     
@@ -1640,21 +1650,27 @@ function showUpdateToast(forceReload = false) {
         toast.querySelector(".update-btn").disabled = true;
         
         try {
-            // 1. Alle Caches löschen
+            // 1. Neue Version in localStorage speichern BEVOR wir neu laden
+            if (newVersion) {
+                localStorage.setItem(LOCAL_VERSION_KEY, newVersion);
+                console.log("[Update] Neue Version gespeichert:", newVersion);
+            }
+            
+            // 2. Alle Caches löschen
             if ('caches' in window) {
                 const cacheNames = await caches.keys();
                 await Promise.all(cacheNames.map(name => caches.delete(name)));
                 console.log("[Update] Caches gelöscht");
             }
             
-            // 2. Service Worker deregistrieren
+            // 3. Service Worker deregistrieren
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 await Promise.all(registrations.map(reg => reg.unregister()));
                 console.log("[Update] Service Worker deregistriert");
             }
             
-            // 3. Kurz warten dann hard reload
+            // 4. Kurz warten dann hard reload
             setTimeout(() => {
                 window.location.href = window.location.href.split('?')[0] + '?update=' + Date.now();
             }, 500);
