@@ -1582,7 +1582,7 @@ if ("serviceWorker" in navigator) {
 // ==============================
 // VERSION CHECK (Fallback für Mobile)
 // ==============================
-const APP_VERSION = "1.0.18";
+const APP_VERSION = "1.0.19";
 
 async function checkForUpdates() {
     try {
