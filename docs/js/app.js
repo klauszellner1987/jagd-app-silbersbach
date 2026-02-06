@@ -835,15 +835,16 @@ async function initializeApp() {
                 li.appendChild(notes);
             }
 
-            // Foto-Bereich
+            // Foto-Bereich (nur wenn Bild vorhanden oder Button gewünscht)
             const fotoSection = document.createElement("div");
             fotoSection.className = "entry-foto-section";
             
-            // Bild anzeigen wenn vorhanden
-            if (entry.imageUrl) {
+            // Bild aus Base64 oder URL anzeigen (Thumbnail)
+            const imageSrc = entry.imageBase64 || entry.imageUrl;
+            if (imageSrc) {
                 fotoSection.innerHTML = `
-                    <div class="entry-foto-container">
-                        <img src="${entry.imageUrl}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
+                    <div class="entry-foto-thumbnail">
+                        <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
                     </div>
                 `;
             }
@@ -858,7 +859,7 @@ async function initializeApp() {
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
-                ${entry.imageUrl ? "Foto ändern" : "Foto hinzufügen"}
+                ${imageSrc ? "Foto ändern" : "Foto hinzufügen"}
             `;
             fotoSection.appendChild(fotoBtn);
             
@@ -886,18 +887,48 @@ async function initializeApp() {
         });
     }
 
+    // Bild komprimieren (max 600px Breite, 60% Qualität)
+    function compressImage(file, maxWidth = 600, quality = 0.6) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Skalieren wenn zu groß
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Als JPEG mit Kompression
+                    const base64 = canvas.toDataURL("image/jpeg", quality);
+                    console.log("[Foto] Komprimiert:", Math.round(base64.length / 1024), "KB");
+                    resolve(base64);
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
     function attachFotoEvents() {
         const buttons = document.querySelectorAll(".entry-foto-btn");
-        console.log("[Foto] attachFotoEvents aufgerufen, gefundene Buttons:", buttons.length);
         buttons.forEach(btn => {
-            console.log("[Foto] Event-Listener hinzugefügt für:", btn.dataset.id);
             btn.addEventListener("click", async () => {
-                console.log("[Foto] Button geklickt!");
                 const entryId = btn.dataset.id;
-                if (!entryId) {
-                    console.error("Keine Entry-ID gefunden");
-                    return;
-                }
+                if (!entryId) return;
                 
                 const fileInput = document.createElement("input");
                 fileInput.type = "file";
@@ -906,16 +937,7 @@ async function initializeApp() {
                 
                 fileInput.onchange = async () => {
                     const file = fileInput.files[0];
-                    if (!file) {
-                        console.log("Keine Datei ausgewählt");
-                        return;
-                    }
-                    
-                    if (!firebase.storage) {
-                        showToast("Fehler: Storage nicht verfügbar", "error");
-                        console.error("Firebase Storage nicht initialisiert");
-                        return;
-                    }
+                    if (!file) return;
                     
                     const originalContent = btn.innerHTML;
                     
@@ -929,25 +951,22 @@ async function initializeApp() {
                             Lädt...
                         `;
                         
-                        console.log("Upload startet für Entry:", entryId);
-                        const storageRef = firebase.storage().ref();
-                        const fileRef = storageRef.child(`streckenliste/${entryId}_${Date.now()}_${file.name}`);
+                        // Bild komprimieren
+                        const base64 = await compressImage(file);
                         
-                        console.log("Uploading file...");
-                        await fileRef.put(file);
+                        // Prüfen ob unter 750KB (Firestore-Limit)
+                        if (base64.length > 750000) {
+                            throw new Error("Bild zu groß, bitte kleineres Bild wählen");
+                        }
                         
-                        console.log("Getting download URL...");
-                        const url = await fileRef.getDownloadURL();
+                        // In Firestore speichern
+                        await entriesCollection.doc(entryId).update({ imageBase64: base64 });
                         
-                        console.log("Updating Firestore...");
-                        await entriesCollection.doc(entryId).update({ imageUrl: url });
-                        
-                        console.log("Upload erfolgreich!");
-                        showToast("Foto hochgeladen", "success");
+                        showToast("Foto gespeichert", "success");
                         // renderEntries() wird automatisch durch onSnapshot aufgerufen
                     } catch (err) {
-                        console.error("Foto-Upload Fehler:", err);
-                        showToast("Fehler beim Upload: " + err.message, "error");
+                        console.error("Foto-Fehler:", err);
+                        showToast(err.message || "Fehler beim Speichern", "error");
                         btn.disabled = false;
                         btn.innerHTML = originalContent;
                     }

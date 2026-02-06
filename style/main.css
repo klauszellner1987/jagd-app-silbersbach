@@ -2968,34 +2968,38 @@ button:hover {
     transform: scale(0.95);
 }
 
-/* Entry Foto Section */
+/* Entry Foto Section - Thumbnail und Button nebeneinander */
 .entry-foto-section {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 0.75rem;
     margin-top: 0.5rem;
     padding-top: 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.entry-foto-container {
-    width: 100%;
-    border-radius: 10px;
+/* Thumbnail Container - feste Höhe */
+.entry-foto-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
 }
 
 .entry-foto-img {
     width: 100%;
-    max-height: 200px;
+    height: 100%;
     object-fit: cover;
     cursor: pointer;
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .entry-foto-img:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
+    opacity: 0.85;
+    transform: scale(1.05);
 }
 
 .entry-foto-btn {
