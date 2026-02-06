@@ -1579,8 +1579,46 @@ if ("serviceWorker" in navigator) {
     });
 }
 
+// ==============================
+// VERSION CHECK (Fallback für Mobile)
+// ==============================
+const APP_VERSION = "1.0.16";
+
+async function checkForUpdates() {
+    try {
+        // Cache-Busting: Timestamp anhängen
+        const response = await fetch(`./version.json?t=${Date.now()}`, {
+            cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+            console.log("[Version] version.json nicht gefunden");
+            return;
+        }
+        
+        const data = await response.json();
+        console.log("[Version] Server:", data.version, "| Lokal:", APP_VERSION);
+        
+        if (data.version !== APP_VERSION) {
+            console.log("[Version] Update verfügbar!");
+            showUpdateToast(true); // true = force reload statt SW message
+        }
+    } catch (err) {
+        console.log("[Version] Check fehlgeschlagen:", err);
+    }
+}
+
+// Version-Check beim Laden und alle 30 Sekunden
+window.addEventListener("load", () => {
+    // Kurz warten damit die App geladen ist
+    setTimeout(checkForUpdates, 3000);
+    
+    // Alle 30 Sekunden prüfen
+    setInterval(checkForUpdates, 30000);
+});
+
 // Update-Toast für neue App-Version
-function showUpdateToast() {
+function showUpdateToast(forceReload = false) {
     const container = document.getElementById("toast-container");
     if (!container) return;
     
@@ -1598,11 +1636,27 @@ function showUpdateToast() {
     `;
     
     toast.querySelector(".update-btn").addEventListener("click", () => {
-        navigator.serviceWorker.ready.then(reg => {
-            if (reg.waiting) {
-                reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        if (forceReload) {
+            // Direkter Reload mit Cache-Clearing
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                }).then(() => {
+                    window.location.reload(true);
+                });
+            } else {
+                window.location.reload(true);
             }
-        });
+        } else {
+            // Service Worker Update
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: "SKIP_WAITING" });
+                } else {
+                    window.location.reload(true);
+                }
+            });
+        }
         toast.remove();
     });
     
