@@ -849,6 +849,10 @@ async function initializeApp() {
                 `;
             }
             
+            // Button-Container
+            const fotoBtnContainer = document.createElement("div");
+            fotoBtnContainer.className = "entry-foto-buttons";
+            
             // Foto-Button (hinzufügen oder ändern)
             const fotoBtn = document.createElement("button");
             fotoBtn.className = "entry-foto-btn";
@@ -859,9 +863,25 @@ async function initializeApp() {
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
-                ${imageSrc ? "Foto ändern" : "Foto hinzufügen"}
+                ${imageSrc ? "Ändern" : "Foto hinzufügen"}
             `;
-            fotoSection.appendChild(fotoBtn);
+            fotoBtnContainer.appendChild(fotoBtn);
+            
+            // Foto löschen Button (nur wenn Bild vorhanden)
+            if (imageSrc) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "entry-foto-delete-btn";
+                deleteBtn.dataset.id = entry.id;
+                deleteBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/>
+                    </svg>
+                    Löschen
+                `;
+                fotoBtnContainer.appendChild(deleteBtn);
+            }
+            
+            fotoSection.appendChild(fotoBtnContainer);
             
             li.appendChild(fotoSection);
 
@@ -980,6 +1000,33 @@ async function initializeApp() {
                 openImageModal(img.src);
             });
         });
+        
+        // Foto löschen Handler
+        document.querySelectorAll(".entry-foto-delete-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const entryId = btn.dataset.id;
+                if (!entryId) return;
+                
+                const confirmed = await showConfirm(
+                    "Möchten Sie das Foto wirklich löschen?",
+                    "Foto löschen",
+                    "Löschen"
+                );
+                
+                if (confirmed) {
+                    try {
+                        await entriesCollection.doc(entryId).update({ 
+                            imageBase64: firebase.firestore.FieldValue.delete(),
+                            imageUrl: firebase.firestore.FieldValue.delete()
+                        });
+                        showToast("Foto gelöscht", "delete");
+                    } catch (err) {
+                        console.error("Foto löschen Fehler:", err);
+                        showToast("Fehler beim Löschen", "error");
+                    }
+                }
+            });
+        });
     }
     
     // Bild-Vollansicht Modal
@@ -989,8 +1036,8 @@ async function initializeApp() {
         overlay.innerHTML = `
             <div class="image-modal-content">
                 <img src="${src}" alt="Streckenfoto">
-                <button class="image-modal-close">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <button class="image-modal-close" aria-label="Schließen">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="3">
                         <line x1="18" y1="6" x2="6" y2="18"/>
                         <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>

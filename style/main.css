@@ -3044,6 +3044,40 @@ button:hover {
     animation: spin 1s linear infinite;
 }
 
+/* Button Container für Ändern/Löschen */
+.entry-foto-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Foto löschen Button */
+.entry-foto-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(231, 76, 60, 0.6);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.entry-foto-delete-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.entry-foto-delete-btn:hover {
+    background: rgba(231, 76, 60, 0.85);
+    transform: translateY(-1px);
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -3079,13 +3113,13 @@ button:hover {
 
 .image-modal-close {
     position: absolute;
-    top: -40px;
+    top: -50px;
     right: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3094,9 +3128,14 @@ button:hover {
     transition: all 0.2s ease;
 }
 
+.image-modal-close svg {
+    display: block;
+}
+
 .image-modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.35);
     transform: scale(1.1);
+    border-color: white;
 }
 
 /* ============================================
