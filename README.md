@@ -71,6 +71,18 @@ Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
 
 ## Changelog
 
+### v1.2.3 - Mobile Optimierungen + Auto-Update
+
+**Mobile UI Verbesserungen und automatische Updates:**
+
+- Login-Box Mobile: Fullscreen auf kleinen Bildschirmen
+- Auto-Update System: Automatische Benachrichtigung bei neuen Versionen
+- PWA verbessert: Zuverlässigere Cache-Verwaltung mit localStorage-basiertem Versioning
+- Toast-Notifications: SVG-Icons statt Emojis, einheitliches Design
+- Dashboard Mobile: Feste Höhe, kein Scrolling, optimierte Widget-Größen
+- Streckenliste: Detaillierte Karten-Ansicht, verbessertes Mobile Layout
+- Karten-Verbesserungen: GPS-Button, Hochsitz-Icons, schnellere Animation
+
 ### v1.2.0 - Firebase Authentication
 
 **Sicherer Login mit Firebase Email/Password Authentication:**
