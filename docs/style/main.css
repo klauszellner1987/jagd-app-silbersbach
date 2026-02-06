@@ -3112,28 +3112,31 @@ button:hover {
 }
 
 .image-modal-close {
-    position: absolute;
-    top: -50px;
-    right: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.7);
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: white;
     transition: all 0.2s ease;
+    z-index: 10001;
 }
 
 .image-modal-close svg {
     display: block;
+    width: 28px;
+    height: 28px;
 }
 
 .image-modal-close:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.8);
     transform: scale(1.1);
     border-color: white;
 }
