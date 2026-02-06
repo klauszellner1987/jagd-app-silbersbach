@@ -1582,7 +1582,7 @@ if ("serviceWorker" in navigator) {
 // ==============================
 // VERSION CHECK (Fallback für Mobile)
 // ==============================
-const APP_VERSION = "1.0.17";
+const APP_VERSION = "1.0.18";
 
 async function checkForUpdates() {
     try {
@@ -1635,29 +1635,34 @@ function showUpdateToast(forceReload = false) {
         <button class="update-btn">Aktualisieren</button>
     `;
     
-    toast.querySelector(".update-btn").addEventListener("click", () => {
-        if (forceReload) {
-            // Direkter Reload mit Cache-Clearing
+    toast.querySelector(".update-btn").addEventListener("click", async () => {
+        toast.querySelector(".update-btn").textContent = "Lade...";
+        toast.querySelector(".update-btn").disabled = true;
+        
+        try {
+            // 1. Alle Caches löschen
             if ('caches' in window) {
-                caches.keys().then(names => {
-                    names.forEach(name => caches.delete(name));
-                }).then(() => {
-                    window.location.reload(true);
-                });
-            } else {
-                window.location.reload(true);
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log("[Update] Caches gelöscht");
             }
-        } else {
-            // Service Worker Update
-            navigator.serviceWorker.ready.then(reg => {
-                if (reg.waiting) {
-                    reg.waiting.postMessage({ type: "SKIP_WAITING" });
-                } else {
-                    window.location.reload(true);
-                }
-            });
+            
+            // 2. Service Worker deregistrieren
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map(reg => reg.unregister()));
+                console.log("[Update] Service Worker deregistriert");
+            }
+            
+            // 3. Kurz warten dann hard reload
+            setTimeout(() => {
+                window.location.href = window.location.href.split('?')[0] + '?update=' + Date.now();
+            }, 500);
+            
+        } catch (err) {
+            console.error("[Update] Fehler:", err);
+            window.location.reload(true);
         }
-        toast.remove();
     });
     
     container.appendChild(toast);
