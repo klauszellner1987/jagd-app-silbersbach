@@ -465,6 +465,7 @@ function initAuthListener() {
         if (user) {
             // User is signed in
             document.body.classList.add("authenticated");
+            setLoginLoading(false);
             
             if (loginOverlay) {
                 loginOverlay.style.display = "none";
