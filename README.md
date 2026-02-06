@@ -71,6 +71,27 @@ Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
 
 ## Changelog
 
+### v2.0.1 - Bugfixes
+
+**Fehlerbehebungen nach v2.0.0 Release:**
+
+- Fix: CSS-Link für GitHub Pages korrigiert
+- Fix: Login-Spinner bei erfolgreichem Login ausblenden
+- Fix: Login-Spinner CSS-Spezifität korrigiert (war initial sichtbar)
+- Cache-Buster für zuverlässigere Updates aktualisiert
+
+### v2.0.0 - Kombiniertes Wetter-Widget
+
+**Großes Feature-Update mit neuem Wetter-System:**
+
+- **Kombiniertes Wetter-Widget**: Temperatur, Wind, Mond und Sonnenauf-/untergang in einem Widget
+- **Wetter-Detailseite**: Klick auf Wetter-Widget zeigt alle verfügbaren API-Daten
+- **8 Detail-Widgets**: Temperatur, Wind, Niederschlag, Luftfeuchtigkeit, Sonne, Mond, Sichtweite, Bedingungen
+- **Dynamische Sonnenanzeige**: Zeigt nächsten Sonnenaufgang oder -untergang mit Countdown
+- **Passwort-Toggle**: Auge-Symbol im Login für Passwort-Sichtbarkeit
+- **Version & Creator**: Anzeige im Login-Footer (dynamisch aus version.json)
+- **Verbesserte Icons**: SVG-Icons für Sonnenauf-/untergang passend zum App-Style
+
 ### v1.2.3 - Mobile Optimierungen + Auto-Update
 
 **Mobile UI Verbesserungen und automatische Updates:**
