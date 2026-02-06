@@ -1518,39 +1518,62 @@ function showInstallBannerAfterLogin() {
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").then(reg => {
-            console.log("Service Worker registriert");
+            console.log("[SW] Service Worker registriert");
             
-            // Prüfe alle 60 Sekunden auf Updates
+            // SOFORT nach Updates prüfen beim Laden
+            reg.update().then(() => {
+                console.log("[SW] Initialer Update-Check durchgeführt");
+            }).catch(err => {
+                console.log("[SW] Update-Check Fehler:", err);
+            });
+            
+            // Prüfe alle 30 Sekunden auf Updates (aggressiver für Mobile)
             setInterval(() => {
                 reg.update();
-                console.log("Service Worker Update-Check...");
-            }, 60000);
+                console.log("[SW] Periodischer Update-Check...");
+            }, 30000);
             
             // Wenn neuer SW gefunden wird
             reg.addEventListener("updatefound", () => {
                 const newWorker = reg.installing;
-                console.log("Neuer Service Worker gefunden...");
+                console.log("[SW] Neuer Service Worker gefunden, Status:", newWorker.state);
                 
                 newWorker.addEventListener("statechange", () => {
-                    if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                        // Neue Version verfügbar - User benachrichtigen
-                        console.log("Neue App-Version verfügbar!");
-                        showUpdateToast();
+                    console.log("[SW] Service Worker Status geändert:", newWorker.state);
+                    if (newWorker.state === "installed") {
+                        if (navigator.serviceWorker.controller) {
+                            // Neue Version verfügbar - User benachrichtigen
+                            console.log("[SW] Neue App-Version verfügbar!");
+                            showUpdateToast();
+                        } else {
+                            // Erster Install - keine Benachrichtigung nötig
+                            console.log("[SW] Erster Install - App bereit");
+                        }
                     }
                 });
             });
             
             // Prüfe ob bereits ein wartender SW existiert
             if (reg.waiting) {
+                console.log("[SW] Wartender Service Worker gefunden");
                 showUpdateToast();
             }
+            
+            // Prüfe auch ob ein installierender SW existiert
+            if (reg.installing) {
+                console.log("[SW] Installierender Service Worker gefunden");
+            }
+            
         }).catch(err => {
-            console.error("Service Worker Registrierung fehlgeschlagen:", err);
+            console.error("[SW] Registrierung fehlgeschlagen:", err);
         });
         
         // Reload wenn neuer SW die Kontrolle übernimmt
+        let refreshing = false;
         navigator.serviceWorker.addEventListener("controllerchange", () => {
-            console.log("Service Worker hat gewechselt - Seite wird neu geladen");
+            if (refreshing) return;
+            refreshing = true;
+            console.log("[SW] Controller gewechselt - Seite wird neu geladen");
             window.location.reload();
         });
     });
