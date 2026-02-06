@@ -839,19 +839,20 @@ async function initializeApp() {
             const fotoSection = document.createElement("div");
             fotoSection.className = "entry-foto-section";
             
-            // Bild aus Base64 oder URL anzeigen (Thumbnail)
+            // Bild aus Base64 oder URL anzeigen (Thumbnail mit Lösch-Button)
             const imageSrc = entry.imageBase64 || entry.imageUrl;
             if (imageSrc) {
                 fotoSection.innerHTML = `
                     <div class="entry-foto-thumbnail">
                         <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
+                        <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/>
+                            </svg>
+                        </button>
                     </div>
                 `;
             }
-            
-            // Button-Container
-            const fotoBtnContainer = document.createElement("div");
-            fotoBtnContainer.className = "entry-foto-buttons";
             
             // Foto-Button (hinzufügen oder ändern)
             const fotoBtn = document.createElement("button");
@@ -865,23 +866,7 @@ async function initializeApp() {
                 </svg>
                 ${imageSrc ? "Ändern" : "Foto hinzufügen"}
             `;
-            fotoBtnContainer.appendChild(fotoBtn);
-            
-            // Foto löschen Button (nur wenn Bild vorhanden)
-            if (imageSrc) {
-                const deleteBtn = document.createElement("button");
-                deleteBtn.className = "entry-foto-delete-btn";
-                deleteBtn.dataset.id = entry.id;
-                deleteBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/>
-                    </svg>
-                    Löschen
-                `;
-                fotoBtnContainer.appendChild(deleteBtn);
-            }
-            
-            fotoSection.appendChild(fotoBtnContainer);
+            fotoSection.appendChild(fotoBtn);
             
             li.appendChild(fotoSection);
 
@@ -1037,10 +1022,7 @@ async function initializeApp() {
             <div class="image-modal-content">
                 <img src="${src}" alt="Streckenfoto">
                 <button class="image-modal-close" aria-label="Schließen">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="3">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    ✕
                 </button>
             </div>
         `;

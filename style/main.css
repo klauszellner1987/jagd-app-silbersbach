@@ -2979,8 +2979,9 @@ button:hover {
     border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* Thumbnail Container - feste Höhe */
+/* Thumbnail Container - feste Höhe mit Delete-Button */
 .entry-foto-thumbnail {
+    position: relative;
     width: 80px;
     height: 60px;
     border-radius: 8px;
@@ -3044,38 +3045,35 @@ button:hover {
     animation: spin 1s linear infinite;
 }
 
-/* Button Container für Ändern/Löschen */
-.entry-foto-buttons {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Foto löschen Button */
+/* Foto löschen Button - im Thumbnail oben rechts */
 .entry-foto-delete-btn {
-    display: inline-flex;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
-    background: rgba(231, 76, 60, 0.6);
-    border: 1px solid rgba(231, 76, 60, 0.4);
-    border-radius: 8px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 500;
+    justify-content: center;
+    background: rgba(231, 76, 60, 0.85);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
+    z-index: 5;
 }
 
 .entry-foto-delete-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
 }
 
 .entry-foto-delete-btn:hover {
-    background: rgba(231, 76, 60, 0.85);
-    transform: translateY(-1px);
+    background: rgba(231, 76, 60, 1);
+    transform: scale(1.15);
 }
 
 @keyframes spin {
@@ -3115,8 +3113,8 @@ button:hover {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     width: 48px;
     height: 48px;
@@ -3125,18 +3123,15 @@ button:hover {
     justify-content: center;
     cursor: pointer;
     color: white;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
     transition: all 0.2s ease;
     z-index: 10001;
 }
 
-.image-modal-close svg {
-    display: block;
-    width: 28px;
-    height: 28px;
-}
-
 .image-modal-close:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     transform: scale(1.1);
     border-color: white;
 }
