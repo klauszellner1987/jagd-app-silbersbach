@@ -1,4 +1,4 @@
-const CACHE_NAME = "revier-app-v12";
+const CACHE_NAME = "revier-app-v13";
 
 const ASSETS = [
   "./",
