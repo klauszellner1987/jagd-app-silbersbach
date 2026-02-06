@@ -1209,40 +1209,72 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         tileLayer.on('tileerror', () => mapStatusDot.classList.replace("online","offline"));
     }
 
-    // GPS Marker
+    // GPS Marker - wird erst bei Nutzerinteraktion (Button-Klick) gestartet
     let gpsMarker = null;
-    let firstFix = true;
+    let gpsWatchId = null;
+    let gpsSearching = false;
 
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(
+    const gpsIcon = L.divIcon({
+        className: "gps-marker-wrapper",
+        html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
+        iconSize: [24,24],
+        iconAnchor: [12,12]
+    });
+
+    function updateGpsMarker(lat, lng) {
+        if (!gpsMarker) {
+            gpsMarker = L.marker([lat, lng], { icon: gpsIcon }).addTo(map);
+        } else {
+            gpsMarker.setLatLng([lat, lng]);
+        }
+        const el = gpsMarker.getElement();
+        if (el) el.classList.remove("offline");
+    }
+
+    function handleGpsError(err) {
+        if (gpsMarker) {
+            const el = gpsMarker.getElement();
+            if (el) el.classList.add("offline");
+        }
+        switch (err.code) {
+            case 1: // PERMISSION_DENIED
+                showToast("GPS-Berechtigung verweigert. Bitte in den Einstellungen aktivieren.", "error");
+                break;
+            case 2: // POSITION_UNAVAILABLE
+                showToast("GPS-Position nicht verfügbar", "error");
+                break;
+            case 3: // TIMEOUT
+                showToast("GPS-Signal wird gesucht...", "info");
+                break;
+            default:
+                showToast("GPS-Fehler aufgetreten", "error");
+        }
+        console.warn("GPS Fehler:", err);
+        gpsSearching = false;
+        // Button-Animation stoppen
+        const gpsBtn = document.querySelector(".gps-center-btn");
+        if (gpsBtn) gpsBtn.classList.remove("gps-searching");
+    }
+
+    function startGpsTracking() {
+        if (gpsWatchId !== null) return; // Tracking laeuft bereits
+        if (!navigator.geolocation) {
+            showToast("GPS wird von diesem Gerät nicht unterstützt", "error");
+            return;
+        }
+        gpsWatchId = navigator.geolocation.watchPosition(
             pos => {
                 const { latitude, longitude } = pos.coords;
-                if (!gpsMarker) {
-                    gpsMarker = L.marker([latitude, longitude], {
-                        icon: L.divIcon({
-                            className: "gps-marker-wrapper",
-                            html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
-                            iconSize: [24,24],
-                            iconAnchor: [12,12]
-                        })
-                    }).addTo(map);
-                } else gpsMarker.setLatLng([latitude, longitude]);
-
-                const el = gpsMarker.getElement();
-                if (el) el.classList.remove("offline");
-
-                if (firstFix) {
-                    map.setView([latitude, longitude], map.getZoom());
-                    firstFix = false;
-                }
+                updateGpsMarker(latitude, longitude);
+                gpsSearching = false;
+                // Button-Animation stoppen
+                const gpsBtn = document.querySelector(".gps-center-btn");
+                if (gpsBtn) gpsBtn.classList.remove("gps-searching");
             },
-            err => {
-                if (gpsMarker) { const el = gpsMarker.getElement(); if(el) el.classList.add("offline"); }
-                console.warn("GPS konnte nicht geladen werden:", err);
-            },
-            { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
+            err => handleGpsError(err),
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
         );
-    } else console.warn("Geolocation wird von diesem Gerät nicht unterstützt.");
+    }
 
     // ==========================
     // Hochsitz + Button
@@ -1405,13 +1437,49 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel) {
         L.DomEvent.disableClickPropagation(btn);
         L.DomEvent.on(btn, "click", (e) => {
             L.DomEvent.stopPropagation(e);
+
+            // Position bereits vorhanden -> direkt hinfliegen
             if (gpsMarker) {
                 const pos = gpsMarker.getLatLng();
                 map.flyTo([pos.lat, pos.lng], 17, { duration: 0.5 });
                 showToast("Zur aktuellen Position");
-            } else {
-                showToast("GPS-Position nicht verfügbar", "error");
+                return;
             }
+
+            // Kein GPS verfuegbar auf dem Geraet
+            if (!navigator.geolocation) {
+                showToast("GPS wird von diesem Gerät nicht unterstützt", "error");
+                return;
+            }
+
+            // Bereits am Suchen -> nicht doppelt starten
+            if (gpsSearching) {
+                showToast("GPS-Signal wird gesucht...", "info");
+                return;
+            }
+
+            // Erstmaliger Klick: Position holen + Tracking starten
+            gpsSearching = true;
+            btn.classList.add("gps-searching");
+            showToast("GPS-Position wird gesucht...", "info");
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    updateGpsMarker(latitude, longitude);
+                    map.flyTo([latitude, longitude], 17, { duration: 0.5 });
+                    showToast("GPS-Position gefunden");
+                    gpsSearching = false;
+                    btn.classList.remove("gps-searching");
+                    // Fortlaufendes Tracking starten
+                    startGpsTracking();
+                },
+                err => handleGpsError(err),
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+            );
+
+            // Parallel watchPosition starten fuer fortlaufende Updates
+            startGpsTracking();
         });
         return btn;
     };
