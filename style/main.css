@@ -1276,6 +1276,10 @@ button:hover {
 }
 
 .toast {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     min-width: 220px;
     padding: 14px 20px;
     border-radius: 14px;
@@ -1290,6 +1294,22 @@ button:hover {
     animation: toastSlide 0.3s ease, toastFade 0.3s ease 2.7s forwards;
 }
 
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toast-icon svg {
+    stroke: white;
+    opacity: 0.95;
+}
+
+.toast-message {
+    flex: 1;
+}
+
 .toast.success { 
     background: linear-gradient(135deg, rgba(95, 161, 117, 0.9), rgba(46, 204, 113, 0.9));
     border-color: rgba(129, 199, 132, 0.4);
@@ -1297,6 +1317,10 @@ button:hover {
 .toast.error { 
     background: linear-gradient(135deg, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.9));
     border-color: rgba(231, 76, 60, 0.4);
+}
+.toast.delete { 
+    background: linear-gradient(135deg, rgba(150, 100, 80, 0.9), rgba(120, 80, 60, 0.9));
+    border-color: rgba(180, 140, 100, 0.4);
 }
 .toast.info { 
     background: linear-gradient(135deg, rgba(47, 111, 78, 0.9), rgba(59, 82, 64, 0.9));
