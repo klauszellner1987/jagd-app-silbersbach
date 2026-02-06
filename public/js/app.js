@@ -887,10 +887,17 @@ async function initializeApp() {
     }
 
     function attachFotoEvents() {
-        document.querySelectorAll(".entry-foto-btn").forEach(btn => {
+        const buttons = document.querySelectorAll(".entry-foto-btn");
+        console.log("[Foto] attachFotoEvents aufgerufen, gefundene Buttons:", buttons.length);
+        buttons.forEach(btn => {
+            console.log("[Foto] Event-Listener hinzugefügt für:", btn.dataset.id);
             btn.addEventListener("click", async () => {
+                console.log("[Foto] Button geklickt!");
                 const entryId = btn.dataset.id;
-                if (!entryId) return;
+                if (!entryId) {
+                    console.error("Keine Entry-ID gefunden");
+                    return;
+                }
                 
                 const fileInput = document.createElement("input");
                 fileInput.type = "file";
@@ -899,10 +906,18 @@ async function initializeApp() {
                 
                 fileInput.onchange = async () => {
                     const file = fileInput.files[0];
-                    if (!file || !firebase.storage) {
-                        showToast("Fehler: Storage nicht verfügbar", "error");
+                    if (!file) {
+                        console.log("Keine Datei ausgewählt");
                         return;
                     }
+                    
+                    if (!firebase.storage) {
+                        showToast("Fehler: Storage nicht verfügbar", "error");
+                        console.error("Firebase Storage nicht initialisiert");
+                        return;
+                    }
+                    
+                    const originalContent = btn.innerHTML;
                     
                     try {
                         // Loading-State anzeigen
@@ -914,16 +929,27 @@ async function initializeApp() {
                             Lädt...
                         `;
                         
+                        console.log("Upload startet für Entry:", entryId);
                         const storageRef = firebase.storage().ref();
-                        const fileRef = storageRef.child(`streckenliste/${entryId}_${file.name}`);
+                        const fileRef = storageRef.child(`streckenliste/${entryId}_${Date.now()}_${file.name}`);
+                        
+                        console.log("Uploading file...");
                         await fileRef.put(file);
+                        
+                        console.log("Getting download URL...");
                         const url = await fileRef.getDownloadURL();
+                        
+                        console.log("Updating Firestore...");
                         await entriesCollection.doc(entryId).update({ imageUrl: url });
+                        
+                        console.log("Upload erfolgreich!");
                         showToast("Foto hochgeladen", "success");
+                        // renderEntries() wird automatisch durch onSnapshot aufgerufen
                     } catch (err) {
                         console.error("Foto-Upload Fehler:", err);
-                        showToast("Fehler beim Upload", "error");
+                        showToast("Fehler beim Upload: " + err.message, "error");
                         btn.disabled = false;
+                        btn.innerHTML = originalContent;
                     }
                 };
             });
