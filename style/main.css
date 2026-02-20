@@ -3909,12 +3909,10 @@ button:hover {
     gap: 0.6rem;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 8px;
-    /* Mehr Platz fuer Scroll-Indikation */
+    padding: 5px 0 10px 0;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    min-height: 45px;
-    /* Mehr Luft nach oben/unten */
+    min-height: 60px;
     align-items: center;
     scrollbar-width: none;
 }
