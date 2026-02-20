@@ -1268,7 +1268,7 @@ const eigengrundstuecke = [
     },
     {
         id: "lam-733",
-        name: "Lam 733",
+        name: "Flurstück Lam 733",
         color: "#3b82f6",
         fillColor: "#60a5fa",
         isVisible: false,
@@ -1284,7 +1284,7 @@ const eigengrundstuecke = [
     },
     {
         id: "lam-754",
-        name: "Lam 754",
+        name: "Flurstück Lam 754",
         color: "#3b82f6",
         fillColor: "#60a5fa",
         isVisible: false,
