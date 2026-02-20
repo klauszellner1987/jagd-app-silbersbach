@@ -741,6 +741,120 @@ async function initializeApp() {
     const db = firebase.firestore();
     const hochsitzeCollection = db.collection("hochsitze");
 
+    // ============================================
+    // SCHWARZES BRETT LOGIK
+    // ============================================
+    const bulletinCollection = db.collection("bulletinBoard");
+    const bulletinList = document.getElementById("bulletin-list");
+    const bulletinPreview = document.getElementById("bulletin-preview");
+    const bulletinBadge = document.getElementById("bulletin-badge");
+    const bulletinSubmitBtn = document.getElementById("bulletin-submit-btn");
+    const bulletinInput = document.getElementById("bulletin-input");
+
+    if (bulletinList) {
+        bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // 1. Liste rendern
+            bulletinList.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+            items.forEach(item => {
+                const date = item.timestamp ? new Date(item.timestamp).toLocaleString('de-DE', {
+                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                }) : 'Unbekannt';
+
+                const el = document.createElement("div");
+                el.className = "bulletin-item";
+                el.innerHTML = `
+                    <div class="bulletin-item-header">
+                        <span class="bulletin-item-sender">${item.sender || 'Unbekannt'}</span>
+                        <span class="bulletin-item-date">${date}</span>
+                    </div>
+                    <div class="bulletin-item-content">${item.message}</div>
+                    <div style="text-align: right; margin-top: 0.5rem;">
+                        <button class="bulletin-delete-btn" data-id="${item.id}" aria-label="Löschen">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                bulletinList.appendChild(el);
+            });
+
+            // Lösch-Events für Bulletin Board
+            bulletinList.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await showConfirm(
+                        "Möchten Sie diesen Aushang wirklich löschen?",
+                        "Aushang löschen",
+                        "Löschen"
+                    );
+                    if (confirmed) {
+                        try {
+                            await bulletinCollection.doc(btn.dataset.id).delete();
+                            showToast("Aushang entfernt", "delete");
+                        } catch (err) {
+                            console.error(err);
+                            showToast("Fehler beim Löschen", "error");
+                        }
+                    }
+                };
+            });
+
+            // 2. Badge & Dashboard Preview updaten
+            if (bulletinBadge) {
+                bulletinBadge.textContent = items.length;
+                bulletinBadge.classList.toggle("hidden", items.length === 0);
+            }
+
+            if (bulletinPreview) {
+                bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
+                // Zeige nur die 2 neuesten
+                items.slice(0, 2).forEach(item => {
+                    const el = document.createElement("div");
+                    el.className = "bulletin-preview-item";
+                    el.textContent = item.message;
+                    bulletinPreview.appendChild(el);
+                });
+            }
+        });
+    }
+
+    // Nachricht senden
+    if (bulletinSubmitBtn && bulletinInput) {
+        bulletinSubmitBtn.onclick = async () => {
+            const msg = bulletinInput.value.trim();
+            if (!msg) return;
+
+            bulletinSubmitBtn.disabled = true;
+            const originalContent = bulletinSubmitBtn.innerHTML;
+            bulletinSubmitBtn.innerHTML = "Wird gesendet...";
+
+            try {
+                const user = firebase.auth().currentUser;
+                // Einfacher Name aus E-Mail oder DisplayName
+                const sender = user ? (user.displayName || user.email.split('@')[0]) : 'Unbekannt';
+
+                await bulletinCollection.add({
+                    message: msg,
+                    timestamp: Date.now(),
+                    sender: sender
+                });
+
+                bulletinInput.value = "";
+                showToast("Aushang erfolgreich erstellt", "success");
+            } catch (err) {
+                console.error("Bulletin Error:", err);
+                showToast("Fehler beim Senden", "error");
+            } finally {
+                bulletinSubmitBtn.disabled = false;
+                bulletinSubmitBtn.innerHTML = originalContent;
+            }
+        };
+    }
+
     const hochsitzPanel = document.getElementById("hochsitz-panel");
     const panelContent = hochsitzPanel?.querySelector(".panel-content");
     const grundPanel = document.getElementById("eigengrundstuecke-panel");
