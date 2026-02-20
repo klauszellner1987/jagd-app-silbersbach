@@ -811,8 +811,8 @@ async function initializeApp() {
 
             if (bulletinPreview) {
                 bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
-                // Zeige nur die 2 neuesten
-                items.slice(0, 2).forEach(item => {
+                // Zeige nur die 4 neuesten
+                items.slice(0, 4).forEach(item => {
                     const el = document.createElement("div");
                     el.className = "bulletin-preview-item";
                     el.textContent = item.message;
