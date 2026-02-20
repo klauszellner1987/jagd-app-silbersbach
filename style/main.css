@@ -3867,6 +3867,7 @@ button:hover {
 /* ============================================
    SCHWARZES BRETT (BULLETIN BOARD)
    ============================================ */
+/* Bulletin Board Widget on Dashboard */
 .bulletin-widget {
     margin-bottom: 0.75rem;
     padding: 1.1rem;
@@ -3874,6 +3875,10 @@ button:hover {
     flex-direction: column;
     gap: 0.75rem;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    overflow: hidden !important;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .bulletin-header {
@@ -3884,6 +3889,7 @@ button:hover {
     font-weight: 700;
     color: white;
     letter-spacing: 0.3px;
+    flex-shrink: 0;
 }
 
 .bulletin-badge {
@@ -3897,31 +3903,24 @@ button:hover {
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
-.bulletin-widget {
-    overflow: hidden !important;
-    display: flex;
-    flex-direction: column;
-}
-
 .bulletin-preview {
     display: flex;
     flex-direction: row;
     gap: 0.6rem;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
+    /* Mehr Platz fuer Scroll-Indikation */
     -webkit-overflow-scrolling: touch;
-    height: 38px;
-    /* Festgelegte Höhe verhindert vertikales Ausbrechen */
+    width: 100%;
+    min-height: 45px;
+    /* Mehr Luft nach oben/unten */
     align-items: center;
+    scrollbar-width: none;
 }
 
 .bulletin-preview::-webkit-scrollbar {
     display: none;
-}
-
-.bulletin-preview {
-    scrollbar-width: none;
 }
 
 .bulletin-empty {
@@ -3939,16 +3938,16 @@ button:hover {
     /* Feste Breite */
     max-width: 160px;
     background: rgba(0, 0, 0, 0.25);
-    padding: 0.5rem 0.8rem;
-    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
     font-size: 0.85rem;
     border-left: 3px solid rgba(124, 255, 155, 0.6);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: rgba(255, 255, 255, 0.9);
-    height: 1.2rem;
-    line-height: 1.2rem;
+    height: 1.4rem;
+    line-height: 1.4rem;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
 }
