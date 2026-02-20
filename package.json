@@ -1,6 +1,6 @@
 {
   "name": "jagd-app-silbersbach",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Dies ist eine kleine Web-App für euer Jagd-Revier. Jeder Nutzer kann die Seite auf dem Handy öffnen.",
   "main": "service-worker.js",
   "scripts": {
