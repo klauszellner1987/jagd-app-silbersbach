@@ -753,7 +753,9 @@ async function initializeApp() {
 
     if (bulletinList) {
         bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Nur aktive (nicht erledigte) Items anzeigen
+            const items = allItems.filter(item => !item.isDone);
 
             // 1. Liste rendern
             bulletinList.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
@@ -770,7 +772,13 @@ async function initializeApp() {
                         <span class="bulletin-item-date">${date}</span>
                     </div>
                     <div class="bulletin-item-content">${item.message}</div>
-                    <div style="text-align: right; margin-top: 0.5rem;">
+                    <div style="text-align: right; margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="bulletin-done-btn" data-id="${item.id}" title="Erledigt">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Erledigt
+                        </button>
                         <button class="bulletin-delete-btn" data-id="${item.id}" aria-label="Löschen">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -780,6 +788,20 @@ async function initializeApp() {
                     </div>
                 `;
                 bulletinList.appendChild(el);
+            });
+
+            // Erledigt-Events
+            bulletinList.querySelectorAll(".bulletin-done-btn").forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    try {
+                        await bulletinCollection.doc(btn.dataset.id).update({ isDone: true });
+                        showToast("Aushang als erledigt markiert", "success");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Fehler beim Aktualisieren", "error");
+                    }
+                };
             });
 
             // Lösch-Events für Bulletin Board
@@ -816,6 +838,17 @@ async function initializeApp() {
                     const el = document.createElement("div");
                     el.className = "bulletin-preview-item";
                     el.textContent = item.message;
+
+                    // Klick auf Eintrag im Widget = Erledigt
+                    el.onclick = async (e) => {
+                        e.stopPropagation(); // Verhindert das Öffnen der Seite
+                        try {
+                            await bulletinCollection.doc(item.id).update({ isDone: true });
+                            showToast("Erledigt!", "success");
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    };
                     bulletinPreview.appendChild(el);
                 });
             }

@@ -3949,6 +3949,17 @@ button:hover {
     color: rgba(255, 255, 255, 0.9);
     height: 1.2rem;
     line-height: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.bulletin-preview-item:hover {
+    background: rgba(124, 255, 155, 0.15);
+    transform: translateY(-1px);
+}
+
+.bulletin-preview-item:active {
+    transform: scale(0.95);
 }
 
 /* Bulletin Board Page */
@@ -4069,6 +4080,27 @@ button:hover {
     color: white;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+.bulletin-done-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 6px 12px;
+    background: rgba(95, 161, 117, 0.2);
+    border: 1px solid rgba(95, 161, 117, 0.3);
+    color: var(--primary-light);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.bulletin-done-btn:hover {
+    background: rgba(95, 161, 117, 0.4);
+    border-color: rgba(95, 161, 117, 0.6);
+    color: white;
 }
 
 .bulletin-delete-btn {
