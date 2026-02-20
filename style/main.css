@@ -3927,8 +3927,8 @@ button:hover {
 .bulletin-board-container {
     max-width: 600px;
     margin: 0 auto;
-    padding-bottom: 5rem;
-    /* Space for FAB or just scrolling */
+    padding: 0 1rem 5rem 1rem;
+    /* Extra side padding for mobile */
 }
 
 .bulletin-board-title {
@@ -3967,6 +3967,8 @@ button:hover {
     font-size: 1.05rem;
     resize: none;
     outline: none;
+    box-sizing: border-box;
+    /* Fix for overflow */
     transition: border-color 0.3s;
 }
 
