@@ -3897,13 +3897,23 @@ button:hover {
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
+.bulletin-widget {
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+}
+
 .bulletin-preview {
     display: flex;
     flex-direction: row;
     gap: 0.6rem;
     overflow-x: auto;
+    overflow-y: hidden;
     padding-bottom: 5px;
     -webkit-overflow-scrolling: touch;
+    height: 38px;
+    /* Festgelegte Höhe verhindert vertikales Ausbrechen */
+    align-items: center;
 }
 
 .bulletin-preview::-webkit-scrollbar {
@@ -3925,16 +3935,20 @@ button:hover {
 
 .bulletin-preview-item {
     flex: 0 0 auto;
-    max-width: 180px;
+    width: 160px;
+    /* Feste Breite */
+    max-width: 160px;
     background: rgba(0, 0, 0, 0.25);
-    padding: 0.7rem 0.9rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
     border-left: 3px solid rgba(124, 255, 155, 0.6);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: rgba(255, 255, 255, 0.9);
+    height: 1.2rem;
+    line-height: 1.2rem;
 }
 
 /* Bulletin Board Page */
