@@ -34,8 +34,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Silbersbach">
-  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-Bk50ydqE.js"></script>
-  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-DKSkeFEY.css">
+  <script type="module" crossorigin src="/jagd-app-silbersbach/assets/index-Du9ie2jP.js"></script>
+  <link rel="stylesheet" crossorigin href="/jagd-app-silbersbach/assets/index-CVJl1sGu.css">
 </head>
 
 <body>
@@ -253,6 +253,22 @@
                 </div>
             </div>
 
+            <!-- Schwarzes Brett Widget (Neu) -->
+            <div class="widget bulletin-widget nav-widget" id="bulletin-widget" data-target="bulletin-board">
+                <div class="bulletin-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    <span>Schwarzes Brett</span>
+                    <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
+                </div>
+                <div class="bulletin-preview" id="bulletin-preview">
+                    <p class="bulletin-empty">Keine neuen Aushänge...</p>
+                </div>
+            </div>
+
             <!-- Navigation Widgets (2er Grid) -->
             <div class="widget-grid-2">
                 <!-- Revier Map Widget -->
@@ -293,6 +309,48 @@
                 </svg>
                 Abmelden
             </button>
+        </div>
+
+        <!-- BULLETIN BOARD PAGE -->
+        <div id="bulletin-board" class="page">
+            <button class="back-to-home">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <div class="bulletin-board-container">
+                <h2 class="bulletin-board-title">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    <span>Schwarzes Brett</span>
+                </h2>
+
+                <div class="bulletin-input-wrapper">
+                    <textarea id="bulletin-input"
+                        placeholder="Neue Nachricht für alle... (z.B. Kanzel repariert)"></textarea>
+                    <button id="bulletin-submit-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        Senden
+                    </button>
+                </div>
+
+                <div id="bulletin-list" class="bulletin-list">
+                    <!-- Nachrichten werden per JS geladen -->
+                    <div class="bulletin-loading">
+                        <div class="spinner"></div>
+                        <span>Lade Aushänge...</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- REVIER PAGE -->

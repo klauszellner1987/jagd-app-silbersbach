@@ -40,6 +40,10 @@
     --transition-fast: 0.15s ease-out;
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* ============================================
    SCROLLBAR VERSTECKEN
 ============================================ */
@@ -2329,9 +2333,9 @@ button:hover {
 }
 
 /* Dashboard - Vollbild ohne Scrollen */
-#dashboard {
+#dashboard.page {
+    display: none;
     position: relative;
-    display: flex;
     flex-direction: column;
     height: calc(100vh - 60px);
     /* Viewport minus Header - Desktop */
@@ -2342,6 +2346,10 @@ button:hover {
     touch-action: none;
     /* Verhindert Touch-Scroll auf Dashboard */
     -webkit-overflow-scrolling: auto;
+}
+
+#dashboard.page.active {
+    display: flex;
 }
 
 /* Dashboard Mobile - Platz für Header */
@@ -3852,5 +3860,233 @@ button:hover {
     .panel-entry {
         padding: 10px 12px;
         font-size: 0.9rem;
+    }
+
+}
+
+/* ============================================
+   SCHWARZES BRETT (BULLETIN BOARD)
+   ============================================ */
+.bulletin-widget {
+    margin-bottom: 0.75rem;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+}
+
+.bulletin-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.3px;
+}
+
+.bulletin-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: auto;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.bulletin-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.bulletin-empty {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.bulletin-preview-item {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    border-left: 3px solid rgba(124, 255, 155, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Bulletin Board Page */
+.bulletin-board-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: 5rem;
+    /* Space for FAB or just scrolling */
+}
+
+.bulletin-board-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.bulletin-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    padding: 1.25rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+#bulletin-input {
+    width: 100%;
+    min-height: 90px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 1rem;
+    color: white;
+    font-family: inherit;
+    font-size: 1.05rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#bulletin-input:focus {
+    border-color: rgba(124, 255, 155, 0.4);
+}
+
+#bulletin-submit-btn {
+    align-self: flex-end;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.75rem;
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.9), rgba(129, 199, 132, 0.9));
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#bulletin-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(95, 161, 117, 0.4);
+}
+
+#bulletin-submit-btn:active {
+    transform: translateY(0);
+}
+
+.bulletin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.bulletin-item {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 1.25rem;
+    position: relative;
+    animation: bulletinSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--glass-shadow);
+}
+
+.bulletin-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.bulletin-item-sender {
+    color: rgba(124, 255, 155, 0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bulletin-item-content {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: white;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.bulletin-delete-btn {
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(239, 68, 68, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 10px;
+}
+
+.bulletin-delete-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.bulletin-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes bulletinSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .bulletin-widget {
+        padding: 0.9rem;
+    }
+
+    .bulletin-board-title {
+        font-size: 1.3rem;
+    }
+
+    .bulletin-item-content {
+        font-size: 1rem;
     }
 }
