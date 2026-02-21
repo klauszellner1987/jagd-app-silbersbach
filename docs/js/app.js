@@ -479,8 +479,26 @@ function initAuthListener() {
                     try {
                         if ('serviceWorker' in navigator) {
                             showToast("Verbinde mit Hintergrund-Dienst...", "info");
-                            const reg = await navigator.serviceWorker.ready;
-                            initPushNotifications(firebase.firestore(), reg);
+
+                            // Versuche die Registration zu finden ohne zu hängen (v2.6.0)
+                            let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
+
+                            if (!reg) {
+                                // Fallback: Warte kurz auf .ready but with safety timeout
+                                const timeout = new Promise(r => setTimeout(() => r(null), 4000));
+                                const ready = navigator.serviceWorker.ready;
+                                reg = await Promise.race([ready, timeout]);
+                            }
+
+                            if (reg) {
+                                initPushNotifications(firebase.firestore(), reg);
+                            } else {
+                                showToast("Hintergrund-Dienst antwortet nicht.", "error");
+                                // Trotzdem versuchen, falls er später kommt
+                                navigator.serviceWorker.ready.then(r => {
+                                    initPushNotifications(firebase.firestore(), r);
+                                });
+                            }
                         }
                     } catch (e) {
                         showToast("Push-Init Fehler: " + e.message, "error");
@@ -2467,6 +2485,7 @@ if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").then(reg => {
             console.log("[SW] Service Worker registriert");
+            window.globalSwReg = reg;
 
             // SOFORT nach Updates prüfen beim Laden
             reg.update().then(() => {
@@ -2627,17 +2646,17 @@ async function fetchAndSaveToken(db, swReg) {
     }
 
     const messaging = firebase.messaging();
-    showToast("Suche Gerät (" + swState + ")...", "info");
+    showToast("Fordere Schlüssel an...", "info");
 
     try {
-        // Timeout-Mechanismus für Token-Abruf (v2.5.0)
+        // Timeout-Mechanismus für Token-Abruf (v2.6.0)
         const tokenPromise = messaging.getToken({
             vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
 
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout (15s)")), 15000)
+            setTimeout(() => reject(new Error("Timeout (20s)")), 20000)
         );
 
         const currentToken = await Promise.race([tokenPromise, timeoutPromise]);
@@ -2657,7 +2676,7 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.5.0'
+                version: '2.6.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
@@ -2799,7 +2818,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.5.0...", "info");
+    showToast("Systemstart v2.6.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
