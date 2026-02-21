@@ -480,24 +480,19 @@ function initAuthListener() {
                         if ('serviceWorker' in navigator) {
                             showToast("Verbinde mit Hintergrund-Dienst...", "info");
 
-                            // Versuche die Registration zu finden ohne zu hängen (v2.6.0)
+                            // Versuche die Registration zu finden (v2.7.0)
                             let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
 
                             if (!reg) {
-                                // Fallback: Warte kurz auf .ready but with safety timeout
-                                const timeout = new Promise(r => setTimeout(() => r(null), 4000));
-                                const ready = navigator.serviceWorker.ready;
-                                reg = await Promise.race([ready, timeout]);
+                                showToast("Warte auf System-Freigabe...", "info");
+                                const timeout = new Promise(r => setTimeout(() => r(null), 5000));
+                                reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
                             }
 
                             if (reg) {
                                 initPushNotifications(firebase.firestore(), reg);
                             } else {
-                                showToast("Hintergrund-Dienst antwortet nicht.", "error");
-                                // Trotzdem versuchen, falls er später kommt
-                                navigator.serviceWorker.ready.then(r => {
-                                    initPushNotifications(firebase.firestore(), r);
-                                });
+                                showToast("System blockiert Push-Modul.", "error");
                             }
                         }
                     } catch (e) {
@@ -2676,21 +2671,21 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.6.0'
+                version: '2.7.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
             showToast("GERÄT REGISTRIERT! 🔔", "success");
             console.log("FCM gespeichert.");
         } else {
-            showToast("Kein Schlüssel vom System.", "error");
+            showToast("Kein Schlüssel erhalten.", "error");
         }
     } catch (err) {
         console.error('FCM Error Detail:', err);
         let msg = err.message || err.code || "FCM Fehler";
 
-        if (msg.includes("Timeout")) msg = "Antwort dauert zu lange...";
-        if (msg.includes("subscribe")) msg = "PushManager blockiert";
+        if (msg.includes("Timeout")) msg = "Google antwortet zu langsam...";
+        if (msg.includes("subscribe")) msg = "Push-Manager blockiert";
 
         showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
     }
@@ -2818,7 +2813,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.6.0...", "info");
+    showToast("Systemstart v2.7.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {

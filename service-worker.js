@@ -23,21 +23,28 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'revier-app-v30';
+const CACHE_NAME = 'revier-app-v31';
 
 const ASSETS = [
   "./",
   "./index.html",
-  "./style/main.css",
-  "./js/app.js",
   "./manifest.json"
 ];
 
-// Install - cache new assets
+// Install - cache assets robustly (v2.7.0)
 self.addEventListener("install", event => {
-  self.skipWaiting(); // Activate immediately
+  console.log("[SW] Install Event...");
+  self.skipWaiting();
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => {
+      // Wir versuchen zu cachen, aber ein Fehler hier soll NICHT den ganzen SW blockieren
+      return Promise.allSettled(
+        ASSETS.map(url =>
+          cache.add(url).catch(err => console.log("[SW] Cache failing for:", url))
+        )
+      );
+    })
   );
 });
 
