@@ -833,20 +833,30 @@ async function initializeApp() {
 
             if (bulletinPreview) {
                 bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
-                // Zeige alle aktiven Einträge in der Vorschau
-                items.forEach(item => {
+                // LIMIT: Zeige maximal 10 neueste Einträge in der Vorschau
+                items.slice(0, 10).forEach(item => {
                     const el = document.createElement("div");
                     el.className = "bulletin-preview-item";
                     el.textContent = item.message;
 
-                    // Klick auf Eintrag im Widget = Erledigt
+                    // Klick auf Eintrag im Widget
                     el.onclick = async (e) => {
                         e.stopPropagation(); // Verhindert das Öffnen der Seite
-                        try {
-                            await bulletinCollection.doc(item.id).update({ isDone: true });
-                            showToast("Erledigt!", "success");
-                        } catch (err) {
-                            console.error(err);
+                        // MODAL: Bestätigung einholen
+                        const confirmed = await showConfirm(
+                            "Möchten Sie diesen Aushang als erledigt markieren?",
+                            "Aushang erledigt",
+                            "Erledigen"
+                        );
+
+                        if (confirmed) {
+                            try {
+                                await bulletinCollection.doc(item.id).update({ isDone: true });
+                                showToast("Erledigt!", "success");
+                            } catch (err) {
+                                console.error(err);
+                                showToast("Fehler beim Aktualisieren", "error");
+                            }
                         }
                     };
                     bulletinPreview.appendChild(el);
