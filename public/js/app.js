@@ -2524,51 +2524,62 @@ if ("serviceWorker" in navigator) {
 }
 
 async function initPushNotifications(db, swReg) {
-    if (!firebase.messaging || !firebase.messaging.isSupported) return;
-    try {
-        const isSupported = await firebase.messaging.isSupported();
-        if (!isSupported) {
-            console.log("Firebase Messaging wird nicht unterstützt.");
-            return;
-        }
-    } catch (e) {
+    // Lauter Debug-Start
+    showToast("Prüfe Benachrichtigungen...", "info");
+
+    if (!firebase.messaging) {
+        showToast("Fehler: Messaging-Modul fehlt!", "error");
         return;
     }
 
-    console.log("Push Status:", Notification.permission);
+    try {
+        const isSupported = await firebase.messaging.isSupported();
+        if (!isSupported) {
+            showToast("Push wird hier nicht unterstützt.", "error");
+            return;
+        }
+    } catch (e) {
+        showToast("Push-Check Fehler: " + e.message, "error");
+        return;
+    }
 
-    if (Notification.permission === 'granted') {
+    const currentPerm = Notification.permission;
+    showToast("Status: " + currentPerm, "info");
+
+    if (currentPerm === 'granted') {
+        showToast("Bereits erlaubt! Token-Update...", "info");
         await fetchAndSaveToken(db, swReg);
         return;
     }
 
-    if (Notification.permission === 'default') {
-        showToast("Tippe irgendwohin, um Benachrichtigungen zu aktivieren", "info");
+    if (currentPerm === 'default') {
+        showToast("BITTE 1x IRGENDWOHIN TIPPEN!", "info");
 
         const requestPushAccess = async () => {
-            // Event-Listener sofort entfernen, damit es wirklich nur 1x feuert
-            document.removeEventListener('click', requestPushAccess);
-            document.removeEventListener('touchstart', requestPushAccess);
+            // Event-Listener sofort entfernen
+            window.removeEventListener('click', requestPushAccess);
+            window.removeEventListener('touchstart', requestPushAccess);
 
+            showToast("System-Dialog wird geladen...", "info");
             try {
                 const permission = await Notification.requestPermission();
+                showToast("Ergebnis: " + permission, "info");
                 if (permission === 'granted') {
-                    showToast("Berechtigung erteilt! Token wird erstellt...", "info");
                     await fetchAndSaveToken(db, swReg);
                 } else {
-                    showToast("Berechtigung abgelehnt.", "error");
+                    showToast("Abgelehnt. Muss manuell erlaubt werden.", "error");
                 }
             } catch (err) {
                 console.error("Fehler bei Push-Berechtigung:", err);
-                showToast("Fehler bei Berechtigung", "error");
+                showToast("Dialog Fehler: " + err.message, "error");
             }
         };
 
-        // Auf Klick und Touch reagieren
-        document.addEventListener('click', requestPushAccess);
-        document.addEventListener('touchstart', requestPushAccess, { passive: true });
-    } else if (Notification.permission === 'denied') {
-        console.log("Push-Berechtigung wurde vom Nutzer blockiert.");
+        // Auf Klick und Touch am window reagieren (sicherer als document)
+        window.addEventListener('click', requestPushAccess);
+        window.addEventListener('touchstart', requestPushAccess, { passive: true });
+    } else if (currentPerm === 'denied') {
+        showToast("BLOCKIERT! Bitte in den Handy-Einstellungen (App Info) erlauben.", "error");
     }
 }
 
