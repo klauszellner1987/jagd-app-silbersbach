@@ -2535,14 +2535,16 @@ async function initPushNotifications(db, swReg) {
         return;
     }
 
+    console.log("Push Status:", Notification.permission);
+
     if (Notification.permission === 'granted') {
         await fetchAndSaveToken(db, swReg);
         return;
     }
 
     if (Notification.permission === 'default') {
-        // Native Push-Berechtigung erfordert (v.a. unter iOS/Safari) eine direkte User Action.
-        // Daher hängen wir uns an den allerersten Touch/Klick des Users.
+        showToast("Tippe irgendwohin, um Benachrichtigungen zu aktivieren", "info");
+
         const requestPushAccess = async () => {
             // Event-Listener sofort entfernen, damit es wirklich nur 1x feuert
             document.removeEventListener('click', requestPushAccess);
@@ -2551,17 +2553,22 @@ async function initPushNotifications(db, swReg) {
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
+                    showToast("Berechtigung erteilt! Token wird erstellt...", "info");
                     await fetchAndSaveToken(db, swReg);
-                    showToast("Benachrichtigungen aktiviert!", "success");
+                } else {
+                    showToast("Berechtigung abgelehnt.", "error");
                 }
             } catch (err) {
                 console.error("Fehler bei Push-Berechtigung:", err);
+                showToast("Fehler bei Berechtigung", "error");
             }
         };
 
         // Auf Klick und Touch reagieren
         document.addEventListener('click', requestPushAccess);
         document.addEventListener('touchstart', requestPushAccess, { passive: true });
+    } else if (Notification.permission === 'denied') {
+        console.log("Push-Berechtigung wurde vom Nutzer blockiert.");
     }
 }
 
@@ -2573,22 +2580,35 @@ async function fetchAndSaveToken(db, swReg) {
             vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
+
         if (currentToken) {
-            const user = firebase.auth().currentUser;
-            if (user) {
-                await db.collection('fcmTokens').doc(currentToken).set({
-                    token: currentToken,
-                    userId: user.uid,
-                    userName: user.displayName || user.email || 'Unbekannt',
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                console.log("FCM Token gespeichert.");
+            console.log("Token erhalten:", currentToken);
+
+            // Sicherstellen, dass wir einen User haben (falls Auth noch kurz braucht)
+            let user = firebase.auth().currentUser;
+            if (!user) {
+                // Einmaliger Check nach kurzem Delay falls nötig
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                user = firebase.auth().currentUser;
             }
+
+            const tokenData = {
+                token: currentToken,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                userId: user ? user.uid : 'anon',
+                userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt'
+            };
+
+            await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
+            console.log("FCM Token in Firestore gespeichert.");
+            showToast("Glocke aktiv! Benachrichtigungen sind scharf.", "success");
         } else {
-            console.log("Kein FCM Token erhalten.");
+            console.log("Kein FCM Token erhalten (NULL).");
+            showToast("Konnte Token nicht abrufen.", "error");
         }
     } catch (err) {
         console.error('Fehler beim Abrufen/Speichern des FCM Tokens:', err);
+        showToast("FCM Fehler: " + err.message, "error");
     }
 }
 
