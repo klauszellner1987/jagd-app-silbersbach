@@ -34,7 +34,24 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v2.9.0)
+// Notification Click Event - App öffnen (v3.2.0)
+self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Benachrichtigung geklickt.');
+    event.notification.close();
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // Falls die App schon offen ist, fokussieren
+            if (clientList.length > 0) {
+                return clientList[0].focus();
+            }
+            // Ansonsten neu öffnen
+            return clients.openWindow('./');
+        })
+    );
+});
+
+// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v3.2.0)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", () => { }); // Nur Platzhalter

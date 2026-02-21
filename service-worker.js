@@ -13,23 +13,32 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Background Message Received:', payload);
-  const notificationTitle = payload.notification?.title || 'Neue Aushang';
+  console.log('[SW] Hintergrund-Nachricht:', payload);
+  if (payload.notification) return; // System zeigt es an
+
+  const notificationTitle = 'Jagd-App Info';
   const notificationOptions = {
-    body: payload.notification?.body || 'Es gibt Neuigkeiten auf dem Schwarzen Brett.',
+    body: payload.data?.message || 'Neuigkeit am Schwarzen Brett.',
     icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png'
+    badge: './icons/icon-192.png',
+    tag: 'bulletin-notification',
+    renotify: true
   };
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'revier-app-v32';
+// Notification Click Event - App öffnen (v3.2.0)
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      if (clientList.length > 0) return clientList[0].focus();
+      return clients.openWindow('./');
+    })
+  );
+});
 
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.json"
-];
+const CACHE_NAME = 'revier-app-v33';
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => {
