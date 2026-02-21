@@ -14,9 +14,18 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
     console.log('[SW] Hintergrund-Nachricht:', payload);
-    const notificationTitle = payload.notification?.title || 'Jagd-App Info';
+
+    // Falls die Nachricht bereits einen Benachrichtigungs-Block hat, 
+    // zeigt Android/Chrome sie automatisch an. Wir zeigen sie nur manuell,
+    // wenn es eine reine Daten-Nachricht ist, um Dopplungen zu vermeiden. (v3.1.0)
+    if (payload.notification) {
+        console.log('[SW] System übernimmt die Anzeige automatisch.');
+        return;
+    }
+
+    const notificationTitle = 'Jagd-App Info';
     const notificationOptions = {
-        body: payload.notification?.body || 'Neuigkeit am Schwarzen Brett.',
+        body: payload.data?.message || 'Neuigkeit am Schwarzen Brett.',
         icon: './icons/icon-192.png',
         badge: './icons/icon-192.png',
         tag: 'bulletin-notification',
