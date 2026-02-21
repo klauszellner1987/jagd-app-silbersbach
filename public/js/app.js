@@ -475,16 +475,25 @@ function initAuthListener() {
             if (!isAppInitialized) {
                 isAppInitialized = true;
                 initializeApp().then(async () => {
-                    console.log("App initialized, setting up Push...");
+                    showToast("App bereit. Starte Push...", "info");
                     try {
                         if ('serviceWorker' in navigator) {
-                            const reg = await navigator.serviceWorker.ready;
-                            initPushNotifications(firebase.firestore(), reg);
+                            // Versuche die bestehende Registration zu nutzen
+                            const reg = swRegCache || await navigator.serviceWorker.getRegistration();
+                            if (reg) {
+                                initPushNotifications(firebase.firestore(), reg);
+                            } else {
+                                showToast("Warte auf Service Worker...", "info");
+                                const readyReg = await navigator.serviceWorker.ready;
+                                initPushNotifications(firebase.firestore(), readyReg);
+                            }
                         }
                     } catch (e) {
+                        showToast("Push-Init Fehler: " + e.message, "error");
                         console.error("Push init error:", e);
                     }
                 }).catch((error) => {
+                    showToast("App Fehler: " + error.message, "error");
                     console.error("App initialization error:", error);
                 });
 
@@ -2460,10 +2469,13 @@ function showInstallBannerAfterLogin() {
 // ==============================
 // SERVICE WORKER & AUTO-UPDATE
 // ==============================
+let swRegCache = null;
+
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").then(reg => {
             console.log("[SW] Service Worker registriert");
+            swRegCache = reg;
 
             // SOFORT nach Updates prüfen beim Laden
             reg.update().then(() => {
@@ -2739,19 +2751,19 @@ function showUpdateToast(forceReload = false, newVersion = null) {
 // MAIN INITIALIZATION
 // ==============================
 function initAll() {
+    // Globaler Error-Handler für Toasts (Debug v2.2.7)
+    window.onerror = function (msg, url, line) {
+        showToast("Fehler: " + msg + " (L" + line + ")", "error");
+        return false;
+    };
+
+    showToast("Systemstart v2.2.7...", "info");
+
     // iOS Bounce/Overscroll Fix
     try {
         preventIOSBounce();
-        console.log("iOS Bounce Fix OK");
     } catch (e) {
         console.error("iOS Bounce Fix error:", e);
-    }
-
-    try {
-        initNavigation();
-        console.log("Navigation OK");
-    } catch (e) {
-        console.error("Navigation init error:", e);
     }
 
     try {
@@ -2759,6 +2771,14 @@ function initAll() {
         console.log("Login OK");
     } catch (e) {
         console.error("Login init error:", e);
+        showToast("Login Init Fehler", "error");
+    }
+
+    try {
+        initNavigation();
+        console.log("Navigation OK");
+    } catch (e) {
+        console.error("Navigation init error:", e);
     }
 
     try {
