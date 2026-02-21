@@ -8,69 +8,79 @@ exports.sendBulletinNotification = functions.firestore
     .document('bulletinBoard/{docId}')
     .onCreate(async (snap, context) => {
         const newValue = snap.data();
-        // Fallback-Nachricht, falls der Text fehlt
         const messageText = newValue.message || 'Ein neuer Aushang wurde erstellt.';
         const senderInfo = newValue.sender || 'Jemand';
-
         const bodyText = `${senderInfo}: ${messageText}`;
+
+        console.log(`Verarbeite neuen Aushang von ${senderInfo}.`);
 
         // Alle gespeicherten FCM Tokens abrufen
         const tokensSnapshot = await admin.firestore().collection('fcmTokens').get();
 
         if (tokensSnapshot.empty) {
-            console.log('Keine FCM Tokens gefunden. Senden abgebrochen.');
+            console.log('Keine FCM Tokens in der fcmTokens Collection gefunden.');
             return null;
         }
 
         const tokens = [];
-        const tokenDocs = []; // Referenz auf die Dokumente behalten für späteres Löschen
-
         tokensSnapshot.forEach(doc => {
             const data = doc.data();
             if (data.token) {
                 tokens.push(data.token);
-                tokenDocs.push(doc); // Gleicher Index wie im tokens Array
             }
         });
 
         if (tokens.length === 0) {
-            console.log('FCM Tokens Collection existiert, ist aber leer.');
+            console.log('FCM Tokens Collection ist nicht leer, enthält aber keine "token" Felder.');
             return null;
         }
 
-        // Notification Payload
-        // Achtung: Auf iOS wird das icon oft ignoriert, aber Android nutzt es
-        const payload = {
+        console.log(`${tokens.length} Token(s) gefunden. Sende Multicast...`);
+
+        // Modern Multicast Message API (v11+)
+        const message = {
             notification: {
                 title: 'Neuer Aushang (Schwarzes Brett)',
-                body: bodyText,
-                icon: 'https://klauszellner1987.github.io/jagd-app-silbersbach/icons/icon-192.png'
-            }
+                body: bodyText
+            },
+            android: {
+                notification: {
+                    icon: 'stock_ticker_update',
+                    color: '#2f6f4e',
+                    sound: 'default'
+                }
+            },
+            tokens: tokens
         };
 
         try {
-            // Sende Multicast an alle Geräte in einem Rutsch
-            const response = await admin.messaging().sendToDevice(tokens, payload);
-            console.log(`Erfolgreich gesendet an ${response.successCount} Geräte.`);
+            const response = await admin.messaging().sendEachForMulticast(message);
+            console.log(`Ergebnis: ${response.successCount} erfolgreich, ${response.failureCount} fehlgeschlagen.`);
 
-            // Bereinigen ungültiger Tokens (z. B. wenn die App deinstalliert wurde)
-            const tokensToRemove = [];
-            response.results.forEach((result, index) => {
-                const error = result.error;
-                if (error) {
-                    console.error('Fehler beim Senden an Token:', tokens[index], error);
-                    // Entferne ungültige Registrierungstokens aus der Datenbank
-                    if (error.code === 'messaging/invalid-registration-token' ||
-                        error.code === 'messaging/registration-token-not-registered') {
-                        tokensToRemove.push(tokenDocs[index].ref.delete());
+            if (response.failureCount > 0) {
+                const tokensToRemove = [];
+                response.responses.forEach((resp, idx) => {
+                    if (!resp.success) {
+                        const errorCode = resp.error.code;
+                        console.error(`Fehler bei Token ${tokens[idx].substring(0, 10)}...: ${errorCode}`);
+
+                        if (errorCode === 'messaging/invalid-registration-token' ||
+                            errorCode === 'messaging/registration-token-not-registered') {
+                            const tokenToDelete = tokens[idx];
+                            tokensToRemove.push(
+                                admin.firestore().collection('fcmTokens').doc(tokenToDelete).delete()
+                            );
+                        }
                     }
+                });
+                if (tokensToRemove.length > 0) {
+                    await Promise.all(tokensToRemove);
+                    console.log(`${tokensToRemove.length} ungültige Tokens bereinigt.`);
                 }
-            });
-
-            return Promise.all(tokensToRemove);
-
+            }
+            return null;
         } catch (error) {
-            console.error('Genereller Fehler beim Versenden der Multicast-Nachricht:', error);
+            console.error('Kritischer Fehler beim Multicast-Senden:', error);
             return null;
         }
     });

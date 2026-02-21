@@ -475,28 +475,22 @@ function initAuthListener() {
             if (!isAppInitialized) {
                 isAppInitialized = true;
                 initializeApp().then(async () => {
-                    showToast("App bereit. Initialisiere Push...", "info");
                     try {
                         if ('serviceWorker' in navigator) {
-                            showToast("Verbinde mit Hintergrund-Dienst...", "info");
 
                             // Versuche die Registration zu finden (v2.7.0)
                             let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
 
                             if (!reg) {
-                                showToast("Warte auf System-Freigabe...", "info");
                                 const timeout = new Promise(r => setTimeout(() => r(null), 5000));
                                 reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
                             }
 
                             if (reg) {
                                 initPushNotifications(firebase.firestore(), reg);
-                            } else {
-                                showToast("System blockiert Push-Modul.", "error");
                             }
                         }
                     } catch (e) {
-                        showToast("Push-Init Fehler: " + e.message, "error");
                         console.error("Push init error:", e);
                     }
                 }).catch((error) => {
@@ -2538,54 +2532,34 @@ if ("serviceWorker" in navigator) {
 }
 
 async function initPushNotifications(db, swReg) {
-    // Lauter Debug-Start
-    showToast("Prüfe Benachrichtigungen...", "info");
-
-    if (!firebase.messaging) {
-        showToast("Fehler: Messaging-Modul fehlt!", "error");
-        return;
-    }
+    if (!firebase.messaging) return;
 
     try {
         const isSupported = await firebase.messaging.isSupported();
-        if (!isSupported) {
-            showToast("Push wird hier nicht unterstützt.", "error");
-            return;
-        }
+        if (!isSupported) return;
     } catch (e) {
-        showToast("Push-Check Fehler: " + e.message, "error");
         return;
     }
 
     const currentPerm = Notification.permission;
-    showToast("Status: " + currentPerm, "info");
 
     if (currentPerm === 'granted') {
-        showToast("Bereits erlaubt! Token-Update...", "info");
         await fetchAndSaveToken(db, swReg);
         return;
     }
 
     if (currentPerm === 'default') {
-        showToast("BITTE 1x IRGENDWOHIN TIPPEN!", "info");
-
         const requestPushAccess = async () => {
-            // Event-Listener sofort entfernen
             window.removeEventListener('click', requestPushAccess);
             window.removeEventListener('touchstart', requestPushAccess);
 
-            showToast("System-Dialog wird geladen...", "info");
             try {
                 const permission = await Notification.requestPermission();
-                showToast("Ergebnis: " + permission, "info");
                 if (permission === 'granted') {
                     await fetchAndSaveToken(db, swReg);
-                } else {
-                    showToast("Abgelehnt. Muss manuell erlaubt werden.", "error");
                 }
             } catch (err) {
                 console.error("Fehler bei Push-Berechtigung:", err);
-                showToast("Dialog Fehler: " + err.message, "error");
             }
         };
 
@@ -2622,8 +2596,6 @@ async function fetchAndSaveToken(db, swReg) {
 
     while (attempts < maxAttempts) {
         attempts++;
-        showToast(`Schlüssel-Versuch ${attempts}...`, "info");
-
         try {
             const currentToken = await messaging.getToken({
                 vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
@@ -2631,8 +2603,6 @@ async function fetchAndSaveToken(db, swReg) {
             });
 
             if (currentToken) {
-                console.log("Token erhalten:", currentToken);
-
                 let user = firebase.auth().currentUser;
                 if (!user) {
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -2645,12 +2615,12 @@ async function fetchAndSaveToken(db, swReg) {
                     userId: user ? user.uid : 'anon',
                     userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                     device: navigator.userAgent.substring(0, 100),
-                    version: '2.9.0'
+                    version: '3.0.0'
                 };
 
                 await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-                showToast("GERÄT REGISTRIERT! 🔔", "success");
-                return; // Erfolg!
+                showToast("Push-Benachrichtigungen aktiv! 🔔", "success");
+                return;
             } else {
                 showToast("System gibt keinen Schlüssel frei.", "error");
                 return;
@@ -2795,7 +2765,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.9.0...", "info");
+    showToast("Reviersystem v3.0.0 bereit", "success");
 
     // iOS Bounce/Overscroll Fix
     try {
