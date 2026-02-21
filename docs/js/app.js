@@ -2539,21 +2539,27 @@ async function initPushNotifications(db) {
     }
 
     if (Notification.permission === 'default') {
-        const confirmed = await showConfirm(
-            "Möchtest du Push-Benachrichtigungen aktivieren, um bei neuen Aushängen sofort informiert zu werden?",
-            "Benachrichtigungen",
-            "Aktivieren"
-        );
+        // Native Push-Berechtigung erfordert (v.a. unter iOS/Safari) eine direkte User Action.
+        // Daher hängen wir uns an den allerersten Touch/Klick des Users.
+        const requestPushAccess = async () => {
+            // Event-Listener sofort entfernen, damit es wirklich nur 1x feuert
+            document.removeEventListener('click', requestPushAccess);
+            document.removeEventListener('touchstart', requestPushAccess);
 
-        if (confirmed) {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                await fetchAndSaveToken(db);
-                showToast("Benachrichtigungen aktiviert!", "success");
-            } else {
-                showToast("Benachrichtigungen blockiert.", "error");
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    await fetchAndSaveToken(db);
+                    showToast("Benachrichtigungen aktiviert!", "success");
+                }
+            } catch (err) {
+                console.error("Fehler bei Push-Berechtigung:", err);
             }
-        }
+        };
+
+        // Auf Klick und Touch reagieren
+        document.addEventListener('click', requestPushAccess);
+        document.addEventListener('touchstart', requestPushAccess, { passive: true });
     }
 }
 
