@@ -475,18 +475,12 @@ function initAuthListener() {
             if (!isAppInitialized) {
                 isAppInitialized = true;
                 initializeApp().then(async () => {
-                    showToast("App bereit. Starte Push...", "info");
+                    showToast("App bereit. Initialisiere Push...", "info");
                     try {
                         if ('serviceWorker' in navigator) {
-                            // Versuche die bestehende Registration zu nutzen
-                            const reg = swRegCache || await navigator.serviceWorker.getRegistration();
-                            if (reg) {
-                                initPushNotifications(firebase.firestore(), reg);
-                            } else {
-                                showToast("Warte auf Service Worker...", "info");
-                                const readyReg = await navigator.serviceWorker.ready;
-                                initPushNotifications(firebase.firestore(), readyReg);
-                            }
+                            showToast("Verbinde mit Hintergrund-Dienst...", "info");
+                            const reg = await navigator.serviceWorker.ready;
+                            initPushNotifications(firebase.firestore(), reg);
                         }
                     } catch (e) {
                         showToast("Push-Init Fehler: " + e.message, "error");
@@ -2469,13 +2463,10 @@ function showInstallBannerAfterLogin() {
 // ==============================
 // SERVICE WORKER & AUTO-UPDATE
 // ==============================
-let swRegCache = null;
-
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js").then(reg => {
             console.log("[SW] Service Worker registriert");
-            swRegCache = reg;
 
             // SOFORT nach Updates prüfen beim Laden
             reg.update().then(() => {
@@ -2601,35 +2592,42 @@ async function fetchAndSaveToken(db, swReg) {
         return;
     }
 
-    // Sicherstellen, dass der Worker wirklich aktiv ist (v2.3.0)
-    let activeWorker = swReg.active;
-    if (!activeWorker || activeWorker.state !== 'activated') {
-        showToast("Warte auf Hintergrund-Dienst...", "info");
-        // Wir warten bis zu 5 Sekunden
-        for (let i = 0; i < 10; i++) {
-            if (swReg.active && swReg.active.state === 'activated') {
-                activeWorker = swReg.active;
-                break;
-            }
-            await new Promise(r => setTimeout(r, 500));
+    // Sicherstellen, dass der Worker aktiv ist (v2.4.0)
+    let worker = swReg.active;
+    if (!worker) {
+        worker = swReg.waiting || swReg.installing;
+        if (worker) {
+            showToast("Dienst wird aktiviert...", "info");
+            await new Promise(resolve => {
+                const checkStatus = () => {
+                    if (worker.state === 'activated') {
+                        resolve();
+                        worker.removeEventListener('statechange', checkStatus);
+                    }
+                };
+                worker.addEventListener('statechange', checkStatus);
+                // Fallback timeout
+                setTimeout(resolve, 8000);
+            });
+            worker = swReg.active; // Jetzt sollte er aktiv sein
         }
     }
 
-    const swState = activeWorker ? activeWorker.state : "unbekannt";
+    const swState = worker ? worker.state : "unbekannt";
     console.log("[FCM] SW State:", swState);
 
     if (Notification.permission !== 'granted') {
-        showToast("Push nicht erlaubt: " + Notification.permission, "error");
+        showToast("Berechtigung fehlt: " + Notification.permission, "error");
         return;
     }
 
-    if (!activeWorker) {
-        showToast("Dienst schläft noch. Bitte Seite neu laden.", "error");
+    if (!worker) {
+        showToast("Dienst lässt sich nicht wecken.", "error");
         return;
     }
 
     const messaging = firebase.messaging();
-    showToast("Hole Token (" + swState + ")...", "info");
+    showToast("Hole Gerät-ID (" + swState + ")...", "info");
 
     try {
         const currentToken = await messaging.getToken({
@@ -2652,24 +2650,22 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.3.1'
+                version: '2.4.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
             showToast("GLOCKE AKTIV! 🔔", "success");
         } else {
-            showToast("Kein Token vom System erhalten.", "error");
+            showToast("Kein Schlüssel erhalten vom System.", "error");
         }
     } catch (err) {
-        console.error('FCM Error:', err);
-        let msg = err.message || "Unbekannter Fehler";
-        if (msg.includes("subscribe")) msg = "System-Blockade (PushManager)";
-        showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
+        console.error('FCM Error Detail:', err);
+        let msg = err.message || err.code || "FCM Fehler";
 
-        // Bei manchen Fehlern hilft ein Refresh
-        if (err.name === 'AbortError') {
-            showToast("Versuche es gleich nochmal...", "info");
-        }
+        if (msg.includes("subscribe")) msg = "PushManager blockiert";
+        if (msg.includes("AbortError") || err.code === 20) msg = "Zeitüberschreitung (20)";
+
+        showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
     }
 }
 
@@ -2795,7 +2791,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.3.1...", "info");
+    showToast("Systemstart v2.4.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
