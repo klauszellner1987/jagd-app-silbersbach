@@ -2627,13 +2627,20 @@ async function fetchAndSaveToken(db, swReg) {
     }
 
     const messaging = firebase.messaging();
-    showToast("Hole Gerät-ID (" + swState + ")...", "info");
+    showToast("Suche Gerät (" + swState + ")...", "info");
 
     try {
-        const currentToken = await messaging.getToken({
+        // Timeout-Mechanismus für Token-Abruf (v2.5.0)
+        const tokenPromise = messaging.getToken({
             vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
+
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout (15s)")), 15000)
+        );
+
+        const currentToken = await Promise.race([tokenPromise, timeoutPromise]);
 
         if (currentToken) {
             console.log("Token erhalten:", currentToken);
@@ -2650,20 +2657,21 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.4.0'
+                version: '2.5.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-            showToast("GLOCKE AKTIV! 🔔", "success");
+            showToast("GERÄT REGISTRIERT! 🔔", "success");
+            console.log("FCM gespeichert.");
         } else {
-            showToast("Kein Schlüssel erhalten vom System.", "error");
+            showToast("Kein Schlüssel vom System.", "error");
         }
     } catch (err) {
         console.error('FCM Error Detail:', err);
         let msg = err.message || err.code || "FCM Fehler";
 
+        if (msg.includes("Timeout")) msg = "Antwort dauert zu lange...";
         if (msg.includes("subscribe")) msg = "PushManager blockiert";
-        if (msg.includes("AbortError") || err.code === 20) msg = "Zeitüberschreitung (20)";
 
         showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
     }
@@ -2791,7 +2799,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.4.0...", "info");
+    showToast("Systemstart v2.5.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
