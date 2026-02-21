@@ -2602,59 +2602,24 @@ async function initPushNotifications(db, swReg) {
 
 async function fetchAndSaveToken(db, swReg) {
     if (!swReg) {
-        showToast("Fehler: swReg fehlt", "error");
+        showToast("Fehler: System-Modul fehlt", "error");
         return;
     }
-
-    // Sicherstellen, dass der Worker aktiv ist (v2.4.0)
-    let worker = swReg.active;
-    if (!worker) {
-        worker = swReg.waiting || swReg.installing;
-        if (worker) {
-            showToast("Dienst wird aktiviert...", "info");
-            await new Promise(resolve => {
-                const checkStatus = () => {
-                    if (worker.state === 'activated') {
-                        resolve();
-                        worker.removeEventListener('statechange', checkStatus);
-                    }
-                };
-                worker.addEventListener('statechange', checkStatus);
-                // Fallback timeout
-                setTimeout(resolve, 8000);
-            });
-            worker = swReg.active; // Jetzt sollte er aktiv sein
-        }
-    }
-
-    const swState = worker ? worker.state : "unbekannt";
-    console.log("[FCM] SW State:", swState);
 
     if (Notification.permission !== 'granted') {
         showToast("Berechtigung fehlt: " + Notification.permission, "error");
         return;
     }
 
-    if (!worker) {
-        showToast("Dienst lässt sich nicht wecken.", "error");
-        return;
-    }
-
     const messaging = firebase.messaging();
-    showToast("Fordere Schlüssel an...", "info");
+    showToast("Schlüssel anfordern...", "info");
 
     try {
-        // Timeout-Mechanismus für Token-Abruf (v2.6.0)
-        const tokenPromise = messaging.getToken({
+        // Direkter Abruf ohne Schnickschnack (v2.8.0)
+        const currentToken = await messaging.getToken({
             vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
-
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout (20s)")), 20000)
-        );
-
-        const currentToken = await Promise.race([tokenPromise, timeoutPromise]);
 
         if (currentToken) {
             console.log("Token erhalten:", currentToken);
@@ -2671,23 +2636,22 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.7.0'
+                version: '2.8.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
             showToast("GERÄT REGISTRIERT! 🔔", "success");
-            console.log("FCM gespeichert.");
         } else {
-            showToast("Kein Schlüssel erhalten.", "error");
+            showToast("System gibt keinen Schlüssel frei.", "error");
         }
     } catch (err) {
         console.error('FCM Error Detail:', err);
-        let msg = err.message || err.code || "FCM Fehler";
+        let msg = err.message || err.code || "Fehler";
 
-        if (msg.includes("Timeout")) msg = "Google antwortet zu langsam...";
-        if (msg.includes("subscribe")) msg = "Push-Manager blockiert";
+        if (msg.includes("subscribe")) msg = "System blockiert Push";
+        if (msg.includes("AbortError") || err.code === 20) msg = "Abbruch (20)";
 
-        showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
+        showToast("FCM: " + msg.substring(0, 50), "error");
     }
 }
 
@@ -2813,7 +2777,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.7.0...", "info");
+    showToast("Systemstart v2.8.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
