@@ -2512,7 +2512,75 @@ if ("serviceWorker" in navigator) {
             window.location.reload();
         });
     });
+
+    // ==============================
+    // PUSH NOTIFICATIONS (FCM)
+    // ==============================
+    setTimeout(() => {
+        initPushNotifications(db);
+    }, 2000); // Kurz warten, um Ladezeit der App nicht zu blockieren
 }
+
+async function initPushNotifications(db) {
+    if (!firebase.messaging || !firebase.messaging.isSupported) return;
+    try {
+        const isSupported = await firebase.messaging.isSupported();
+        if (!isSupported) {
+            console.log("Firebase Messaging wird nicht unterstützt.");
+            return;
+        }
+    } catch (e) {
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        await fetchAndSaveToken(db);
+        return;
+    }
+
+    if (Notification.permission === 'default') {
+        const confirmed = await showConfirm(
+            "Möchtest du Push-Benachrichtigungen aktivieren, um bei neuen Aushängen sofort informiert zu werden?",
+            "Benachrichtigungen",
+            "Aktivieren"
+        );
+
+        if (confirmed) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                await fetchAndSaveToken(db);
+                showToast("Benachrichtigungen aktiviert!", "success");
+            } else {
+                showToast("Benachrichtigungen blockiert.", "error");
+            }
+        }
+    }
+}
+
+async function fetchAndSaveToken(db) {
+    const messaging = firebase.messaging();
+    try {
+        // HINWEIS FÜR DEN NUTZER: Hier kommt der VAPID Key rein!
+        const currentToken = await messaging.getToken({ vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg' });
+        if (currentToken) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                await db.collection('fcmTokens').doc(currentToken).set({
+                    token: currentToken,
+                    userId: user.uid,
+                    userName: user.displayName || user.email || 'Unbekannt',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("FCM Token gespeichert.");
+            }
+        } else {
+            console.log("Kein FCM Token erhalten.");
+        }
+    } catch (err) {
+        console.error('Fehler beim Abrufen/Speichern des FCM Tokens:', err);
+    }
+}
+
 
 // ==============================
 // VERSION CHECK (Fallback für Mobile)
