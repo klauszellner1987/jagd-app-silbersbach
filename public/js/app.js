@@ -2652,7 +2652,7 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.3.0'
+                version: '2.3.1'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
@@ -2795,7 +2795,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.3.0...", "info");
+    showToast("Systemstart v2.3.1...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
