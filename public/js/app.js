@@ -2596,9 +2596,20 @@ async function initPushNotifications(db, swReg) {
 }
 
 async function fetchAndSaveToken(db, swReg) {
+    if (!swReg) {
+        showToast("Fehler: Kein Service Worker!", "error");
+        return;
+    }
+
+    if (Notification.permission !== 'granted') {
+        showToast("Push nicht erlaubt (Status: " + Notification.permission + ")", "error");
+        return;
+    }
+
     const messaging = firebase.messaging();
+    showToast("Fordere Token an...", "info");
+
     try {
-        // HIER WICHTIG: Die swReg mitgeben, da unser SW nicht "firebase-messaging-sw.js" heißt
         const currentToken = await messaging.getToken({
             vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
@@ -2607,11 +2618,9 @@ async function fetchAndSaveToken(db, swReg) {
         if (currentToken) {
             console.log("Token erhalten:", currentToken);
 
-            // Sicherstellen, dass wir einen User haben (falls Auth noch kurz braucht)
             let user = firebase.auth().currentUser;
             if (!user) {
-                // Einmaliger Check nach kurzem Delay falls nötig
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 user = firebase.auth().currentUser;
             }
 
@@ -2619,19 +2628,24 @@ async function fetchAndSaveToken(db, swReg) {
                 token: currentToken,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 userId: user ? user.uid : 'anon',
-                userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt'
+                userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
+                device: navigator.userAgent.substring(0, 100)
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-            console.log("FCM Token in Firestore gespeichert.");
-            showToast("Glocke aktiv! Benachrichtigungen sind scharf.", "success");
+            console.log("FCM Token gespeichert.");
+            showToast("GERRÄTE-GLOCKE AKTIV! 🔔", "success");
         } else {
-            console.log("Kein FCM Token erhalten (NULL).");
-            showToast("Konnte Token nicht abrufen.", "error");
+            showToast("Token leer. Bitte Seite neu laden.", "error");
         }
     } catch (err) {
-        console.error('Fehler beim Abrufen/Speichern des FCM Tokens:', err);
-        showToast("FCM Fehler: " + err.message, "error");
+        console.error('FCM Error Detail:', err);
+        const errorMsg = err.code || err.name || "Unbekannt";
+        showToast("FCM FEHLER: " + errorMsg, "error");
+
+        if (err.code === "messaging/permission-blocked") {
+            showToast("Browser blockiert Push!", "error");
+        }
     }
 }
 
