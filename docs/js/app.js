@@ -2596,22 +2596,33 @@ async function initPushNotifications(db, swReg) {
 }
 
 async function fetchAndSaveToken(db, swReg) {
+    // Debug-Info für v2.2.9
     if (!swReg) {
-        showToast("Fehler: Kein Service Worker!", "error");
+        showToast("Fehler: swReg fehlt", "error");
         return;
     }
 
+    const worker = swReg.active || swReg.waiting || swReg.installing;
+    const swState = worker ? worker.state : "unbekannt";
+    console.log("[FCM] SW Registration:", swReg);
+    console.log("[FCM] SW State:", swState);
+
     if (Notification.permission !== 'granted') {
-        showToast("Push nicht erlaubt (Status: " + Notification.permission + ")", "error");
+        showToast("Push nicht erlaubt: " + Notification.permission, "error");
         return;
     }
 
     const messaging = firebase.messaging();
-    showToast("Fordere Token an...", "info");
+    showToast("Hole Token (" + swState + ")...", "info");
 
     try {
+        // Bei AbortError (Code 20) hilft oft ein kurzes Warten, falls der SW gerade erst aktiviert wurde
+        if (swState !== 'activated') {
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
         const currentToken = await messaging.getToken({
-            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
+            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
 
@@ -2629,22 +2640,23 @@ async function fetchAndSaveToken(db, swReg) {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
-                device: navigator.userAgent.substring(0, 100)
+                device: navigator.userAgent.substring(0, 100),
+                version: '2.2.9'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-            console.log("FCM Token gespeichert.");
-            showToast("GERRÄTE-GLOCKE AKTIV! 🔔", "success");
+            showToast("GLOCKE AKTIV! 🔔", "success");
         } else {
-            showToast("Token leer. Bitte Seite neu laden.", "error");
+            showToast("Token leer (NULL).", "error");
         }
     } catch (err) {
-        console.error('FCM Error Detail:', err);
-        const errorMsg = err.code || err.name || "Unbekannt";
-        showToast("FCM FEHLER: " + errorMsg, "error");
+        console.error('Full FCM Error:', err);
+        // Detaillierte Fehlermeldung für den User
+        const detail = err.message || err.code || err.name || "Unbekannter Fehler";
+        showToast("FCM FEHLER: " + detail.substring(0, 60), "error");
 
-        if (err.code === "messaging/permission-blocked") {
-            showToast("Browser blockiert Push!", "error");
+        if (err.name === 'AbortError' || err.code === 20) {
+            showToast("Versuch fehlgeschlagen (20). Bitte nochmal tippen.", "info");
         }
     }
 }
