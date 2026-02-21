@@ -2499,29 +2499,29 @@ if ("serviceWorker" in navigator) {
                 console.log("[SW] Installierender Service Worker gefunden");
             }
 
+            // Reload wenn neuer SW die Kontrolle übernimmt
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener("controllerchange", () => {
+                if (refreshing) return;
+                refreshing = true;
+                console.log("[SW] Controller gewechselt - Seite wird neu geladen");
+                window.location.reload();
+            });
+
+            // ==============================
+            // PUSH NOTIFICATIONS (FCM)
+            // ==============================
+            // Wichtig: Wir übergeben die Registration an Firebase!
+            setTimeout(() => {
+                initPushNotifications(db, reg);
+            }, 1000);
         }).catch(err => {
             console.error("[SW] Registrierung fehlgeschlagen:", err);
         });
-
-        // Reload wenn neuer SW die Kontrolle übernimmt
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-            if (refreshing) return;
-            refreshing = true;
-            console.log("[SW] Controller gewechselt - Seite wird neu geladen");
-            window.location.reload();
-        });
     });
-
-    // ==============================
-    // PUSH NOTIFICATIONS (FCM)
-    // ==============================
-    setTimeout(() => {
-        initPushNotifications(db);
-    }, 2000); // Kurz warten, um Ladezeit der App nicht zu blockieren
 }
 
-async function initPushNotifications(db) {
+async function initPushNotifications(db, swReg) {
     if (!firebase.messaging || !firebase.messaging.isSupported) return;
     try {
         const isSupported = await firebase.messaging.isSupported();
@@ -2534,7 +2534,7 @@ async function initPushNotifications(db) {
     }
 
     if (Notification.permission === 'granted') {
-        await fetchAndSaveToken(db);
+        await fetchAndSaveToken(db, swReg);
         return;
     }
 
@@ -2549,7 +2549,7 @@ async function initPushNotifications(db) {
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    await fetchAndSaveToken(db);
+                    await fetchAndSaveToken(db, swReg);
                     showToast("Benachrichtigungen aktiviert!", "success");
                 }
             } catch (err) {
@@ -2563,11 +2563,14 @@ async function initPushNotifications(db) {
     }
 }
 
-async function fetchAndSaveToken(db) {
+async function fetchAndSaveToken(db, swReg) {
     const messaging = firebase.messaging();
     try {
-        // HINWEIS FÜR DEN NUTZER: Hier kommt der VAPID Key rein!
-        const currentToken = await messaging.getToken({ vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg' });
+        // HIER WICHTIG: Die swReg mitgeben, da unser SW nicht "firebase-messaging-sw.js" heißt
+        const currentToken = await messaging.getToken({
+            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
+            serviceWorkerRegistration: swReg
+        });
         if (currentToken) {
             const user = firebase.auth().currentUser;
             if (user) {
