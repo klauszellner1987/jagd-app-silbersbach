@@ -37,7 +37,7 @@ exports.sendBulletinNotification = functions.firestore
 
         console.log(`${tokens.length} Token(s) gefunden. Sende Multicast...`);
 
-        // Modern Multicast Message API (v11+)
+        // Modern Multicast Message API with Link (v3.3.0)
         const message = {
             notification: {
                 title: 'Neuer Aushang (Schwarzes Brett)',
@@ -48,6 +48,11 @@ exports.sendBulletinNotification = functions.firestore
                     icon: 'stock_ticker_update',
                     color: '#2f6f4e',
                     sound: 'default'
+                }
+            },
+            webpush: {
+                fcm_options: {
+                    link: 'https://klauszellner1987.github.io/jagd-app-silbersbach/'
                 }
             },
             tokens: tokens

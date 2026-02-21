@@ -34,24 +34,29 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Notification Click Event - App öffnen (v3.2.0)
+// Notification Click Event - App öffnen (v3.3.0)
 self.addEventListener('notificationclick', (event) => {
-    console.log('[SW] Benachrichtigung geklickt.');
     event.notification.close();
+
+    const targetUrl = self.registration.scope;
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // Falls die App schon offen ist, fokussieren
-            if (clientList.length > 0) {
-                return clientList[0].focus();
+            // Prüfen, ob die App bereits in einem Tab/Fenster offen ist
+            for (const client of clientList) {
+                if (client.url.includes(targetUrl) && 'focus' in client) {
+                    return client.focus();
+                }
             }
-            // Ansonsten neu öffnen
-            return clients.openWindow('./');
+            // Falls nicht offen, neu im PWA/Browser-Fenster öffnen
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
         })
     );
 });
 
-// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v3.2.0)
+// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v3.3.0)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", () => { }); // Nur Platzhalter

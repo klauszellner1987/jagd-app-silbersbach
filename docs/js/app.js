@@ -2615,7 +2615,7 @@ async function fetchAndSaveToken(db, swReg) {
                     userId: user ? user.uid : 'anon',
                     userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                     device: navigator.userAgent.substring(0, 100),
-                    version: '3.2.0'
+                    version: '3.3.0'
                 };
 
                 await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
@@ -2765,7 +2765,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Reviersystem v3.2.0 bereit", "success");
+    showToast("Reviersystem v3.3.0 bereit", "success");
 
     // iOS Bounce/Overscroll Fix
     try {

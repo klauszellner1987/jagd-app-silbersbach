@@ -27,18 +27,26 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Notification Click Event - App öffnen (v3.2.0)
+// Notification Click Event - App öffnen (v3.3.0)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const targetUrl = self.registration.scope;
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      if (clientList.length > 0) return clientList[0].focus();
-      return clients.openWindow('./');
+      for (const client of clientList) {
+        if (client.url.includes(targetUrl) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });
 
-const CACHE_NAME = 'revier-app-v33';
+const CACHE_NAME = 'revier-app-v34';
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => {
