@@ -25,7 +25,7 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v2.8.0)
+// Minimalistischer SW ohne Caching für maximale Zuverlässigkeit (v2.9.0)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
 self.addEventListener("fetch", () => { }); // Nur Platzhalter

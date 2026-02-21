@@ -2478,16 +2478,13 @@ function showInstallBannerAfterLogin() {
 // ==============================
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").then(reg => {
-            console.log("[SW] Service Worker registriert");
+        // Nutze den Standardnamen für FCM Kompatibilität (v2.9.0)
+        navigator.serviceWorker.register("./firebase-messaging-sw.js").then(reg => {
+            console.log("[SW] Firebase Service Worker registriert");
             window.globalSwReg = reg;
 
             // SOFORT nach Updates prüfen beim Laden
-            reg.update().then(() => {
-                console.log("[SW] Initialer Update-Check durchgeführt");
-            }).catch(err => {
-                console.log("[SW] Update-Check Fehler:", err);
-            });
+            reg.update().catch(err => console.log("[SW] Update-Check Fehler:", err));
 
             // Prüfe alle 30 Sekunden auf Updates (aggressiver für Mobile)
             setInterval(() => {
@@ -2606,52 +2603,73 @@ async function fetchAndSaveToken(db, swReg) {
         return;
     }
 
+    // Sicherstellen, dass der Worker aktiv ist (v2.9.0)
+    let worker = swReg.active;
+    if (!worker || worker.state !== 'activated') {
+        showToast("Warte auf Aktivierung...", "info");
+        await new Promise(r => setTimeout(r, 1500));
+        worker = swReg.active;
+    }
+
     if (Notification.permission !== 'granted') {
         showToast("Berechtigung fehlt: " + Notification.permission, "error");
         return;
     }
 
     const messaging = firebase.messaging();
-    showToast("Schlüssel anfordern...", "info");
+    let attempts = 0;
+    const maxAttempts = 3;
 
-    try {
-        // Direkter Abruf ohne Schnickschnack (v2.8.0)
-        const currentToken = await messaging.getToken({
-            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
-            serviceWorkerRegistration: swReg
-        });
+    while (attempts < maxAttempts) {
+        attempts++;
+        showToast(`Schlüssel-Versuch ${attempts}...`, "info");
 
-        if (currentToken) {
-            console.log("Token erhalten:", currentToken);
+        try {
+            const currentToken = await messaging.getToken({
+                vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
+                serviceWorkerRegistration: swReg
+            });
 
-            let user = firebase.auth().currentUser;
-            if (!user) {
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                user = firebase.auth().currentUser;
+            if (currentToken) {
+                console.log("Token erhalten:", currentToken);
+
+                let user = firebase.auth().currentUser;
+                if (!user) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    user = firebase.auth().currentUser;
+                }
+
+                const tokenData = {
+                    token: currentToken,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    userId: user ? user.uid : 'anon',
+                    userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
+                    device: navigator.userAgent.substring(0, 100),
+                    version: '2.9.0'
+                };
+
+                await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
+                showToast("GERÄT REGISTRIERT! 🔔", "success");
+                return; // Erfolg!
+            } else {
+                showToast("System gibt keinen Schlüssel frei.", "error");
+                return;
+            }
+        } catch (err) {
+            console.warn(`FCM Versuch ${attempts} fehlgeschlagen:`, err);
+
+            // Wenn Code 20 (Abort), versuchen wir es nochmal
+            if ((err.code === 20 || err.name === 'AbortError') && attempts < maxAttempts) {
+                showToast("System hakt (20), ich probiere es nochmal...", "info");
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
             }
 
-            const tokenData = {
-                token: currentToken,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                userId: user ? user.uid : 'anon',
-                userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
-                device: navigator.userAgent.substring(0, 100),
-                version: '2.8.0'
-            };
-
-            await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-            showToast("GERÄT REGISTRIERT! 🔔", "success");
-        } else {
-            showToast("System gibt keinen Schlüssel frei.", "error");
+            let msg = err.message || err.code || "Fehler";
+            if (msg.includes("subscribe")) msg = "System blockiert Push";
+            showToast("FCM: " + msg.substring(0, 50), "error");
+            break;
         }
-    } catch (err) {
-        console.error('FCM Error Detail:', err);
-        let msg = err.message || err.code || "Fehler";
-
-        if (msg.includes("subscribe")) msg = "System blockiert Push";
-        if (msg.includes("AbortError") || err.code === 20) msg = "Abbruch (20)";
-
-        showToast("FCM: " + msg.substring(0, 50), "error");
     }
 }
 
@@ -2777,7 +2795,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.8.0...", "info");
+    showToast("Systemstart v2.9.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
