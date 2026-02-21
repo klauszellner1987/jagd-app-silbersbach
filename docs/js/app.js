@@ -474,7 +474,17 @@ function initAuthListener() {
             // Initialize app only once
             if (!isAppInitialized) {
                 isAppInitialized = true;
-                initializeApp().catch((error) => {
+                initializeApp().then(async () => {
+                    console.log("App initialized, setting up Push...");
+                    try {
+                        if ('serviceWorker' in navigator) {
+                            const reg = await navigator.serviceWorker.ready;
+                            initPushNotifications(firebase.firestore(), reg);
+                        }
+                    } catch (e) {
+                        console.error("Push init error:", e);
+                    }
+                }).catch((error) => {
                     console.error("App initialization error:", error);
                 });
 
@@ -2507,14 +2517,6 @@ if ("serviceWorker" in navigator) {
                 console.log("[SW] Controller gewechselt - Seite wird neu geladen");
                 window.location.reload();
             });
-
-            // ==============================
-            // PUSH NOTIFICATIONS (FCM)
-            // ==============================
-            // Wichtig: Wir übergeben die Registration an Firebase!
-            setTimeout(() => {
-                initPushNotifications(db, reg);
-            }, 1000);
         }).catch(err => {
             console.error("[SW] Registrierung fehlgeschlagen:", err);
         });

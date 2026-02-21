@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'revier-app-v19';
+const CACHE_NAME = 'revier-app-v20';
 
 const ASSETS = [
   "./",
