@@ -2596,15 +2596,26 @@ async function initPushNotifications(db, swReg) {
 }
 
 async function fetchAndSaveToken(db, swReg) {
-    // Debug-Info für v2.2.9
     if (!swReg) {
         showToast("Fehler: swReg fehlt", "error");
         return;
     }
 
-    const worker = swReg.active || swReg.waiting || swReg.installing;
-    const swState = worker ? worker.state : "unbekannt";
-    console.log("[FCM] SW Registration:", swReg);
+    // Sicherstellen, dass der Worker wirklich aktiv ist (v2.3.0)
+    let activeWorker = swReg.active;
+    if (!activeWorker || activeWorker.state !== 'activated') {
+        showToast("Warte auf Hintergrund-Dienst...", "info");
+        // Wir warten bis zu 5 Sekunden
+        for (let i = 0; i < 10; i++) {
+            if (swReg.active && swReg.active.state === 'activated') {
+                activeWorker = swReg.active;
+                break;
+            }
+            await new Promise(r => setTimeout(r, 500));
+        }
+    }
+
+    const swState = activeWorker ? activeWorker.state : "unbekannt";
     console.log("[FCM] SW State:", swState);
 
     if (Notification.permission !== 'granted') {
@@ -2612,17 +2623,17 @@ async function fetchAndSaveToken(db, swReg) {
         return;
     }
 
+    if (!activeWorker) {
+        showToast("Dienst schläft noch. Bitte Seite neu laden.", "error");
+        return;
+    }
+
     const messaging = firebase.messaging();
     showToast("Hole Token (" + swState + ")...", "info");
 
     try {
-        // Bei AbortError (Code 20) hilft oft ein kurzes Warten, falls der SW gerade erst aktiviert wurde
-        if (swState !== 'activated') {
-            await new Promise(r => setTimeout(r, 2000));
-        }
-
         const currentToken = await messaging.getToken({
-            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapR9X5JzoKJFAHXvYSIEQg',
+            vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
             serviceWorkerRegistration: swReg
         });
 
@@ -2641,22 +2652,23 @@ async function fetchAndSaveToken(db, swReg) {
                 userId: user ? user.uid : 'anon',
                 userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                 device: navigator.userAgent.substring(0, 100),
-                version: '2.2.9'
+                version: '2.3.0'
             };
 
             await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
             showToast("GLOCKE AKTIV! 🔔", "success");
         } else {
-            showToast("Token leer (NULL).", "error");
+            showToast("Kein Token vom System erhalten.", "error");
         }
     } catch (err) {
-        console.error('Full FCM Error:', err);
-        // Detaillierte Fehlermeldung für den User
-        const detail = err.message || err.code || err.name || "Unbekannter Fehler";
-        showToast("FCM FEHLER: " + detail.substring(0, 60), "error");
+        console.error('FCM Error:', err);
+        let msg = err.message || "Unbekannter Fehler";
+        if (msg.includes("subscribe")) msg = "System-Blockade (PushManager)";
+        showToast("FCM FEHLER: " + msg.substring(0, 50), "error");
 
-        if (err.name === 'AbortError' || err.code === 20) {
-            showToast("Versuch fehlgeschlagen (20). Bitte nochmal tippen.", "info");
+        // Bei manchen Fehlern hilft ein Refresh
+        if (err.name === 'AbortError') {
+            showToast("Versuche es gleich nochmal...", "info");
         }
     }
 }
@@ -2783,7 +2795,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Systemstart v2.2.7...", "info");
+    showToast("Systemstart v2.3.0...", "info");
 
     // iOS Bounce/Overscroll Fix
     try {
