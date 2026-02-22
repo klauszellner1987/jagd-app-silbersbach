@@ -1,6 +1,6 @@
 {
   "name": "jagd-app-silbersbach",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "description": "Dies ist eine kleine Web-App für euer Jagd-Revier. Jeder Nutzer kann die Seite auf dem Handy öffnen.",
   "main": "service-worker.js",
   "scripts": {
@@ -15,16 +15,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/device": "^6.0.0",
+    "@capacitor/geolocation": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
     "autoprefixer": "^10.4.24",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
-    "vite": "^5.4.21",
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/push-notifications": "^6.0.0",
-    "@capacitor/device": "^6.0.0"
+    "vite": "^5.4.21"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/android": "^6.0.0"
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.0.0"
   }
 }

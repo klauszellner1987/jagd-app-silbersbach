@@ -1565,7 +1565,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         function showGpsFinalError(err) {
             switch (err.code) {
                 case 1: // PERMISSION_DENIED
-                    showToast("GPS-Berechtigung blockiert. Bitte in Browser-Einstellungen erlauben.", "error");
+                    const permMsg = isNativeApp()
+                        ? "GPS-Berechtigung verweigert. Bitte in den App-Einstellungen erlauben."
+                        : "GPS-Berechtigung blockiert. Bitte in Browser-Einstellungen erlauben.";
+                    showToast(permMsg, "error");
                     break;
                 case 2: // POSITION_UNAVAILABLE
                     showToast("Standort nicht verfügbar. Bitte GPS/Standort in den Handy-Einstellungen prüfen.", "error");
