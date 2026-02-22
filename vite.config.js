@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/jagd-app-silbersbach/',
+  base: './',
   build: {
     outDir: 'docs',
     assetsDir: 'assets',

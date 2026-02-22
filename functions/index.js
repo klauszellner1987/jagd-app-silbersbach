@@ -44,6 +44,7 @@ exports.sendBulletinNotification = functions.firestore
                 body: bodyText
             },
             android: {
+                priority: 'high', // Wichtig: Weckt das Gerät aus dem Tiefschlaf
                 notification: {
                     icon: 'stock_ticker_update',
                     color: '#2f6f4e',
@@ -51,6 +52,9 @@ exports.sendBulletinNotification = functions.firestore
                 }
             },
             webpush: {
+                headers: {
+                    Urgency: 'high' // Priorität für Browser-Zustellung
+                },
                 fcm_options: {
                     link: 'https://klauszellner1987.github.io/jagd-app-silbersbach/'
                 }

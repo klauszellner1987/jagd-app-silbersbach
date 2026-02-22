@@ -141,6 +141,13 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* ============================================
+   NATIVE APP TWEAKS
+============================================ */
+body.native-app #install-banner {
+    display: none !important;
+}
+
 
 /* ============================================
    MAIN & CONTAINER
@@ -628,6 +635,8 @@ button:hover {
 #login-overlay {
     position: fixed;
     inset: 0;
+    background-color: var(--bg);
+    /* Fallback Farbe */
     background-image: url('../assets/images/login-background.jpg');
     background-size: cover;
     background-position: center;
@@ -645,7 +654,8 @@ button:hover {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+    /* Dunkleres Overlay für bessere Lesbarkeit */
     z-index: -1;
 }
 

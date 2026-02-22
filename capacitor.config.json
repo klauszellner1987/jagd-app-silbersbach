@@ -1,0 +1,9 @@
+{
+    "appId": "de.silbersbach.jagdapp",
+    "appName": "GJR Silbersbach",
+    "webDir": "docs",
+    "bundledWebRuntime": false,
+    "server": {
+        "androidScheme": "https"
+    }
+}

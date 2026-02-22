@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "243860338509",
+    "project_id": "jagd-app-silbersbach",
+    "storage_bucket": "jagd-app-silbersbach.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243860338509:android:d3cdd8393938de90c62904",
+        "android_client_info": {
+          "package_name": "de.silbersbach.jagdapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2J-kwdOh6SgtKVay3nocdXZ0mkJWkzGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

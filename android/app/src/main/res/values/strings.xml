@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GJR Silbersbach</string>
+    <string name="title_activity_main">GJR Silbersbach</string>
+    <string name="package_name">de.silbersbach.jagdapp</string>
+    <string name="custom_url_scheme">de.silbersbach.jagdapp</string>
+</resources>

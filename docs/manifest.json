@@ -3,7 +3,7 @@
   "short_name": "Silbersbach",
   "description": "App für Revierkarten, Streckenliste, Schonzeiten und Wetterinfos",
   "start_url": ".",
-  "id": "/jagd-app-silbersbach/",
+  "id": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#2f6f4e",

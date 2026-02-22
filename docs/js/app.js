@@ -12,6 +12,13 @@ const firebaseConfig = {
 };
 
 // ==============================
+// UTILS & PLATFORM CHECK
+// ==============================
+function isNativeApp() {
+    return window.Capacitor && window.Capacitor.getPlatform() !== 'web';
+}
+
+// ==============================
 // JAGDZEITEN BAYERN - Daten
 // ==============================
 const jagdzeitenBayern = [
@@ -463,7 +470,9 @@ function initAuthListener() {
     // Listen for auth state changes
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-            // User is signed in
+            if (isNativeApp()) {
+                document.body.classList.add("native-app");
+            }
             document.body.classList.add("authenticated");
             setLoginLoading(false);
 
@@ -476,9 +485,11 @@ function initAuthListener() {
                 isAppInitialized = true;
                 initializeApp().then(async () => {
                     try {
-                        if ('serviceWorker' in navigator) {
-
-                            // Versuche die Registration zu finden (v2.7.0)
+                        if (isNativeApp()) {
+                            // Native App Push Initialisierung
+                            initPushNotifications(firebase.firestore(), null);
+                        } else if ('serviceWorker' in navigator) {
+                            // PWA Service Worker Push Initialisierung
                             let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
 
                             if (!reg) {
@@ -2459,6 +2470,8 @@ function initInstallPrompt() {
 
 // Show install banner after successful login
 function showInstallBannerAfterLogin() {
+    if (isNativeApp()) return; // In der App brauchen wir keinen PWA Banner
+
     const banner = document.getElementById('install-banner');
     if (deferredPrompt && banner) {
         setTimeout(() => {
@@ -2532,6 +2545,11 @@ if ("serviceWorker" in navigator) {
 }
 
 async function initPushNotifications(db, swReg) {
+    if (isNativeApp()) {
+        await initNativePush(db);
+        return;
+    }
+
     if (!firebase.messaging) return;
 
     try {
@@ -2570,6 +2588,65 @@ async function initPushNotifications(db, swReg) {
         showToast("BLOCKIERT! Bitte in den Handy-Einstellungen (App Info) erlauben.", "error");
     }
 }
+
+async function initNativePush(db) {
+    if (!window.Capacitor || !window.Capacitor.Plugins.PushNotifications) {
+        console.warn("Capacitor Push Plugin nicht gefunden.");
+        return;
+    }
+
+    const { PushNotifications } = window.Capacitor.Plugins;
+
+    // Berechtigung prüfen & anfordern
+    let permStatus = await PushNotifications.checkPermissions();
+    if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions();
+    }
+
+    if (permStatus.receive !== 'granted') {
+        showToast("Push-Berechtigung verweigert.", "error");
+        return;
+    }
+
+    // Listener für erfolgreiche Token-Registrierung
+    PushNotifications.addListener('registration', async (token) => {
+        const fcmToken = token.value;
+        console.log('Native Push Token:', fcmToken);
+
+        let user = firebase.auth().currentUser;
+        const tokenData = {
+            token: fcmToken,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            userId: user ? user.uid : 'anon',
+            userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
+            device: 'Android Native App',
+            version: '4.0.0'
+        };
+
+        await db.collection('fcmTokens').doc(fcmToken).set(tokenData, { merge: true });
+        showToast("Native Push aktiv! 🔔", "success");
+    });
+
+    PushNotifications.addListener('registrationError', (error) => {
+        console.error('Push registration error:', error);
+    });
+
+    // Optionale Listener für eintreffende Nachrichten
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('Push empfangen:', notification);
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        console.log('Push-Aktion ausgeführt:', notification);
+        // Hier könnte man zur Seite navigieren:
+        // if (notification.notification.data.target) navigateToPage(...)
+    });
+
+    // Registrierung starten
+    await PushNotifications.register();
+}
+
+
 
 async function fetchAndSaveToken(db, swReg) {
     if (!swReg) {
