@@ -3178,21 +3178,19 @@ button:hover {
    SCHONZEIT DETAIL PAGE
 ============================================ */
 #schonzeit-page {
-    padding: 1rem;
-    padding-top: 1rem;
-    /* Padding oben reduziert, da der Header sticky ist */
+    padding: 0 1rem;
 }
 
 .schonzeit-header-sticky {
     position: sticky;
-    top: -1.1rem;
-    /* Kleiner Puffer für das Container-Padding */
+    top: 0;
     z-index: 110;
-    background: rgba(30, 48, 34, 0.98);
+    background: rgb(30, 48, 34);
+    /* Volle Deckkraft damit nichts durchscheint */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 1.5rem 1rem 0.5rem 1rem;
-    margin: -1rem -1rem 1.25rem -1rem;
+    padding: 1.5rem 1rem 0.8rem 1rem;
+    margin: 0 -1rem 1.25rem -1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
