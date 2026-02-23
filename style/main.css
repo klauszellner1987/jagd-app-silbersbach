@@ -438,14 +438,21 @@ main {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 0.85rem 0.75rem 0.85rem 1rem;
-    /* Padding vereinheitlicht */
+    padding: 0.85rem 0.75rem 0.85rem 0.85rem;
     cursor: pointer;
     transition: all 0.15s ease;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
     min-height: 64px;
-    /* Feste Mindesthöhe für Stabilität */
+}
+
+#bulletin-widget {
+    padding-left: 0.75rem !important;
+    /* Spezieller Fix für den optischen Versatz */
+}
+
+#schonzeit-widget {
+    padding-left: 0.85rem !important;
 }
 
 .info-row:active {
@@ -456,9 +463,11 @@ main {
 .info-row-left {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    /* Festgelegter Abstand zwischen Icon und Text */
+    gap: 1.1rem;
+    /* Etwas mehr Abstand für bessere Lesbarkeit */
     flex: 1;
+    margin: 0;
+    padding: 0;
 }
 
 .info-row-icon {
