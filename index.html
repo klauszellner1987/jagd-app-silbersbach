@@ -12,6 +12,9 @@
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 
+    <!-- Iconify (für Premium Wild-Icons) -->
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
     <!-- Styles (Vite) -->
     <script type="module" src="/main.js"></script>
 
@@ -208,12 +211,7 @@
                 <div class="app-card-grid">
                     <div class="app-card nav-widget" data-target="revier">
                         <div class="app-card-icon">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-                                <line x1="8" y1="2" x2="8" y2="18" />
-                                <line x1="16" y1="6" x2="16" y2="22" />
-                            </svg>
+                            <iconify-icon icon="gi:paper-map" width="36" height="36"></iconify-icon>
                         </div>
                         <p class="app-card-title">Revier Karte</p>
                         <p class="app-card-sub" id="hochsitz-count">Karte &amp; Hochsitze</p>
@@ -221,15 +219,7 @@
 
                     <div class="app-card nav-widget" data-target="streckenliste">
                         <div class="app-card-icon">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="4" cy="6" r="1.5" fill="currentColor" />
-                                <circle cx="4" cy="12" r="1.5" fill="currentColor" />
-                                <circle cx="4" cy="18" r="1.5" fill="currentColor" />
-                                <line x1="9" y1="6" x2="20" y2="6" />
-                                <line x1="9" y1="12" x2="20" y2="12" />
-                                <line x1="9" y1="18" x2="20" y2="18" />
-                            </svg>
+                            <iconify-icon icon="gi:bulleted-list" width="36" height="36"></iconify-icon>
                         </div>
                         <p class="app-card-title">Strecke</p>
                         <p class="app-card-sub" id="strecke-count">Erlegte Strecke</p>
@@ -240,11 +230,7 @@
                 <div class="info-row nav-widget" data-target="bulletin-board" id="bulletin-widget">
                     <div class="info-row-left">
                         <div class="info-row-icon">
-                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                            </svg>
+                            <iconify-icon icon="gi:notification" width="30" height="30"></iconify-icon>
                         </div>
                         <div class="info-row-text">
                             <span class="info-row-title">Schwarzes Brett</span>
@@ -264,26 +250,7 @@
                 <div class="info-row nav-widget" data-target="schonzeit-page" id="schonzeit-widget">
                     <div class="info-row-left">
                         <div class="info-row-icon" id="schonzeit-icon">
-                            <!-- Festes Premium-Logo: Der Stolze Zwölfender -->
-                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <!-- Kopf -->
-                                <path d="M12 20c-1.5 0-3-1-3-4.5 0-2.5 1-3.5 3-3.5s3 1 3 3.5c0 3.5-1.5 4.5-3 4.5Z" />
-                                <!-- Geweih Links -->
-                                <path d="M9 14c-2-1-3-3-3-5" />
-                                <path d="M6 9c-1-1-2-1.5-3-1" />
-                                <path d="M6 9c0-2-1-3-2-3.5" />
-                                <path d="M9 13c-1-2-1.5-4-1-6" />
-                                <path d="M8 7c0-2 .5-3.5 1.5-4.5" />
-                                <!-- Geweih Rechts -->
-                                <path d="M15 14c2-1 3-3 3-5" />
-                                <path d="M18 9c1-1 2-1.5 3-1" />
-                                <path d="M18 9c0-2 1-3 2-3.5" />
-                                <path d="M15 13c1-2 1.5-4 1-6" />
-                                <path d="M16 7c0-2-.5-3.5-1.5-4.5" />
-                                <!-- Ohren -->
-                                <path d="M9 15c-1.5-.5-2.5-1.5-2.5-3M15 15c1.5-.5 2.5-1.5 2.5-3" />
-                            </svg>
+                            <iconify-icon icon="gi:deer" width="30" height="30"></iconify-icon>
                         </div>
                         <div class="info-row-text">
                             <span class="info-row-title" id="schonzeit-wildart">Schonzeiten</span>

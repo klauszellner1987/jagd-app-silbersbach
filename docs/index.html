@@ -12,6 +12,9 @@
     <!-- Tabler Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 
+    <!-- Iconify (für Premium Wild-Icons) -->
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
     <!-- Styles (Vite) -->
 
     <!-- Leaflet CSS (für Karte) -->
@@ -34,8 +37,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Silbersbach">
-  <script type="module" crossorigin src="./assets/index-exVt-5Ys.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CXg0IU8L.css">
+  <script type="module" crossorigin src="./assets/index-BHLyOL07.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BIpLDdxZ.css">
 </head>
 
 <body>
@@ -209,12 +212,7 @@
                 <div class="app-card-grid">
                     <div class="app-card nav-widget" data-target="revier">
                         <div class="app-card-icon">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-                                <line x1="8" y1="2" x2="8" y2="18" />
-                                <line x1="16" y1="6" x2="16" y2="22" />
-                            </svg>
+                            <iconify-icon icon="gi:paper-map" width="36" height="36"></iconify-icon>
                         </div>
                         <p class="app-card-title">Revier Karte</p>
                         <p class="app-card-sub" id="hochsitz-count">Karte &amp; Hochsitze</p>
@@ -222,15 +220,7 @@
 
                     <div class="app-card nav-widget" data-target="streckenliste">
                         <div class="app-card-icon">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="4" cy="6" r="1.5" fill="currentColor" />
-                                <circle cx="4" cy="12" r="1.5" fill="currentColor" />
-                                <circle cx="4" cy="18" r="1.5" fill="currentColor" />
-                                <line x1="9" y1="6" x2="20" y2="6" />
-                                <line x1="9" y1="12" x2="20" y2="12" />
-                                <line x1="9" y1="18" x2="20" y2="18" />
-                            </svg>
+                            <iconify-icon icon="gi:bulleted-list" width="36" height="36"></iconify-icon>
                         </div>
                         <p class="app-card-title">Strecke</p>
                         <p class="app-card-sub" id="strecke-count">Erlegte Strecke</p>
@@ -241,11 +231,7 @@
                 <div class="info-row nav-widget" data-target="bulletin-board" id="bulletin-widget">
                     <div class="info-row-left">
                         <div class="info-row-icon">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                            </svg>
+                            <iconify-icon icon="gi:notification" width="30" height="30"></iconify-icon>
                         </div>
                         <div class="info-row-text">
                             <span class="info-row-title">Schwarzes Brett</span>
@@ -265,13 +251,7 @@
                 <div class="info-row nav-widget" data-target="schonzeit-page" id="schonzeit-widget">
                     <div class="info-row-left">
                         <div class="info-row-icon" id="schonzeit-icon">
-                            <!-- Wird per JS befüllt -->
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M12 2a3 3 0 0 0-3 3v1H7l-2-2-1 1 2 2v1a5 5 0 0 0 10 0V7l2-2-1-1-2 2h-2V5a3 3 0 0 0-3-3z" />
-                                <path d="M9 13v5a3 3 0 0 0 6 0v-5" />
-                            </svg>
+                            <iconify-icon icon="gi:deer" width="30" height="30"></iconify-icon>
                         </div>
                         <div class="info-row-text">
                             <span class="info-row-title" id="schonzeit-wildart">Schonzeiten</span>
