@@ -253,6 +253,16 @@ function navigateToPage(targetId) {
         }
         // Tab aktiv markieren
         setActiveTab(targetId);
+
+        // Seite initial rendern falls nötig
+        if (targetId === 'schonzeit-page') {
+            renderSchonzeitListe();
+        } else if (targetId === 'wetter-page') {
+            // Falls Wetter-Details-Daten geladen sind
+            if (typeof renderWetterDetailPage === 'function') {
+                renderWetterDetailPage();
+            }
+        }
     }
 }
 
@@ -779,8 +789,8 @@ function initSchonzeitWidget() {
     // Rotation alle 5 Sekunden
     schonzeitInterval = setInterval(updateSchonzeitWidget, 5000);
 
-    // Details-Button Event Listener
-    const detailsBtn = document.getElementById('schonzeit-details-btn');
+    // Details-Button Event Listener (Widget auf Dashboard)
+    const detailsBtn = document.getElementById('schonzeit-widget');
     if (detailsBtn) {
         detailsBtn.addEventListener('click', () => {
             showSchonzeitDetails();
@@ -791,9 +801,10 @@ function initSchonzeitWidget() {
 }
 
 function showSchonzeitDetails() {
-    // Navigiere zur Detail-Seite mit dem bestehenden Navigationssystem
+    // Navigiere zur Detail-Seite
     navigateToPage('schonzeit-page');
-    renderSchonzeitListe();
+    // Sicherstellen dass 'Alle' ausgewählt ist
+    filterSchonzeitListe('alle');
 }
 
 let aktuellerFilter = 'alle';
