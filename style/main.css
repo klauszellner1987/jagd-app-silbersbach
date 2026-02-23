@@ -3179,6 +3179,8 @@ button:hover {
 ============================================ */
 #schonzeit-page {
     padding: 0 1rem;
+    padding-top: 0 !important;
+    /* Verhindert den zusätzlichen Abstand auf Mobilgeräten */
 }
 
 .schonzeit-header-sticky {
@@ -3189,7 +3191,7 @@ button:hover {
     /* Volle Deckkraft damit nichts durchscheint */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 1.5rem 1rem 0.8rem 1rem;
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) 1rem 0.8rem 1rem;
     margin: 0 -1rem 1.25rem -1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
