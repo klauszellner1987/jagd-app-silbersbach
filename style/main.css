@@ -471,12 +471,12 @@ main {
 }
 
 .info-row-icon {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    /* Verhindert das Quetschen */
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 14px;
+    /* Angepasst an app-card-icon */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -486,10 +486,10 @@ main {
 
 .info-row-icon i,
 .info-row-icon svg {
-    font-size: 22px;
-    /* Einheitliche Größe für Tabler-Icons */
-    width: 22px;
-    height: 22px;
+    font-size: 30px;
+    /* Gleiche Größe wie in den oberen Karten */
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
