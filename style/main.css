@@ -438,7 +438,8 @@ main {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 0.85rem 1.1rem;
+    padding: 0.85rem 0.75rem 0.85rem 1.1rem;
+    /* Rechtes Padding reduziert */
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
@@ -489,7 +490,15 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.5);
+    /* Etwas heller */
+}
+
+.info-row-right svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+    /* Etwas dickerer Strich für die Größe */
 }
 
 /* TAB BAR - Zweite Definition entfernt (zusammengeführt mit erster) */
