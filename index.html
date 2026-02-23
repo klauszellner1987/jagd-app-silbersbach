@@ -358,21 +358,23 @@
         <!-- SCHONZEIT DETAIL PAGE -->
         <div id="schonzeit-page" class="page">
             <div class="schonzeit-page-container">
-                <h2 class="schonzeit-page-title">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 6v6l4 2" />
-                    </svg>
-                    <span>Jagd- und Schonzeiten Bayern</span>
-                </h2>
-                <div class="schonzeit-filter-tabs">
-                    <button class="schonzeit-filter-btn active" data-filter="alle"
-                        onclick="filterSchonzeitListe('alle')">Alle</button>
-                    <button class="schonzeit-filter-btn" data-filter="schonzeit"
-                        onclick="filterSchonzeitListe('schonzeit')">Schonzeit</button>
-                    <button class="schonzeit-filter-btn" data-filter="jagdzeit"
-                        onclick="filterSchonzeitListe('jagdzeit')">Jagdzeit</button>
+                <div class="schonzeit-header-sticky">
+                    <h2 class="schonzeit-page-title">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                        <span>Jagd- und Schonzeiten Bayern</span>
+                    </h2>
+                    <div class="schonzeit-filter-tabs">
+                        <button class="schonzeit-filter-btn active" data-filter="alle"
+                            onclick="filterSchonzeitListe('alle')">Alle</button>
+                        <button class="schonzeit-filter-btn" data-filter="schonzeit"
+                            onclick="filterSchonzeitListe('schonzeit')">Schonzeit</button>
+                        <button class="schonzeit-filter-btn" data-filter="jagdzeit"
+                            onclick="filterSchonzeitListe('jagdzeit')">Jagdzeit</button>
+                    </div>
                 </div>
                 <div id="schonzeit-liste" class="schonzeit-liste">
                     <!-- Wildarten werden per JS eingefügt -->
