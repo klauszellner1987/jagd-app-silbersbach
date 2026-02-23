@@ -161,154 +161,134 @@
     </div>
 
 
-    <main class="pt-2 pb-2 px-3 sm:px-4">
+    <!-- MAIN APP WRAPPER -->
+    <main>
+
         <!-- DASHBOARD (Home) - Standard nach Login -->
         <div id="dashboard" class="page active">
-            <!-- Schonzeit Widget -->
-            <div class="widget schonzeit-widget" id="schonzeit-widget">
-                <div class="schonzeit-icon-container" id="schonzeit-icon">
-                    <!-- Icon wird per JS gesetzt -->
-                </div>
-                <div class="schonzeit-content">
-                    <p class="schonzeit-wildart" id="schonzeit-wildart">--</p>
-                    <p class="schonzeit-datum" id="schonzeit-datum">Lade...</p>
-                </div>
-                <div class="schonzeit-status">
-                    <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
-                    <span class="schonzeit-status-text" id="schonzeit-status-text">--</span>
-                </div>
-                <button class="schonzeit-details-btn" id="schonzeit-details-btn">Details</button>
-            </div>
 
-            <!-- Kombiniertes Wetter Widget -->
-            <div class="widget wetter-combined-widget" id="wetter-widget">
-                <!-- Titel -->
-                <div class="wetter-header">
-                    <svg class="wetter-header-icon" viewBox="0 0 24 24" width="20" height="20" fill="none"
-                        stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="5" />
-                        <line x1="12" y1="1" x2="12" y2="3" />
-                        <line x1="12" y1="21" x2="12" y2="23" />
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                        <line x1="1" y1="12" x2="3" y2="12" />
-                        <line x1="21" y1="12" x2="23" y2="12" />
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                    </svg>
-                    <span>Wetter Silbersbach</span>
-                </div>
-
-                <!-- 3 Mini-Karten -->
-                <div class="wetter-cards">
-                    <!-- Temperatur -->
-                    <div class="wetter-card" id="wetter-temp">
-                        <div class="wetter-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="wetter-card-value">--°C</div>
-                        <div class="wetter-card-label">Laden...</div>
+            <!-- HERO SECTION: Wetter + Begrüßung – anklickbar für Wetter Details -->
+            <div class="hero-section" id="hero-section" onclick="showWetterDetails()" style="cursor: pointer;">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <p class="hero-greeting" id="hero-greeting">Willkommen</p>
+                    <div class="hero-weather">
+                        <span class="hero-temp" id="hero-temp">--°</span>
+                        <span class="hero-desc" id="hero-desc">Lade...</span>
                     </div>
-
-                    <!-- Wind -->
-                    <div class="wetter-card" id="wetter-wind">
-                        <div class="wetter-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <div class="hero-pills">
+                        <div class="hero-pill" id="hero-wind">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <path
-                                    d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2">
-                                </path>
+                                    d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+                            </svg>
+                            <span id="hero-wind-text">-- km/h</span>
+                        </div>
+                        <div class="hero-pill" id="hero-sun">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M17 18a5 5 0 0 0-10 0" />
+                                <line x1="12" y1="9" x2="12" y2="2" />
+                                <line x1="4.22" y1="10.22" x2="5.64" y2="11.64" />
+                                <line x1="1" y1="18" x2="3" y2="18" />
+                                <line x1="21" y1="18" x2="23" y2="18" />
+                                <line x1="18.36" y1="11.64" x2="19.78" y2="10.22" />
+                            </svg>
+                            <span id="hero-sun-text">--:--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APP GRID CARDS -->
+            <div class="dashboard-content">
+
+                <!-- 2 Square Cards -->
+                <div class="app-card-grid">
+                    <div class="app-card nav-widget" data-target="revier">
+                        <div class="app-card-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                                <line x1="8" y1="2" x2="8" y2="18" />
+                                <line x1="16" y1="6" x2="16" y2="22" />
                             </svg>
                         </div>
-                        <div class="wetter-card-value">--</div>
-                        <div class="wetter-card-label">-- km/h</div>
+                        <p class="app-card-title">Revier Karte</p>
+                        <p class="app-card-sub" id="hochsitz-count">Karte &amp; Hochsitze</p>
                     </div>
 
-                    <!-- Mond -->
-                    <div class="wetter-card" id="wetter-moon">
-                        <div class="wetter-card-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    <div class="app-card nav-widget" data-target="streckenliste">
+                        <div class="app-card-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="4" cy="6" r="1.5" fill="currentColor" />
+                                <circle cx="4" cy="12" r="1.5" fill="currentColor" />
+                                <circle cx="4" cy="18" r="1.5" fill="currentColor" />
+                                <line x1="9" y1="6" x2="20" y2="6" />
+                                <line x1="9" y1="12" x2="20" y2="12" />
+                                <line x1="9" y1="18" x2="20" y2="18" />
                             </svg>
                         </div>
-                        <div class="wetter-card-value">--</div>
-                        <div class="wetter-card-label">Mondphase</div>
+                        <p class="app-card-title">Strecke</p>
+                        <p class="app-card-sub" id="strecke-count">Erlegte Strecke</p>
                     </div>
                 </div>
 
-                <!-- Sonnen-Leiste -->
-                <div class="wetter-sun-bar" id="wetter-sun">
-                    <svg class="wetter-sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none"
-                        stroke="currentColor" stroke-width="1.5">
-                        <path d="M17 18a5 5 0 0 0-10 0" />
-                        <line x1="12" y1="9" x2="12" y2="2" />
-                        <line x1="4.22" y1="10.22" x2="5.64" y2="11.64" />
-                        <line x1="1" y1="18" x2="3" y2="18" />
-                        <line x1="21" y1="18" x2="23" y2="18" />
-                        <line x1="18.36" y1="11.64" x2="19.78" y2="10.22" />
-                    </svg>
-                    <span id="sun-text">Laden...</span>
+                <!-- Info Row: Schwarzes Brett -->
+                <div class="info-row nav-widget" data-target="bulletin-board" id="bulletin-widget">
+                    <div class="info-row-left">
+                        <div class="info-row-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                            </svg>
+                        </div>
+                        <div class="info-row-text">
+                            <span class="info-row-title">Schwarzes Brett</span>
+                            <span class="info-row-sub" id="bulletin-preview-text">Keine neuen Aushänge</span>
+                        </div>
+                    </div>
+                    <div class="info-row-right">
+                        <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </div>
                 </div>
+
+                <!-- Info Row: Schonzeiten -->
+                <div class="info-row nav-widget" data-target="schonzeit-page" id="schonzeit-widget">
+                    <div class="info-row-left">
+                        <div class="info-row-icon">
+                            <!-- Hirsch Icon -->
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12 2a3 3 0 0 0-3 3v1H7l-2-2-1 1 2 2v1a5 5 0 0 0 10 0V7l2-2-1-1-2 2h-2V5a3 3 0 0 0-3-3z" />
+                                <path d="M9 13v5a3 3 0 0 0 6 0v-5" />
+                            </svg>
+                        </div>
+                        <div class="info-row-text">
+                            <span class="info-row-title">Schonzeiten</span>
+                            <span class="info-row-sub" id="schonzeit-status-text">Lade...</span>
+                        </div>
+                    </div>
+                    <div class="info-row-right">
+                        <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </div>
+                </div>
+
             </div>
-
-            <!-- Schwarzes Brett Widget (Neu) -->
-            <div class="widget bulletin-widget nav-widget" id="bulletin-widget" data-target="bulletin-board">
-                <div class="bulletin-header">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                    </svg>
-                    <span>Schwarzes Brett</span>
-                    <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
-                </div>
-                <div class="bulletin-preview" id="bulletin-preview">
-                    <p class="bulletin-empty">Keine neuen Aushänge...</p>
-                </div>
-            </div>
-
-            <!-- Navigation Widgets (2er Grid) -->
-            <div class="widget-grid-2">
-                <!-- Revier Map Widget -->
-                <div class="widget nav-widget" data-target="revier">
-                    <svg class="nav-widget-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-                        <line x1="8" y1="2" x2="8" y2="18"></line>
-                        <line x1="16" y1="6" x2="16" y2="22"></line>
-                    </svg>
-                    <p class="nav-widget-title">Revier Map</p>
-                    <p class="nav-widget-subtitle">Karte & Hochsitze</p>
-                </div>
-
-                <!-- Streckenliste Widget -->
-                <div class="widget nav-widget" data-target="streckenliste">
-                    <svg class="nav-widget-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="4" cy="6" r="1.5" fill="currentColor"></circle>
-                        <circle cx="4" cy="12" r="1.5" fill="currentColor"></circle>
-                        <circle cx="4" cy="18" r="1.5" fill="currentColor"></circle>
-                        <line x1="9" y1="6" x2="20" y2="6"></line>
-                        <line x1="9" y1="12" x2="20" y2="12"></line>
-                        <line x1="9" y1="18" x2="20" y2="18"></line>
-                    </svg>
-                    <p class="nav-widget-title">Streckenliste</p>
-                    <p class="nav-widget-subtitle">Erlegte Strecke</p>
-                </div>
-            </div>
-
-            <!-- Logout Button -->
-            <button class="logout-btn" id="logout-btn" onclick="logout()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                Abmelden
-            </button>
         </div>
+
 
         <div id="bulletin-board" class="page">
             <div class="bulletin-board-container">
@@ -420,14 +400,92 @@
             </div>
         </div>
 
-        <!-- BOTTOM NAVIGATION BAR -->
+        <!-- EINSTELLUNGEN PAGE (NEU) -->
+        <div id="einstellungen-page" class="page">
+            <div class="settings-container">
+                <h2 class="settings-title">Einstellungen</h2>
+
+                <div class="settings-section">
+                    <p class="settings-section-label">Konto</p>
+                    <div class="settings-row" id="settings-user-row">
+                        <div class="settings-row-left">
+                            <div class="settings-row-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="settings-row-title" id="settings-username">--</p>
+                                <p class="settings-row-sub" id="settings-useremail">--</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="settings-row logout-row" onclick="logout()">
+                        <div class="settings-row-left">
+                            <div class="settings-row-icon danger">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                    <polyline points="16 17 21 12 16 7" />
+                                    <line x1="21" y1="12" x2="9" y2="12" />
+                                </svg>
+                            </div>
+                            <span class="settings-row-title danger">Abmelden</span>
+                        </div>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="settings-section">
+                    <p class="settings-section-label">App Info</p>
+                    <div class="settings-row">
+                        <div class="settings-row-left">
+                            <div class="settings-row-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="settings-row-title">GJR Silbersbach</p>
+                                <p class="settings-row-sub">Version 4.0.0 · by Klaus Zellner</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB BAR - 2 Tabs: Home & Einstellungen -->
         <nav id="bottom-nav" class="bottom-nav hidden">
-            <button class="bottom-nav-btn" onclick="navigateToDashboard()">
-                <i class="ti ti-home"></i>
+            <button class="tab-btn active" data-tab="dashboard" onclick="navigateToDashboard()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
                 <span>Home</span>
             </button>
+            <button class="tab-btn" data-tab="einstellungen-page" onclick="navigateToTab('einstellungen-page')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Einstellungen</span>
+            </button>
         </nav>
+
     </main>
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 /* ============================================
    VARIABLES & GRUNDLAYOUT
+   Version: 4.0.4-premium-finish
 ============================================ */
 :root {
     /* Base Colors */
@@ -52,16 +53,8 @@ html {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    overflow: hidden;
     max-width: 100vw;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE/Edge */
-    overscroll-behavior: none;
-    /* Verhindert Bounce/Pull-to-refresh */
-    position: fixed;
-    width: 100%;
 }
 
 html::-webkit-scrollbar {
@@ -117,28 +110,13 @@ body {
     margin: 0;
     line-height: 1.5;
     overflow-x: hidden;
-    min-height: 100vh;
+    min-height: 100dvh;
 }
 
-/* Minimaler Header - wie Mockup */
+
+/* Header ausblenden - Tab Bar übernimmt Navigation */
 .app-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem 0;
-    text-align: center;
-    z-index: 1000;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
-}
-
-.app-header h1 {
-    font-size: 1rem;
-    font-weight: 500;
-    color: white;
-    margin: 0;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    letter-spacing: 0.5px;
+    display: none;
 }
 
 /* ============================================
@@ -147,6 +125,20 @@ body {
 body.native-app #install-banner {
     display: none !important;
 }
+
+/* Badge in Info-Row korrekt positionieren */
+.info-row .bulletin-badge {
+    background: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0.1rem 0.45rem;
+    min-width: 20px;
+    text-align: center;
+    line-height: 1.6;
+}
+
 
 
 /* ============================================
@@ -168,20 +160,479 @@ body.authenticated .app-header {
     opacity: 1;
 }
 
-main {
-    margin-bottom: 140px;
-    margin-top: 60px;
-    padding-top: env(safe-area-inset-top);
-    overflow-x: hidden;
-    max-width: 100%;
+/* Nav Bar immer anzeigen wenn eingeloggt */
+body.authenticated #bottom-nav {
+    display: flex !important;
 }
 
-/* Wenn Dashboard aktiv ist - kein Scrollen auf main */
-main:has(#dashboard.active) {
+
+main {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Dashboard - Flex-Column, reduzierte Höhe für garantierten Abstand zur Navbar */
+#dashboard.page.active {
     overflow: hidden;
-    height: calc(100vh - 60px);
-    height: calc(100dvh - 60px);
-    margin-bottom: 0;
+    touch-action: none;
+    height: calc(100svh - 85px - env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+}
+
+/* DESKTOP / BROWSER VIEW TWEAKS */
+@media (min-width: 600px) {
+    body {
+        background: #1a2a1d;
+        /* Dunklerer Hintergrund für Desktop-Seiten */
+    }
+
+    #dashboard.page.active,
+    .page.active:not(.fullscreen-map),
+    #login-overlay {
+        max-width: 450px;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        min-height: 100vh;
+    }
+
+    .bottom-nav {
+        max-width: 450px;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+    /* Hintergrundeinstellungen für Desktop */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url('../assets/images/app-background-rothirsch.jpg');
+        background-size: cover;
+        background-position: center;
+        filter: blur(20px) brightness(0.4);
+        z-index: -1;
+    }
+}
+
+/* Alle anderen aktiven Seiten scrollen mit Platz für die fixe Tab Bar */
+.page.active:not(#dashboard):not(.fullscreen-map) {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 80px;
+}
+
+/* Tab Bar - position:fixed, immer sichtbar */
+.bottom-nav {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(30, 48, 34, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 9999;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.bottom-nav.hidden {
+    display: none !important;
+}
+
+
+
+/* ============================================
+   HERO SECTION
+============================================ */
+.hero-section {
+    position: relative;
+    height: 165px;
+    /* Wieder etwas höher für die Optik */
+    background-image: url('../assets/images/app-background-rothirsch.jpg');
+    background-size: cover;
+    background-position: center top;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.15) 0%,
+            rgba(30, 50, 35, 0.7) 70%,
+            rgba(30, 50, 35, 0.95) 100%);
+}
+
+.hero-content {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero-greeting {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0 0 0.3rem 0;
+    letter-spacing: 0.3px;
+}
+
+.hero-weather {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.hero-temp {
+    font-size: 3rem;
+    font-weight: 300;
+    color: white;
+    line-height: 1;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hero-desc {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
+}
+
+.hero-pills {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.hero-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+/* ============================================
+   DASHBOARD CONTENT AREA
+============================================ */
+.dashboard-content {
+    flex: 1;
+    padding: 1.2rem 1.1rem;
+    /* Oben mehr Platz (nach unten schieben) */
+    padding-bottom: 2rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    /* Widgets oben halten */
+    gap: 0.9rem;
+    /* Größere Abstände für Premium-Look */
+    overflow: hidden;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+/* Unsichtbarer Puffer am Ende des Dashboards */
+.dashboard-content::after {
+    content: "";
+    display: block;
+    height: 10px;
+    min-height: 10px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   APP CARD GRID (2x Square)
+============================================ */
+.app-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    /* Gap hier angepasst an dashboard-content */
+    flex: 0 1 auto;
+    /* Nicht unendlich wachsen lassen */
+    min-height: 0;
+}
+
+.app-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.app-card:active {
+    transform: scale(0.96);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.app-card-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.app-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.app-card-sub {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0;
+    margin-top: -0.5rem;
+}
+
+/* ============================================
+   INFO ROWS
+============================================ */
+.info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 0.85rem 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.info-row:active {
+    background: rgba(255, 255, 255, 0.14);
+    transform: scale(0.98);
+}
+
+.info-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.info-row-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.85);
+    flex-shrink: 0;
+}
+
+.info-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.info-row-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+}
+
+.info-row-sub {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.info-row-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* TAB BAR - Zweite Definition entfernt (zusammengeführt mit erster) */
+
+
+.tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+    min-width: 60px;
+    box-shadow: none;
+}
+
+.tab-btn svg {
+    width: 24px;
+    height: 24px;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.tab-btn.active {
+    color: var(--primary-light);
+}
+
+.tab-btn.active svg {
+    filter: drop-shadow(0 0 8px rgba(129, 199, 132, 0.5));
+}
+
+/* ============================================
+   SETTINGS PAGE
+============================================ */
+.settings-container {
+    padding: 1.5rem 1.25rem;
+    padding-bottom: 120px;
+}
+
+.settings-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 2rem 0;
+    padding-top: 0.5rem;
+}
+
+.settings-section {
+    margin-bottom: 1.75rem;
+}
+
+.settings-section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 0.6rem 0.4rem;
+}
+
+.settings-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.5rem;
+    cursor: default;
+    text-align: left;
+    color: white;
+    box-shadow: none;
+}
+
+.settings-row:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.logout-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logout-row:active {
+    background: rgba(231, 76, 60, 0.15);
+    transform: scale(0.98);
+}
+
+.settings-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.settings-row-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+}
+
+.settings-row-icon.danger {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.settings-row-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.settings-row-title.danger {
+    color: #e74c3c;
+}
+
+.settings-row-sub {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
 }
 
 .container {
@@ -2335,40 +2786,25 @@ button:hover {
     display: block;
 }
 
-/* Non-fullscreen pages need z-index above header */
-.page.active:not(.fullscreen-map) {
-    position: relative;
-    z-index: 1500;
-    /* Above header (1000) */
-}
-
-/* Dashboard - Vollbild ohne Scrollen */
+/* Dashboard - Flex-Container, füllt gesamten verfügbaren Raum */
 #dashboard.page {
     display: none;
-    position: relative;
-    flex-direction: column;
-    height: calc(100vh - 60px);
-    /* Viewport minus Header - Desktop */
-    height: calc(100dvh - 60px);
     overflow: hidden;
-    padding-top: env(safe-area-inset-top);
-    box-sizing: border-box;
     touch-action: none;
-    /* Verhindert Touch-Scroll auf Dashboard */
-    -webkit-overflow-scrolling: auto;
 }
 
 #dashboard.page.active {
     display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 64px);
+    overflow: hidden;
+    padding-bottom: 0;
 }
 
-/* Dashboard Mobile - Platz für Header */
+/* Mobile */
 @media (max-width: 600px) {
     #dashboard {
-        height: calc(100vh - 50px) !important;
-        /* Header */
-        height: calc(100dvh - 50px) !important;
-        padding-bottom: 10px !important;
+        height: calc(100dvh - 64px) !important;
     }
 }
 
@@ -3486,89 +3922,34 @@ button:hover {
     border-color: white;
 }
 
-/* ============================================
-   BOTTOM NAVIGATION BAR
-============================================ */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 65px;
-    background: linear-gradient(0deg,
-            rgba(45, 90, 65, 1) 0%,
-            rgba(40, 80, 60, 0.98) 50%,
-            rgba(35, 70, 55, 0.95) 100%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    padding-bottom: env(safe-area-inset-bottom);
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.bottom-nav.hidden {
-    display: none;
-}
-
-.bottom-nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 2rem;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.bottom-nav-btn:hover {
-    color: white;
-    transform: scale(1.05);
-}
-
-.bottom-nav-btn:active {
-    transform: scale(0.95);
-}
-
-.bottom-nav-btn i {
-    font-size: 1.5rem;
-}
-
-.bottom-nav-btn span {
-    font-size: 0.7rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Padding für Detail-Seiten um Platz für Bottom Nav zu lassen */
+/* Padding für Detail-Seiten */
 #revier.page,
 #streckenliste.page,
 #schonzeit-page.page,
-#wetter-page.page {
-    padding-bottom: 100px;
+#wetter-page.page,
+#bulletin-board.page,
+#einstellungen-page.page {
+    padding-bottom: 1rem;
 }
 
-/* Solider Hintergrund für Detail-Seiten - komplett ohne Bild */
+
+/* Solider Hintergrund für Detail-Seiten - feste Position, Navbar bleibt sichtbar */
 #revier.page.active,
 #streckenliste.page.active,
 #schonzeit-page.page.active,
 #wetter-page.page.active {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    /* Platz für die Navbar lassen */
     background: linear-gradient(180deg,
             #1a2f1e 0%,
             #0d1a10 100%);
     overflow-y: auto;
-    z-index: 2000;
+    z-index: 1500;
+    /* Unter der Navbar (z-index: 9999) */
 }
 
 /* ============================================

@@ -247,10 +247,12 @@ function navigateToPage(targetId) {
             }
         }
 
-        // Bottom Navigation einblenden (außer auf Dashboard)
-        if (bottomNav && targetId !== "dashboard") {
+        // Bottom Navigation immer anzeigen
+        if (bottomNav) {
             bottomNav.classList.remove("hidden");
         }
+        // Tab aktiv markieren
+        setActiveTab(targetId);
     }
 }
 
@@ -267,8 +269,11 @@ function navigateToDashboard() {
     // Hide FAB
     if (fabBtn) fabBtn.classList.remove("visible");
 
-    // Bottom Navigation ausblenden
-    if (bottomNav) bottomNav.classList.add("hidden");
+    // Tab Bar ANZEIGEN (nicht mehr ausblenden)
+    if (bottomNav) bottomNav.classList.remove("hidden");
+
+    // Tab aktiv markieren
+    setActiveTab("dashboard");
 
     // Hochsitz-Sidebar schliessen
     const hochsitzPanel = document.getElementById("hochsitz-panel");
@@ -277,6 +282,96 @@ function navigateToDashboard() {
         setTimeout(() => hochsitzPanel.classList.add("hidden"), 300);
     }
 }
+
+function navigateToTab(pageId) {
+    const allPages = document.querySelectorAll(".page");
+    const fabBtn = document.getElementById("fab-add-btn");
+    const bottomNav = document.getElementById("bottom-nav");
+
+    allPages.forEach(p => p.classList.remove("active"));
+    const page = document.getElementById(pageId);
+    if (page) page.classList.add("active");
+
+    // Tab Bar anzeigen
+    if (bottomNav) bottomNav.classList.remove("hidden");
+
+    // FAB nur für Streckenliste
+    if (fabBtn) {
+        if (pageId === "streckenliste") {
+            fabBtn.classList.add("visible");
+        } else {
+            fabBtn.classList.remove("visible");
+        }
+    }
+
+    // Tab aktiv markieren
+    setActiveTab(pageId);
+}
+
+function setActiveTab(pageId) {
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === pageId);
+    });
+}
+
+// Hero-Wetter befüllen (aus fetchLiveWeather aufrufen)
+function updateHeroWeather(current, today) {
+    const heroTemp = document.getElementById("hero-temp");
+    const heroDesc = document.getElementById("hero-desc");
+    const heroWindText = document.getElementById("hero-wind-text");
+    const heroSunText = document.getElementById("hero-sun-text");
+
+    if (heroTemp && current) {
+        heroTemp.textContent = `${current.temp.toFixed(0)}°`;
+    }
+    if (heroDesc && current) {
+        const cond = current.conditions || "";
+        // Deutsche Übersetzung der häufigsten Zustände
+        const condMap = {
+            "Clear": "Klar", "Partially cloudy": "Teils bewölkt",
+            "Overcast": "Bedeckt", "Rain": "Regen", "Snow": "Schnee",
+            "Fog": "Nebel", "Thunderstorm": "Gewitter", "Drizzle": "Nieselregen",
+            "Cloudy": "Bewölkt", "Rain, Overcast": "Regen & Bedeckt",
+            "Rain, Partially cloudy": "Leichter Regen", "Snow, Overcast": "Schnee & Bedeckt",
+            "Rain, Thunder": "Gewitter", "Freezing Drizzle/Freezing Rain": "Eisregen",
+            "Light Rain": "Leichter Regen", "Heavy Rain": "Starkregen"
+        };
+        // Fallback: erste Bedingung übersetzen
+        const firstCond = cond.split(",")[0].trim();
+        const condMapSimple = {
+            "Clear": "Klar", "Overcast": "Bedeckt", "Rain": "Regen",
+            "Snow": "Schnee", "Fog": "Nebel", "Drizzle": "Nieselregen",
+            "Cloudy": "Bewölkt", "Thunder": "Gewitter"
+        };
+        heroDesc.textContent = condMap[cond] || condMapSimple[firstCond] || firstCond;
+    }
+    if (heroWindText && current) {
+        const dir = getWindDirection(current.winddir);
+        heroWindText.textContent = `${dir} ${current.windspeed.toFixed(0)} km/h`;
+    }
+    if (heroSunText && today) {
+        const rise = today.sunrise ? today.sunrise.substring(0, 5) : "--:--";
+        heroSunText.textContent = `↑ ${rise}`;
+    }
+}
+
+// Benutzername für Begrüßung & Einstellungen laden
+function updateUserInfo(user) {
+    const name = user.displayName ? user.displayName.split(" ")[0] : (user.email ? user.email.split("@")[0] : "Jäger");
+    const hour = new Date().getHours();
+    let greeting = "Guten Morgen";
+    if (hour >= 12 && hour < 18) greeting = "Guten Nachmittag";
+    else if (hour >= 18) greeting = "Guten Abend";
+
+    const heroGreeting = document.getElementById("hero-greeting");
+    if (heroGreeting) heroGreeting.textContent = `${greeting}, ${name}`;
+
+    const settingsUser = document.getElementById("settings-username");
+    const settingsEmail = document.getElementById("settings-useremail");
+    if (settingsUser) settingsUser.textContent = user.displayName || name;
+    if (settingsEmail) settingsEmail.textContent = user.email || "";
+}
+
 
 // iOS Bounce/Overscroll Prevention
 function preventIOSBounce() {
@@ -478,6 +573,16 @@ function initAuthListener() {
 
             if (loginOverlay) {
                 loginOverlay.style.display = "none";
+            }
+
+            // Benutzername in Hero und Einstellungen eintragen
+            updateUserInfo(user);
+
+            // Tab Bar sofort nach Login anzeigen
+            const bottomNav = document.getElementById("bottom-nav");
+            if (bottomNav) {
+                bottomNav.classList.remove("hidden");
+                setActiveTab("dashboard");
             }
 
             // Initialize app only once
@@ -2066,6 +2171,9 @@ async function fetchLiveWeather() {
 
         // Sonnen-Leiste (Sunrise/Sunset)
         updateSunBar(today, tomorrow);
+
+        // NEU: Hero-Wetter auf dem Dashboard befüllen
+        updateHeroWeather(current, today);
 
     } catch (err) {
         console.error("Wetter Fehler:", err);
