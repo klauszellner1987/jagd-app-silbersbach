@@ -773,7 +773,8 @@ function updateSchonzeitWidget() {
     // Rotiere durch Wildarten mit Jagdzeit
     const wildart = jagdzeitWildarten[schonzeitIndex % jagdzeitWildarten.length];
 
-    iconContainer.innerHTML = `<i class="${wildart.iconClass}"></i>`;
+    // Wir lassen das Hirsch-Icon fest stehen für einen edlen Look
+    // iconContainer.innerHTML = `<i class="${wildart.iconClass}"></i>`;
     wildartEl.textContent = wildart.name;
     datumEl.textContent = getJagdzeitDatum(wildart);
     indicatorEl.className = "schonzeit-indicator open";
