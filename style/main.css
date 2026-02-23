@@ -438,12 +438,14 @@ main {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 0.85rem 0.75rem 0.85rem 1.1rem;
-    /* Rechtes Padding reduziert */
+    padding: 0.85rem 0.75rem 0.85rem 1rem;
+    /* Padding vereinheitlicht */
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
+    min-height: 64px;
+    /* Feste Mindesthöhe für Stabilität */
 }
 
 .info-row:active {
@@ -454,19 +456,34 @@ main {
 .info-row-left {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 1rem;
+    /* Festgelegter Abstand zwischen Icon und Text */
+    flex: 1;
 }
 
 .info-row-icon {
     width: 42px;
     height: 42px;
+    min-width: 42px;
+    /* Verhindert das Quetschen */
     background: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
     flex-shrink: 0;
+}
+
+.info-row-icon i,
+.info-row-icon svg {
+    font-size: 22px;
+    /* Einheitliche Größe für Tabler-Icons */
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .info-row-text {
