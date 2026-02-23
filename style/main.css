@@ -412,6 +412,15 @@ main {
     color: rgba(255, 255, 255, 0.9);
 }
 
+.app-card-icon svg,
+.app-card-icon iconify-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .app-card-title {
     font-size: 0.95rem;
     font-weight: 600;
@@ -485,7 +494,8 @@ main {
 }
 
 .info-row-icon i,
-.info-row-icon svg {
+.info-row-icon svg,
+.info-row-icon iconify-icon {
     font-size: 30px;
     /* Gleiche Größe wie in den oberen Karten */
     width: 30px;
@@ -4361,7 +4371,21 @@ button:hover {
     /* Hinzugefügt für Snapping */
 }
 
-.bulletin-preview::-webkit-scrollbar {
+/* Standard-Styles für Iconify Premium Icons */
+iconify-icon {
+    display: inline-block !important;
+    width: 1em;
+    height: 1em;
+    min-width: 1em;
+    min-height: 1em;
+    vertical-align: middle;
+    color: white !important;
+    /* border: 1px solid red; */
+    /* Temporär zum Testen */
+}
+
+/* Scrollbar verstecken */
+::-webkit-scrollbar {
     display: none;
 }
 
