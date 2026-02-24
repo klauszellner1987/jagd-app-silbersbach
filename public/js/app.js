@@ -649,21 +649,33 @@ function getJagdzeitDatum(wildart) {
     return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
 }
 
-// Hilfsfunktion für professionelle Icons (Tabler Icons)
+// Hilfsfunktion für professionelle Game-Icons (als robuste SVGs eingebettet)
 function getWildartIconHTML(type, size = 30) {
-    // Map Wildart IDs to Tabler Classes (vorgefertigte Profi-Icons)
-    const iconMapping = {
-        'deer': 'ti-deer',   // Offizielles Hirsch/Reh Icon
-        'boar': 'ti-pig',    // Sau
-        'fox': 'ti-paw',     // Fährte für Raubwild
-        'rabbit': 'ti-paw',  // Fährte
-        'duck': 'ti-bird',   // Vogel/Ente
-        'bird': 'ti-feather',// Feder
-        'paw': 'ti-paw'      // Fährte
+    const svgs = {
+        'deer': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M410.1 16.5c-9.1 0-18.1 3.5-25 10.4l-64.8 64.8-19.4-4.8c-11.8-2.9-24.3 2.1-30.8 12.3L256 120.9l-14.1-21.7c-6.5-10.2-19-15.2-30.8-12.3l-19.4 4.8-64.8-64.8c-13.8-13.8-36.2-13.8-50 0s-13.8 36.2 0 50l54.8 54.8-11.7 46.8c-2.9 11.8 2.1 24.3 12.3 30.8l56.5 36.7-18.9 94.4c-2.3 11.6 3.6 23.4 14.3 28.5l96 48c3.7 1.8 7.7 2.7 11.8 2.7s8.1-.9 11.8-2.7l96-48c10.7-5.1 16.6-16.9 14.3-28.5l-18.9-94.4 56.5-36.7c10.2-6.5 15.2-19 12.3-30.8l-11.7-46.8 54.8-54.8c13.8-13.8 13.8-36.2 0-50-6.9-6.9-15.9-10.4-25-10.4z"/>
+                </svg>`,
+        'boar': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M480 256c0-123.7-100.3-224-224-224S32 132.3 32 256c0 102.3 68.5 188.4 162.1 214.9 8.2 2.3 16.9-2.5 19.2-10.7 2.3-8.2-2.5-16.9-10.7-19.2C116.3 418.1 64 343.1 64 256c0-106 86-192 192-192s192 86 192 192c0 87.1-52.3 162.1-126.6 185-8.2 2.3-13 11-10.7 19.2 2.3 8.2 11 13 19.2 10.7C411.5 444.4 480 358.3 480 256zM256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
+                </svg>`,
+        'fox': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M256 32l-96 96v64l-64 64v96l160 128 160-128v-96l-64-64v-64l-96-96z"/>
+                </svg>`,
+        'rabbit': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M128 32l-32 96v128h64l64 96 64-96h64v-128l-32-96h-128z"/>
+                </svg>`,
+        'duck': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M256 64l-128 128v128h256v-128l-128-128z"/>
+                </svg>`,
+        'bird': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M256 96l-160 160v128h320v-128l-160-160z"/>
+                </svg>`,
+        'paw': `<svg width="${size}" height="${size}" viewBox="0 0 512 512" fill="white">
+                    <path d="M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 192c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64z"/>
+                </svg>`
     };
 
-    const iconClass = iconMapping[type] || 'ti-paw';
-    return `<i class="ti ${iconClass}" style="font-size: ${size}px; color: white;"></i>`;
+    return svgs[type] || svgs['paw'];
 }
 
 function updateSchonzeitWidget() {
