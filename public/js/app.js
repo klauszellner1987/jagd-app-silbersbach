@@ -653,9 +653,9 @@ function getJagdzeitDatum(wildart) {
 function getWildartIconHTML(type, size = 30) {
     if (type === 'deer') {
         // Zweite Reihe, zweites Icon aus icons/deer.jpg
-        // Bild ist 10 Spalten x 2 Reihen.
-        // Position X: 11.11% (2. Spalte), Position Y: 100% (2. Reihe)
-        return `<div style="width: ${size}px; height: ${size}px; background-image: url('icons/deer.jpg'); background-size: 1000% 200%; background-position: 11.11% 100%; filter: invert(1) brightness(1.5); display: inline-block;"></div>`;
+        // Wir nutzen mix-blend-mode: screen, um den schwarzen Hintergrund (nach Invertierung) zu entfernen
+        // Und wir machen den Container etwas breiter (size * 1.4), damit die Füße nicht abgeschnitten werden
+        return `<div style="width: ${size * 1.4}px; height: ${size}px; background-image: url('icons/deer.jpg'); background-size: 1000% 200%; background-position: 11.2% 100%; filter: invert(1) brightness(1.5); mix-blend-mode: screen; display: inline-block;"></div>`;
     }
 
     const svgs = {
