@@ -649,12 +649,13 @@ function getJagdzeitDatum(wildart) {
     return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
 }
 
-// Hilfsfunktion für hochwertige Jagd-Silhouetten (Hirsch: Foto vom User, Rest: SVGs)
+// Hilfsfunktion für hochwertige Jagd-Silhouetten (Hirsch: Spezielles Icon aus deer.jpg, Rest: SVGs)
 function getWildartIconHTML(type, size = 30) {
     if (type === 'deer') {
-        // Hirsch-Foto vom User (public/assets/icons/icon2.png)
-        // Wir invertieren es, damit die schwarze Silhouette weiß wird
-        return `<img src="assets/icons/icon2.png" style="width: ${size}px; height: ${size}px; object-fit: contain; filter: invert(1) brightness(2); mix-blend-mode: screen;">`;
+        // Zweite Reihe, zweites Icon aus icons/deer.jpg
+        // Bild ist 10 Spalten x 2 Reihen.
+        // Position X: 11.11% (2. Spalte), Position Y: 100% (2. Reihe)
+        return `<div style="width: ${size}px; height: ${size}px; background-image: url('icons/deer.jpg'); background-size: 1000% 200%; background-position: 11.11% 100%; filter: invert(1) brightness(1.5); display: inline-block;"></div>`;
     }
 
     const svgs = {
