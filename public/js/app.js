@@ -649,15 +649,15 @@ function getJagdzeitDatum(wildart) {
     return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
 }
 
-// Hilfsfunktion für hochwertige Jagd-Silhouetten (direkt eingebettete Detail-SVGs)
+// Hilfsfunktion für hochwertige Jagd-Silhouetten (Hirsch: Foto vom User, Rest: SVGs)
 function getWildartIconHTML(type, size = 30) {
+    if (type === 'deer') {
+        // Hirsch-Foto vom User (public/assets/icons/icon2.png)
+        // Wir invertieren es, damit die schwarze Silhouette weiß wird
+        return `<img src="assets/icons/icon2.png" style="width: ${size}px; height: ${size}px; object-fit: contain; filter: invert(1) brightness(2); mix-blend-mode: screen;">`;
+    }
+
     const svgs = {
-        'deer': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
-            <path d="M12,2c0,0-1,2-3,2s-3,0-3,0s0,1,1,2s2,1,2,1s-2,1-3,3s-1,4,1,6s4,2,6,2s4,0,6-2s2-4,1-6s-2-2-3-3s1,0,2-1s2-1,2-1s0-1-1-2s-1-2-3-2S12,2,12,2z M10,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S10.5,14,10,14z M14,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S14.5,14,14,14z"/>
-            <path d="M12,18c-1.1,0-2-0.9-2-2h4C14,17.1,13.1,18,12,18z"/>
-            <path d="M8,4c-1,0-2-0.5-3-1l1,3c0,0,1,0.5,2,0.5S8,4,8,4z"/>
-            <path d="M16,4c1,0,2-0.5,3-1l-1,3c0,0-1,0.5-2,0.5S16,4,16,4z"/>
-        </svg>`,
         'boar': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M22,12c0-4.4-3.6-8-8-8H8c-4.4,0-8,3.6-8,8s3.6,8,8,8h6C18.4,20,22,16.4,22,12z M6,11c0.5,0,1,0.5,1,1s-0.5,1-1,1s-1-0.5-1-1S5.5,11,6,11z M18,12c0,0.5-0.5,1-1,1s-1-0.5-1-1s0.5-1,1-1S18,11.5,18,12z M4,15c-1,0-2-1-2-2s1-2,2-2"/>
             <path d="M20,10c1,0,2,1,2,2s-1,2-2,2"/>
@@ -675,7 +675,7 @@ function getWildartIconHTML(type, size = 30) {
             <path d="M12,12c4.4,0,8-3.6,8-8h-2c0,3.3-2.7,6-6,6s-6-2.7-6-6H4C4,8.4,7.6,12,12,12z M12,14c-3.3,0-6,2.7-6,6h12C18,16.7,15.3,14,12,14z"/>
             <path d="M18,4c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S16.9,4,18,4z"/>
         </svg>`,
-        'bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
+        ' bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M12,4L2,14h4v6h12v-6h4L12,4z M10,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S10.5,14,10,14z M14,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S14.5,14,14,14z"/>
         </svg>`,
         'paw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
