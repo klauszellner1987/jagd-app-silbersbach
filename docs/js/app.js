@@ -54,7 +54,7 @@ const jagdzeitenBayern = [
 
     // ===== FEDERWILD =====
     { id: "stockente", name: "Stockente", jagdzeitStart: "01.09", jagdzeitEnde: "15.01", iconClass: "duck" },
-    { id: "fasan", name: "Fasan", jagdzeitStart: "01.10", jagdzeitEnde: "31.12", iconClass: "bird" },
+    { id: "fasan", name: "Fasan", jagdzeitStart: "01.10", jagdzeitEnde: "31.12", iconClass: "fasan" },
     { id: "rabenkraehe", name: "Rabenkrähe", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "crow" },
     { id: "elster", name: "Elster", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "crow" },
     { id: "eichelhaeler", name: "Eichelhäher", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "crow" }
@@ -1278,7 +1278,8 @@ l-33 29 40 18 c47 22 130 24 207 7 29 -6 154 -63 277 -125 144 -72 236 -113
         'paw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M12,14c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S14.2,14,12,14z M8,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S9.1,10,8,10z M12,6c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,6,12,6z M16,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S17.1,10,16,10z" />
         </svg>`,
-        'marder': `<div style="width: ${size}px; height: ${size * 0.376}px; background-color: white; -webkit-mask: url('icons/marder.png') no-repeat center; mask: url('icons/marder.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`
+        'marder': `<div style="width: ${size}px; height: ${size * 0.376}px; background-color: white; -webkit-mask: url('icons/marder.png') no-repeat center; mask: url('icons/marder.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`,
+        'fasan': `<div style="width: ${size}px; height: ${size * 0.566}px; background-color: white; -webkit-mask: url('icons/Fasan.png') no-repeat center; mask: url('icons/Fasan.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`
     };
 
     return svgs[type] || svgs['paw'];
