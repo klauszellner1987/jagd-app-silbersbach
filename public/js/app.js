@@ -675,7 +675,7 @@ function getWildartIconHTML(type, size = 30) {
             <path d="M12,12c4.4,0,8-3.6,8-8h-2c0,3.3-2.7,6-6,6s-6-2.7-6-6H4C4,8.4,7.6,12,12,12z M12,14c-3.3,0-6,2.7-6,6h12C18,16.7,15.3,14,12,14z"/>
             <path d="M18,4c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S16.9,4,18,4z"/>
         </svg>`,
-        ' bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
+        'bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M12,4L2,14h4v6h12v-6h4L12,4z M10,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S10.5,14,10,14z M14,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S14.5,14,14,14z"/>
         </svg>`,
         'paw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
