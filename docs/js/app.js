@@ -36,7 +36,7 @@ const jagdzeitenBayern = [
     { id: "schwarzwild-bachen", name: "Schwarzwild (Bachen)", ganzjaehrig: true, iconClass: "boar" },
     { id: "schwarzwild-frischlinge", name: "Schwarzwild (Frischlinge)", ganzjaehrig: true, iconClass: "boar" },
     { id: "schwarzwild-ueberlaeufer", name: "Schwarzwild (Überläufer)", ganzjaehrig: true, iconClass: "boar" },
-    { id: "gamswild", name: "Gamswild", jagdzeitStart: "01.08", jagdzeitEnde: "15.12", iconClass: "deer" },
+    { id: "gamswild", name: "Gamswild", jagdzeitStart: "01.08", jagdzeitEnde: "15.12", iconClass: "gams" },
     { id: "muffelwild", name: "Muffelwild", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "deer" },
 
     // ===== RAUBWILD =====
@@ -1279,7 +1279,9 @@ l-33 29 40 18 c47 22 130 24 207 7 29 -6 154 -63 277 -125 144 -72 236 -113
             <path d="M12,14c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S14.2,14,12,14z M8,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S9.1,10,8,10z M12,6c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,6,12,6z M16,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S17.1,10,16,10z" />
         </svg>`,
         'marder': `<div style="width: ${size}px; height: ${size * 0.376}px; background-color: white; -webkit-mask: url('icons/marder.png') no-repeat center; mask: url('icons/marder.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`,
-        'fasan': `<div style="width: ${size}px; height: ${size * 0.566}px; background-color: white; -webkit-mask: url('icons/Fasan.png') no-repeat center; mask: url('icons/Fasan.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`
+        'fasan': `<div style="width: ${size}px; height: ${size * 0.566}px; background-color: white; -webkit-mask: url('icons/Fasan.png') no-repeat center; mask: url('icons/Fasan.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`,
+        'gams': `<div style="width: ${size}px; height: ${size * 1.154}px; background-color: white; -webkit-mask: url('icons/gams.png') no-repeat center; mask: url('icons/gams.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`,
+        'steinbock': `<div style="width: ${size}px; height: ${size * 0.879}px; background-color: white; -webkit-mask: url('icons/Steinbock.png') no-repeat center; mask: url('icons/Steinbock.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`
     };
 
     return svgs[type] || svgs['paw'];
