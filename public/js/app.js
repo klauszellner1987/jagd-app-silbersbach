@@ -651,15 +651,15 @@ function getJagdzeitDatum(wildart) {
 
 // Hilfsfunktion für professionelle Icons (Tabler Icons)
 function getWildartIconHTML(type, size = 30) {
-    // Map Wildart IDs to Tabler Classes
+    // Map Wildart IDs to Tabler Classes (vorgefertigte Profi-Icons)
     const iconMapping = {
-        'deer': 'ti-paw', // Tabler hat keinen Hirsch, wir nehmen die Fährte
-        'boar': 'ti-paw',
-        'fox': 'ti-paw',
-        'rabbit': 'ti-paw',
-        'duck': 'ti-bird',
-        'bird': 'ti-feather',
-        'paw': 'ti-paw'
+        'deer': 'ti-deer',   // Offizielles Hirsch/Reh Icon
+        'boar': 'ti-pig',    // Sau
+        'fox': 'ti-paw',     // Fährte für Raubwild
+        'rabbit': 'ti-paw',  // Fährte
+        'duck': 'ti-bird',   // Vogel/Ente
+        'bird': 'ti-feather',// Feder
+        'paw': 'ti-paw'      // Fährte
     };
 
     const iconClass = iconMapping[type] || 'ti-paw';
