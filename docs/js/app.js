@@ -649,39 +649,21 @@ function getJagdzeitDatum(wildart) {
     return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
 }
 
-// Hilfsfunktion für Premium-Icons (direkt als SVG)
+// Hilfsfunktion für professionelle Icons (Tabler Icons)
 function getWildartIconHTML(type, size = 30) {
-    const svgs = {
-        'deer': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20c-1.5 0-3-1-3-4.5 0-2.5 1-3.5 3-3.5s3 1 3 3.5c0 3.5-1.5 4.5-3 4.5Z" />
-                    <path d="M9 14c-2-1-3-3-3-5M6 9c-1-1-2-1.5-3-1M6 9c0-2-1-3-2-3.5" />
-                    <path d="M9 13c-1-2-1.5-4-1-6M8 7c0-2 .5-3.5 1.5-4.5" />
-                    <path d="M15 14c2-1 3-3 3-5M18 9c1-1 2-1.5 3-1M18 9c0-2 1-3 2-3.5" />
-                    <path d="M15 13c1-2 1.5-4 1-6M16 7c0-2-.5-3.5-1.5-4.5" />
-                </svg>`,
-        'boar': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 15c2 1 4 2 8 2s7-1 9-5-1-6-3-7-6-1-9 1-5 4-5 9Z" />
-                    <path d="M16 17v2M12 17v2M8 17v1.5M20 12c-1.5.5-3 0-3-2" />
-                </svg>`,
-        'fox': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 18c-3 0-6-2-6-6s2-6 6-6 6 2 6 6-3 6-6 6Z" />
-                    <path d="M7 8 5 4l4 2M17 8l2-4-4 2" /><circle cx="12" cy="13" r="1" />
-                </svg>`,
-        'rabbit': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M7 11c-2-1-3-4-3-7M17 11c2-1 3-4 3-7M12 21c-4 0-7-3-7-7s3-4 7-4 7 0 7 4-3 7-7 7Z" />
-                </svg>`,
-        'duck': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M15.5 11c2.5 0 4.5-2 4.5-4.5S18 2 15.5 2 11 4 11 6.5s2 4.5 4.5 4.5Z" />
-                    <path d="m3 16 3-1 2.5 2.5a8 8 0 0 0 11.5-1" />
-                </svg>`,
-        'bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M16 7c-2-2-5-2-7 0L3 13c3 1 5 4 5 7h8c0-3 2-6 5-7l-5-6Z" />
-                </svg>`,
-        'paw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="13" r="4" /><circle cx="7" cy="6" r="2" /><circle cx="12" cy="4" r="2" /><circle cx="17" cy="6" r="2" />
-                </svg>`
+    // Map Wildart IDs to Tabler Classes
+    const iconMapping = {
+        'deer': 'ti-paw', // Tabler hat keinen Hirsch, wir nehmen die Fährte
+        'boar': 'ti-paw',
+        'fox': 'ti-paw',
+        'rabbit': 'ti-paw',
+        'duck': 'ti-bird',
+        'bird': 'ti-feather',
+        'paw': 'ti-paw'
     };
-    return svgs[type] || svgs['deer'];
+
+    const iconClass = iconMapping[type] || 'ti-paw';
+    return `<i class="ti ${iconClass}" style="font-size: ${size}px; color: white;"></i>`;
 }
 
 function updateSchonzeitWidget() {
