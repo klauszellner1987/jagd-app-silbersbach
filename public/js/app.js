@@ -42,8 +42,8 @@ const jagdzeitenBayern = [
     // ===== RAUBWILD =====
     { id: "fuchs", name: "Fuchs", ganzjaehrig: true, iconClass: "fox" },
     { id: "dachs", name: "Dachs", jagdzeitStart: "01.08", jagdzeitEnde: "31.10", iconClass: "paw" },
-    { id: "baummarder", name: "Baummarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "paw" },
-    { id: "steinmarder", name: "Steinmarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "paw" },
+    { id: "baummarder", name: "Baummarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "marder" },
+    { id: "steinmarder", name: "Steinmarder", jagdzeitStart: "16.10", jagdzeitEnde: "28.02", iconClass: "marder" },
     { id: "iltis", name: "Iltis", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "paw" },
     { id: "hermelin", name: "Hermelin", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "paw" },
     { id: "mauswiesel", name: "Mauswiesel", jagdzeitStart: "01.08", jagdzeitEnde: "28.02", iconClass: "paw" },
@@ -1271,16 +1271,14 @@ l-33 29 40 18 c47 22 130 24 207 7 29 -6 154 -63 277 -125 144 -72 236 -113
 -327 43 -460 24z" />
             </g>
         </svg>`,
-        'duck': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
-            <path d="M12,12c4.4,0,8-3.6,8-8h-2c0,3.3-2.7,6-6,6s-6-2.7-6-6H4C4,8.4,7.6,12,12,12z M12,14c-3.3,0-6,2.7-6,6h12C18,16.7,15.3,14,12,14z"/>
-            <path d="M18,4c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S16.9,4,18,4z"/>
-        </svg>`,
+        'duck': `<div style="width: ${size}px; height: ${size * 1.138}px; background-color: white; -webkit-mask: url('icons/Ente.png') no-repeat center; mask: url('icons/Ente.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`,
         'bird': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M12,4L2,14h4v6h12v-6h4L12,4z M10,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S10.5,14,10,14z M14,14c-0.5,0-1-0.5-1-1s0.5-1,1-1s1,0.5,1,1S14.5,14,14,14z" />
         </svg>`,
         'paw': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="white">
             <path d="M12,14c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S14.2,14,12,14z M8,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S9.1,10,8,10z M12,6c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,6,12,6z M16,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S17.1,10,16,10z" />
-        </svg>`
+        </svg>`,
+        'marder': `<div style="width: ${size}px; height: ${size * 0.376}px; background-color: white; -webkit-mask: url('icons/marder.png') no-repeat center; mask: url('icons/marder.png') no-repeat center; -webkit-mask-size: contain; mask-size: contain; display: block; margin: 0 auto;"></div>`
     };
 
     return svgs[type] || svgs['paw'];
