@@ -158,12 +158,28 @@ function navigateToPage(targetId) {
         if (targetId === 'schonzeit-page') {
             renderSchonzeitListe();
         } else if (targetId === 'wetter-page') {
-            // Falls Wetter-Details-Daten geladen sind
             if (typeof renderWetterDetailPage === 'function') {
                 renderWetterDetailPage();
             }
         }
     }
+
+    // Panels schließen, wenn wir nicht auf der Karte sind
+    if (targetPage && targetId !== "revier") {
+        closeMapPanels();
+    }
+}
+
+// Side-Panels der Karte (Hochsitze/Flurstücke) schließen
+function closeMapPanels() {
+    const panels = ["hochsitz-panel", "eigengrundstuecke-panel"];
+    panels.forEach(id => {
+        const p = document.getElementById(id);
+        if (p && !p.classList.contains("hidden")) {
+            p.classList.remove("open");
+            setTimeout(() => p.classList.add("hidden"), 300);
+        }
+    });
 }
 
 // Navigate back to dashboard
@@ -185,12 +201,8 @@ function navigateToDashboard() {
     // Tab aktiv markieren
     setActiveTab("dashboard");
 
-    // Hochsitz-Sidebar schliessen
-    const hochsitzPanel = document.getElementById("hochsitz-panel");
-    if (hochsitzPanel) {
-        hochsitzPanel.classList.remove("open");
-        setTimeout(() => hochsitzPanel.classList.add("hidden"), 300);
-    }
+    // Alle Karten-Panels (Hochsitze/Flurstücke) schließen
+    closeMapPanels();
 }
 
 function navigateToTab(pageId) {
@@ -216,6 +228,11 @@ function navigateToTab(pageId) {
 
     // Tab aktiv markieren
     setActiveTab(pageId);
+
+    // Panels schließen, wenn wir nicht auf der Karte sind
+    if (pageId !== "revier") {
+        closeMapPanels();
+    }
 }
 
 function setActiveTab(pageId) {
@@ -267,7 +284,10 @@ function updateHeroWeather(current, today) {
 
 // Benutzername für Begrüßung & Einstellungen laden
 function updateUserInfo(user) {
-    const name=user.displayName ? user.displayName.split(" ")[0] : (user.email ? user.email.split("@")[0] : "Jäger");
+    if (!user) return;
+    
+    // Fallback falls kein Name existiert
+    const name = user.displayName ? user.displayName.split(" ")[0] : "Waidmann";
     const hour = new Date().getHours();
     let greeting = "Guten Morgen";
     if (hour >= 12 && hour < 18) greeting = "Guten Nachmittag";
@@ -277,9 +297,24 @@ function updateUserInfo(user) {
     if (heroGreeting) heroGreeting.textContent = `${greeting}, ${name}`;
 
     const settingsUser = document.getElementById("settings-username");
-    const settingsEmail = document.getElementById("settings-useremail");
-    if (settingsUser) settingsUser.textContent = user.displayName || name;
-    if (settingsEmail) settingsEmail.textContent = user.email || "";
+    if (settingsUser) {
+        settingsUser.textContent = user.displayName || "Name eintragen";
+    }
+}
+
+// Profile Modal öffnen
+function openProfileModal() {
+    const modal = document.getElementById("profile-modal");
+    const nameInput = document.getElementById("profile-name-input");
+    if (modal && nameInput) {
+        const user = firebase.auth().currentUser;
+        if (user && user.displayName) {
+            nameInput.value = user.displayName;
+        } else {
+            nameInput.value = "";
+        }
+        modal.classList.remove("hidden");
+    }
 }
 
 
@@ -1626,8 +1661,8 @@ async function initializeApp() {
                 entry.dataset.lng = data.lng;
                 entry.dataset.id=doc.id;
                 entry.innerHTML = `
-        < strong > ${ data.name || "Ohne Namen" }</strong >
-            ${ data.datum ? `<small>Datum: ${new Date(data.datum).toLocaleDateString()}</small>` : "" }
+        <strong>${data.name || "Ohne Namen"}</strong>
+            ${data.datum ? `<small>Datum: ${new Date(data.datum).toLocaleDateString()}</small>` : ""}
                     ${ data.bemerkung ? `<small>${data.bemerkung}</small>` : "" }
                     ${ data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}">` : "" }
     `;
@@ -2007,7 +2042,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
                 if (!modal || !input || !saveBtn || !cancelBtn) return;
 
                 modal.style.display = "block";
-                input.value="";
+                input.value = "";
                 // Nur auf Desktop automatisch fokussieren (verhindert Tastatur-Problem auf Mobile)
                 if (window.innerWidth > 768) {
                     input.focus();
@@ -2015,8 +2050,8 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 const closeModal = () => { modal.style.display = "none"; };
 
-                saveBtn.onclick=async () => {
-                    const name=input.value.trim();
+                saveBtn.onclick = async () => {
+                    const name = input.value.trim();
                     if (!name) return alert("Bitte einen Namen eingeben");
                     try {
                         await hochsitzeCollection.add({
@@ -2034,19 +2069,19 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
                     settingHochsitz = false;
                     const btn = document.querySelector(".hoch-sitz-btn");
                     if (btn) {
-                        btn.style.background="#2f2f2f";
+                        btn.style.background = "#2f2f2f";
                         btn.style.border = "1px solid rgba(255,255,255,0.25)";
                         btn.style.color = "white";
                         btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
                     }
                 };
 
-                cancelBtn.onclick=() => {
+                cancelBtn.onclick = () => {
                     closeModal();
                     settingHochsitz = false;
                     const btn = document.querySelector(".hoch-sitz-btn");
                     if (btn) {
-                        btn.style.background="#2f2f2f";
+                        btn.style.background = "#2f2f2f";
                         btn.style.border = "1px solid rgba(255,255,255,0.25)";
                         btn.style.color = "white";
                         btn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.6)";
@@ -2066,7 +2101,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
             eigengrundstuecke.forEach((g, index) => {
                 const poly = L.polygon(g.coords, { color: g.color, fillColor: g.fillColor, fillOpacity: 0.3 });
                 poly.bindPopup(g.name);
-                const polyId=g.id || `grund - ${ index } `;
+                const polyId = g.id || `grund-${index}`;
                 window.eigengrundstueckePolygons[polyId] = poly;
                 if (g.isVisible) {
                     poly.addTo(map);
@@ -2084,11 +2119,11 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
                     if (g.isVisible) {
                         entry.classList.add("active-plot");
                         entry.style.borderColor = g.color;
-                        entry.style.background="rgba(255,255,255,0.25)";
+                        entry.style.background = "rgba(255,255,255,0.25)";
                     }
 
                     const nameSpan = document.createElement("span");
-                    nameSpan.innerHTML = `< strong > ${ g.name }</strong > `;
+                    nameSpan.innerHTML = `<strong>${g.name}</strong>`;
                     nameSpan.style.color = g.color;
 
                     const statusIcon = document.createElement("span");
@@ -2111,13 +2146,13 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                             entry.classList.add("active-plot");
                             entry.style.borderColor = g.color;
-                            entry.style.background="rgba(255,255,255,0.25)";
+                            entry.style.background = "rgba(255,255,255,0.25)";
                             statusIcon.innerHTML = "✓";
                         } else {
                             map.removeLayer(poly);
                             entry.classList.remove("active-plot");
                             entry.style.borderColor = "";
-                            entry.style.background="";
+                            entry.style.background = "";
                             statusIcon.innerHTML = "";
                         }
                     });
@@ -2133,7 +2168,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         const mapContainer = document.getElementById("map-container");
         if (mapContainer) {
             const mapStatusDot = document.createElement("span");
-            mapStatusDot.id="map-status-dot";
+            mapStatusDot.id = "map-status-dot";
             mapStatusDot.classList.add("offline");
             mapContainer.appendChild(mapStatusDot);
             tileLayer.on('tileload', () => mapStatusDot.classList.replace("offline", "online"));
@@ -2142,12 +2177,12 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
         // GPS Marker - wird erst bei Nutzerinteraktion (Button-Klick) gestartet
         let gpsMarker = null;
-        let gpsWatchId=null;
+        let gpsWatchId = null;
         let gpsSearching = false;
 
         const gpsIcon = L.divIcon({
             className: "gps-marker-wrapper",
-            html: `<div class="gps-marker" ></div> <div class="gps-marker-pulse"></div>`,
+            html: `<div class="gps-marker"></div><div class="gps-marker-pulse"></div>`,
             iconSize: [24, 24],
             iconAnchor: [12, 12]
         });
@@ -2162,7 +2197,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
             if (el) el.classList.remove("offline");
         }
 
-        let gpsHighAccuracyFailed=false;
+        let gpsHighAccuracyFailed = false;
 
         function stopGpsSearching() {
             gpsSearching = false;
@@ -2179,14 +2214,14 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
             // Bei POSITION_UNAVAILABLE: Fallback ohne enableHighAccuracy versuchen
             if (err.code === 2 && !gpsHighAccuracyFailed) {
-                gpsHighAccuracyFailed=true;
+                gpsHighAccuracyFailed = true;
                 console.log("GPS: Fallback ohne enableHighAccuracy...");
                 showToast("GPS-Signal schwach, versuche alternative Ortung...", "info");
 
                 // Alten Watch stoppen falls aktiv
                 if (gpsWatchId !== null) {
                     navigator.geolocation.clearWatch(gpsWatchId);
-                    gpsWatchId=null;
+                    gpsWatchId = null;
                 }
 
                 // Nochmal versuchen ohne High Accuracy (nutzt WiFi/Mobilfunk)
@@ -2239,7 +2274,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
                 return;
             }
             const useHighAccuracy = !gpsHighAccuracyFailed;
-            gpsWatchId=navigator.geolocation.watchPosition(
+            gpsWatchId = navigator.geolocation.watchPosition(
                 pos => {
                     const { latitude, longitude } = pos.coords;
                     updateGpsMarker(latitude, longitude);
@@ -2255,52 +2290,52 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         // Hochsitz + Button
         // ==========================
         const markerButton = L.control({ position: "topright" });
-        markerButton.onAdd=function () {
+        markerButton.onAdd = function () {
             const btn = L.DomUtil.create("button", "hoch-sitz-btn");
             btn.innerHTML = "+";
             btn.title = "Hochsitz hinzufügen";
 
             const normalStyle = `
-    backdrop - filter: blur(16px);
-    -webkit - backdrop - filter: blur(16px);
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: white;
-    font - size: 1.7rem;
-    font - weight: bold;
-    width: 44px;
-    height: 44px;
-    border - radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align - items: center;
-    justify - content: center;
-    box - shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic - bezier(0.4, 0, 0.2, 1);
-    `;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 1.7rem;
+            font-weight: bold;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
 
             const activeStyle = `
-    background: linear - gradient(135deg, rgba(95, 161, 117, 0.4), rgba(61, 190, 106, 0.4));
-    border: 1px solid rgba(124, 255, 155, 0.5);
-    color: white;
-    box - shadow:
-    0 0 0 3px rgba(124, 255, 155, 0.3),
-        0 8px 24px rgba(0, 0, 0, 0.4),
-            0 0 20px rgba(124, 255, 155, 0.4);
-    `;
+            background: linear-gradient(135deg, rgba(95, 161, 117, 0.4), rgba(61, 190, 106, 0.4));
+            border: 1px solid rgba(124, 255, 155, 0.5);
+            color: white;
+            box-shadow:
+                0 0 0 3px rgba(124,255,155,0.3),
+                0 8px 24px rgba(0,0,0,0.4),
+                0 0 20px rgba(124,255,155,0.4);
+        `;
 
             btn.style.cssText = normalStyle;
 
             btn.onmouseenter = () => {
                 if (!settingHochsitz) {
-                    btn.style.background="rgba(255, 255, 255, 0.18)";
-                    btn.style.transform="scale(1.08)";
+                    btn.style.background = "rgba(255, 255, 255, 0.18)";
+                    btn.style.transform = "scale(1.08)";
                 }
             };
             btn.onmouseleave = () => {
                 if (!settingHochsitz) {
-                    btn.style.background="rgba(255, 255, 255, 0.12)";
-                    btn.style.transform="scale(1)";
+                    btn.style.background = "rgba(255, 255, 255, 0.12)";
+                    btn.style.transform = "scale(1)";
                 }
             };
 
@@ -2328,35 +2363,35 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         // Hochsitz LISTEN Button
         // ==========================
         const listButton = L.control({ position: "topright" });
-        listButton.onAdd=function () {
+        listButton.onAdd = function () {
             const btn = L.DomUtil.create("button", "hochsitz-list-btn");
             btn.innerHTML = "☰";
             btn.title = "Hochsitze anzeigen";
             btn.style.cssText = `
-    backdrop - filter: blur(16px);
-    -webkit - backdrop - filter: blur(16px);
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: white;
-    font - size: 1.5rem;
-    width: 44px;
-    height: 44px;
-    border - radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align - items: center;
-    justify - content: center;
-    margin - top: 8px;
-    box - shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic - bezier(0.4, 0, 0.2, 1);
-    `;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
             btn.onmouseenter = () => {
-                btn.style.background="rgba(255, 255, 255, 0.18)";
-                btn.style.transform="scale(1.08)";
+                btn.style.background = "rgba(255, 255, 255, 0.18)";
+                btn.style.transform = "scale(1.08)";
             };
             btn.onmouseleave = () => {
-                btn.style.background="rgba(255, 255, 255, 0.12)";
-                btn.style.transform="scale(1)";
+                btn.style.background = "rgba(255, 255, 255, 0.12)";
+                btn.style.transform = "scale(1)";
             };
 
             // Prevent click propagation to map
@@ -2375,10 +2410,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         // Eigengrundstücke Button (Chainsaw)
         // ==========================
         const chainsawButton = L.control({ position: "topright" });
-        chainsawButton.onAdd=function () {
+        chainsawButton.onAdd = function () {
             const btn = L.DomUtil.create("button", "chainsaw-list-btn");
             // Motorsägen SVG Logo (Tabler Icon ti-cut oder ähnlich, hier abstrakt oder ein Sägeblatt als SVG)
-            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke - linecap="round" stroke - linejoin="round" >
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 18l1.4 -6h11.2l-2.4 8h-8.8a2 2 0 0 1 -2 -2z" />
             <path d="M12.4 6a2 2 0 0 1 -2 -2h-1c-1.3 0 -2.5 1 -3.2 2" />
             <path d="M14.6 12a1 1 0 0 0 -1 1v4" />
@@ -2388,33 +2423,33 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
             <path d="M21 11l-1 -1" />
             <path d="M20 9l-1 -1" />
             <path d="M17 12l2 -2l-1.5 -1.5l-2 2" />
-        </svg> `;
+        </svg>`;
             btn.title = "Eigengrundstücke anzeigen";
             btn.style.cssText = `
-    backdrop - filter: blur(16px);
-    -webkit - backdrop - filter: blur(16px);
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: white;
-    font - size: 1.5rem;
-    width: 44px;
-    height: 44px;
-    border - radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align - items: center;
-    justify - content: center;
-    margin - top: 8px;
-    box - shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic - bezier(0.4, 0, 0.2, 1);
-    `;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
             btn.onmouseenter = () => {
-                btn.style.background="rgba(255, 255, 255, 0.18)";
-                btn.style.transform="scale(1.08)";
+                btn.style.background = "rgba(255, 255, 255, 0.18)";
+                btn.style.transform = "scale(1.08)";
             };
             btn.onmouseleave = () => {
-                btn.style.background="rgba(255, 255, 255, 0.12)";
-                btn.style.transform="scale(1)";
+                btn.style.background = "rgba(255, 255, 255, 0.12)";
+                btn.style.transform = "scale(1)";
             };
 
             L.DomEvent.disableClickPropagation(btn);
@@ -2432,38 +2467,38 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         // GPS-Fokus Button
         // ==========================
         const gpsButton = L.control({ position: "topright" });
-        gpsButton.onAdd=function () {
+        gpsButton.onAdd = function () {
             const btn = L.DomUtil.create("button", "gps-center-btn");
-            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke - linecap="round" stroke - linejoin="round" >
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3" fill="currentColor"/>
             <circle cx="12" cy="12" r="8" opacity="0.3"/>
             <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-        </svg> `;
+        </svg>`;
             btn.title = "Zur aktuellen Position";
             btn.style.cssText = `
-    backdrop - filter: blur(16px);
-    -webkit - backdrop - filter: blur(16px);
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border - radius: 12px;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    display: flex;
-    align - items: center;
-    justify - content: center;
-    color: white;
-    box - shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic - bezier(0.4, 0, 0.2, 1);
-    `;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
 
             btn.onmouseenter = () => {
-                btn.style.background="rgba(255, 255, 255, 0.18)";
-                btn.style.transform="scale(1.08)";
+                btn.style.background = "rgba(255, 255, 255, 0.18)";
+                btn.style.transform = "scale(1.08)";
             };
             btn.onmouseleave = () => {
-                btn.style.background="rgba(255, 255, 255, 0.12)";
-                btn.style.transform="scale(1)";
+                btn.style.background = "rgba(255, 255, 255, 0.12)";
+                btn.style.transform = "scale(1)";
             };
 
             L.DomEvent.disableClickPropagation(btn);
@@ -2492,7 +2527,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 // Erstmaliger Klick: Berechtigung pruefen, dann Position holen
                 gpsSearching = true;
-                gpsHighAccuracyFailed=false;
+                gpsHighAccuracyFailed = false;
                 btn.classList.add("gps-searching");
 
                 // Permissions API nutzen um Status zu pruefen (falls verfuegbar)
@@ -2537,7 +2572,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         hochsitzeCollection.onSnapshot(snapshot => {
             snapshot.docChanges().forEach(change => {
                 const data = change.doc.data();
-                const id=change.doc.id;
+                const id = change.doc.id;
 
                 if (window.hochsitzeMarkers[id]) {
                     map.removeLayer(window.hochsitzeMarkers[id]);
@@ -2548,50 +2583,50 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
                     const marker = L.marker([data.lat, data.lng], {
                         icon: L.divIcon({
                             className: "hochsitz-marker",
-                            html: `<svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns = "http://www.w3.org/2000/svg" >
-                            < !--Hintergrund - Kreis-- >
+                            html: `<svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Hintergrund-Kreis -->
                             <circle cx="16" cy="16" r="15" fill="white" stroke="#2f6f4e" stroke-width="2"/>
-                            <!--Dach -->
+                            <!-- Dach -->
                             <path d="M8 12 L16 6 L24 12" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <!--Kabine -->
+                            <!-- Kabine -->
                             <rect x="9" y="12" width="14" height="8" rx="1" fill="#2f6f4e"/>
-                            <!--Fenster -->
+                            <!-- Fenster -->
                             <rect x="11" y="14" width="4" height="3" rx="0.5" fill="white" opacity="0.8"/>
                             <rect x="17" y="14" width="4" height="3" rx="0.5" fill="white" opacity="0.8"/>
-                            <!--Stelzen -->
+                            <!-- Stelzen -->
                             <line x1="11" y1="20" x2="9" y2="26" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round"/>
                             <line x1="21" y1="20" x2="23" y2="26" stroke="#2f6f4e" stroke-width="2" stroke-linecap="round"/>
-                            <!--Leiter -->
+                            <!-- Leiter -->
                             <line x1="16" y1="20" x2="16" y2="26" stroke="#2f6f4e" stroke-width="1.5" stroke-linecap="round"/>
                             <line x1="14.5" y1="22" x2="17.5" y2="22" stroke="#2f6f4e" stroke-width="1" stroke-linecap="round"/>
                             <line x1="14.5" y1="24" x2="17.5" y2="24" stroke="#2f6f4e" stroke-width="1" stroke-linecap="round"/>
-                        </svg> `,
+                        </svg>`,
                             iconSize: [40, 40],
                             iconAnchor: [20, 40],
                             popupAnchor: [0, -42]
                         })
                     }).addTo(map);
 
-                    const popupContent = `<div class="hochsitz-popup" >
-        <div class="hochsitz-popup-title">${data.name || "Hochsitz"}</div>
-                    ${ data.imageUrl ? `<img src="${data.imageUrl}" class="hochsitz-popup-img">` : "" }
-    <div class="hochsitz-popup-buttons">
-        <button class="hochsitz-popup-btn add-photo-btn" data-id="${id}">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-            </svg>
-            Bild
-        </button>
-        <button class="hochsitz-popup-btn delete-btn delete-marker-btn" data-id="${id}">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
-            </svg>
-            Löschen
-        </button>
-    </div>
-                </div> `;
+                    const popupContent = `<div class="hochsitz-popup">
+                    <div class="hochsitz-popup-title">${data.name || "Hochsitz"}</div>
+                    ${data.imageUrl ? `<img src="${data.imageUrl}" class="hochsitz-popup-img">` : ""}
+                    <div class="hochsitz-popup-buttons">
+                        <button class="hochsitz-popup-btn add-photo-btn" data-id="${id}">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            Bild
+                        </button>
+                        <button class="hochsitz-popup-btn delete-btn delete-marker-btn" data-id="${id}">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/>
+                            </svg>
+                            Löschen
+                        </button>
+                    </div>
+                </div>`;
                     marker.bindPopup(popupContent);
                     window.hochsitzeMarkers[id] = marker;
                 }
@@ -2608,21 +2643,21 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
         // ==========================
         document.addEventListener("click", async (evt) => {
             const target = evt.target;
-            const id=target.dataset?.id;
+            const id = target.dataset?.id;
             if (!id) return;
             const docRef = hochsitzeCollection.doc(id);
 
             if (target.classList.contains("add-photo-btn")) {
                 try {
                     const fileInput = document.createElement("input");
-                    fileInput.type="file";
+                    fileInput.type = "file";
                     fileInput.accept = "image/*";
                     fileInput.click();
-                    fileInput.onchange=async () => {
+                    fileInput.onchange = async () => {
                         const file = fileInput.files[0];
                         if (!file || !firebase.storage) return;
                         const storageRef = firebase.storage().ref();
-                        const fileRef = storageRef.child(`hochsitze / ${ id }_${ file.name } `);
+                        const fileRef = storageRef.child(`hochsitze/${id}_${file.name}`);
                         await fileRef.put(file);
                         const url = await fileRef.getDownloadURL();
                         await docRef.update({ imageUrl: url });
@@ -2635,7 +2670,7 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
             }
 
             if (target.classList.contains("delete-marker-btn")) {
-                const confirmed=await showConfirm(
+                const confirmed = await showConfirm(
                     "Möchten Sie diesen Hochsitz wirklich löschen?",
                     "Hochsitz löschen",
                     "Löschen"
@@ -3499,13 +3534,43 @@ function initAll() {
         return false;
     };
 
-    showToast("Reviersystem v3.3.0 bereit", "success");
+    showToast("Reviersystem v4.0.0 bereit", "success");
 
     // iOS Bounce/Overscroll Fix
     try {
         preventIOSBounce();
     } catch (e) {
         console.error("iOS Bounce Fix error:", e);
+    }
+
+    // Modal Events initialisieren
+    const profileModal = document.getElementById("profile-modal");
+    const cancelProfileBtn = document.getElementById("cancel-profile-btn");
+    const profileForm = document.getElementById("profile-form");
+
+    if (cancelProfileBtn && profileModal) {
+        cancelProfileBtn.addEventListener("click", () => {
+            profileModal.classList.add("hidden");
+        });
+    }
+
+    if (profileForm && profileModal) {
+        profileForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newName = document.getElementById("profile-name-input").value.trim();
+            const user = firebase.auth().currentUser;
+            if (user) {
+                try {
+                    await user.updateProfile({ displayName: newName });
+                    showToast("Profil aktualisiert!", "success");
+                    updateUserInfo(user);
+                    profileModal.classList.add("hidden");
+                } catch (error) {
+                    console.error("Fehler beim Profil-Update", error);
+                    showToast("Es gab ein Problem beim Speichern.", "error");
+                }
+            }
+        });
     }
 
     try {

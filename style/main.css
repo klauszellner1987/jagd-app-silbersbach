@@ -446,12 +446,12 @@ main {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 0.85rem 0.75rem 0.85rem 0.85rem;
+    padding: 0.65rem 0.75rem 0.65rem 0.85rem;
     cursor: pointer;
     transition: all 0.15s ease;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
-    min-height: 64px;
+    min-height: 58px;
 }
 
 #bulletin-widget {
@@ -479,11 +479,11 @@ main {
 }
 
 .info-row-icon {
-    width: 52px;
-    height: 52px;
-    min-width: 52px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    border-radius: 12px;
     /* Angepasst an app-card-icon */
     display: flex;
     align-items: center;
@@ -494,10 +494,10 @@ main {
 
 .info-row-icon i,
 .info-row-icon svg {
-    font-size: 30px;
+    font-size: 26px;
     /* Gleiche Größe wie in den oberen Karten */
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -9,16 +9,19 @@ Eine moderne Web-App für das Jagd-Revier Silbersbach mit Karte, Streckenliste u
 - **Streckenliste**: Erfassung und Verwaltung erlegter Strecke mit Firebase-Backend
 - **Wetterdaten**: Live-Wetter mit Temperatur, Wind und Mondphase
 - **Firebase Authentication**: Sicherer Login mit E-Mail und Passwort
-- **PWA**: Installierbar auf Handy und Desktop
+- **Personalisierung**: Individueller Name für Begrüßung und Konto-Einstellungen
+- **Native App**: Native Android-Version via Capacitor integriert
+- **PWA**: Installierbar auf Handy und Desktop via Browser
 
 ## Tech Stack
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
 - **Styling**: Tailwind CSS, Glassmorphism-Design
 - **Build Tool**: Vite
+- **Mobile Foundation**: Capacitor (für native App-Wrapper)
 - **Backend**: Firebase (Authentication, Firestore, Storage)
 - **Karte**: Leaflet.js
-- **Deployment**: GitHub Pages
+- **Deployment**: GitHub Pages (docs-Ordner) & Native Android App
 
 ## Installation & Development
 
@@ -51,6 +54,20 @@ npm run build
 
 Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
 
+### Android App (Native)
+
+Die App kann als native Android-Anwendung mit Capacitor gebaut werden:
+
+```bash
+# Web-Assets bauen und zum Android-Projekt synchronisieren
+npm run cap:build
+
+# Android Studio öffnen, um die App zu starten oder APK zu erstellen
+npm run cap:open
+```
+
+Stelle sicher, dass **Android Studio** und das **Android SDK** installiert sind.
+
 ## Ordnerstruktur
 
 ```
@@ -70,6 +87,17 @@ Der Build wird im `docs/` Ordner erstellt (für GitHub Pages).
 ```
 
 ## Changelog
+
+### v4.0.0 - Personalisierung & Native App Support
+
+**Großes Update für App-Gefühl und Individualität:**
+
+- **Native App Version**: Integration von Capacitor für echte Android-Funktionalität.
+- **Profil-Personalisierung**: Neues Menü in den Einstellungen, um einen individuellen Namen festzulegen.
+- **Dynamische Begrüßung**: Das Dashboard begrüßt den Nutzer jetzt persönlich statt mit "Waidmann" oder "Jäger".
+- **Auto-Close Panels**: Karten-Seitenleisten (Hochsitze & Flurstücke) schließen sich nun automatisch beim Verlassen der Karte.
+- **UI Bugfixes**: Korrektur der `<strong>`-Tags in der Hochsitz-Liste und stabilere Map-Initialisierung.
+- **Datenpflege**: Flurstück 733 auf 753 korrigiert und Koordinaten aktualisiert.
 
 ### v2.0.1 - Bugfixes
 
