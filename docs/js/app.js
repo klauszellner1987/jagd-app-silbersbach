@@ -24,6 +24,21 @@ function isNativeApp() {
 // ==============================
 // JAGDZEITEN BAYERN - Daten
 // ==============================
+
+// SVG Filter für perfekte Silhouetten (Schwarz -> Weiß, Weiß -> Transparent)
+if (!document.getElementById('svg-silhouette-filter')) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute('style', 'position: absolute; width: 0; height: 0; overflow: hidden;');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.id = "svg-silhouette-filter";
+    svg.innerHTML = `
+        <filter id="silhouette-filter" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -1.1 -1.1 -1.1 0 1" />
+        </filter>
+    `;
+    document.body.appendChild(svg);
+}
+
 const jagdzeitenBayern = [
     // ===== SCHALENWILD =====
     { id: "rotwild-hirsche", name: "Rotwild (Hirsche)", jagdzeitStart: "01.08", jagdzeitEnde: "31.01", iconClass: "deer" },
@@ -731,7 +746,7 @@ function getWildartIconHTML(type, size = 30) {
         return `<img src="icons/${pngIcons[type]}" 
                      width="${size}" height="${size}" 
                      class="silhouette-icon"
-                     style="width: ${size}px; height: ${size}px; transform: scale(${scale});">`;
+                     style="width: ${size}px; height: ${size}px; transform: scale(${scale}); -webkit-filter: url(#silhouette-filter); filter: url(#silhouette-filter);">`;
     }
 
     return "";
