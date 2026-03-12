@@ -3317,11 +3317,12 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
 }
 
 .silhouette-icon {
     object-fit: contain;
+    filter: invert(1) brightness(1.2);
+    mix-blend-mode: lighten;
     display: block;
     margin: 0 auto;
     pointer-events: none;
