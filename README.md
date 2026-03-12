@@ -88,6 +88,15 @@ Stelle sicher, dass **Android Studio** und das **Android SDK** installiert sind.
 
 ## Changelog
 
+### v4.1.0 - Icon-Standardisierung & Performance
+**Vollständige Überarbeitung der Grafiken für ein einheitliches App-Erlebnis:**
+
+- **Standardisierte Tier-Icons**: Alle Wildarten in der Jagd- und Schonzeitliste verwenden nun hochwertige PNG-Silhouetten statt der alten SVG-Platzhalter.
+- **Silhouette-Effekt**: Durch CSS-Blending (Lighten) und Kontrast-Filter fügen sich die schwarzen PNGs perfekt als weiße Silhouetten in das dunkle Glassmorphism-Design ein.
+- **Optimierte Skalierung**: Jedes Tier-Icon wurde individuell skaliert (z.B. Rehwild 1.1x, Wildschwein 1.2x), um einen einheitlichen "optischen Flow" in der Liste zu gewährleisten.
+- **Interaction Fixes**: Deaktivierung des blauen "Tap-Highlights" beim Klicken auf Widgets/Karten auf Android-Geräten für ein natives App-Feeling.
+- **Bereinigte Daten**: Entfernung veralteter SVG-Definitionen aus dem Code für bessere Performance und Wartbarkeit.
+
 ### v4.0.0 - Personalisierung & Native App Support
 
 **Großes Update für App-Gefühl und Individualität:**
