@@ -3297,12 +3297,7 @@ button:hover {
             rgba(60, 120, 80, 0.75) 0%,
             rgba(50, 100, 70, 0.55) 50%,
             rgba(40, 85, 60, 0.4) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    isolation: isolate;
 }
 
 .wildart-card:hover {
@@ -3323,15 +3318,25 @@ button:hover {
 
 .silhouette-icon {
     object-fit: contain;
-    filter: invert(1) grayscale(1) contrast(4) brightness(1.3);
+    filter: invert(1) contrast(100) brightness(1.2);
     mix-blend-mode: screen;
     display: block;
     margin: 0 auto;
     pointer-events: none;
     transform-origin: center;
-    clip-path: inset(5px);
     will-change: filter;
 }
+
+/* Individuelle Skalierung fuer optimalen Flow ohne Transform-Bug */
+.silhouette-icon[data-type="reh"] { width: 110% !important; height: 110% !important; }
+.silhouette-icon[data-type="rehbock"] { width: 115% !important; height: 115% !important; }
+.silhouette-icon[data-type="wildschwein"] { width: 120% !important; height: 120% !important; }
+.silhouette-icon[data-type="fox"] { width: 125% !important; height: 125% !important; }
+.silhouette-icon[data-type="rabbit"] { width: 130% !important; height: 130% !important; }
+.silhouette-icon[data-type="crow"] { width: 120% !important; height: 120% !important; }
+.silhouette-icon[data-type="eichelhaeher"] { width: 120% !important; height: 120% !important; }
+.silhouette-icon[data-type="ente"] { width: 105% !important; height: 105% !important; }
+.silhouette-icon[data-type="fasan"] { width: 105% !important; height: 105% !important; }
 
 .wildart-icon svg {
     width: 100%;

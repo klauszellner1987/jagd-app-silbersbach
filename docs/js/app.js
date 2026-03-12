@@ -724,12 +724,11 @@ function getWildartIconHTML(type, size = 30) {
 
     const scale = iconScales[type] || 1.0;
 
-    if (pngIcons[type]) {
         return `<img src="icons/${pngIcons[type]}" 
                      width="${size}" height="${size}" 
                      class="silhouette-icon"
-                     style="width: ${size}px; height: ${size}px; transform: scale(${scale});">`;
-    }
+                     data-type="${type}"
+                     style="width: ${size}px; height: ${size}px;">`;
 
     return "";
 }
