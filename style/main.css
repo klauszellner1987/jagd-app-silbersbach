@@ -3322,13 +3322,13 @@ button:hover {
 
 .silhouette-icon {
     object-fit: contain;
-    filter: invert(1) contrast(10) brightness(1.2);
-    mix-blend-mode: lighten;
+    filter: invert(1) contrast(20) brightness(1.2);
+    mix-blend-mode: screen;
     display: block;
     margin: 0 auto;
     pointer-events: none;
     transform-origin: center;
-    clip-path: inset(3px);
+    clip-path: inset(5px);
 }
 
 .wildart-icon svg {
