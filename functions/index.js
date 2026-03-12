@@ -37,7 +37,7 @@ exports.sendBulletinNotification = functions.firestore
 
         console.log(`${tokens.length} Token(s) gefunden. Sende Multicast...`);
 
-        // Modern Multicast Message API with Link (v3.3.0)
+        // Modern Multicast Message API with Link (v4.1.1)
         const message = {
             notification: {
                 title: 'Neuer Aushang (Schwarzes Brett)',

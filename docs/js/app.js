@@ -748,7 +748,7 @@ function updateSchonzeitWidget() {
     const jagdzeitWildarten = getWildartenMitJagdzeit();
 
     if (jagdzeitWildarten.length === 0) {
-        iconContainer.innerHTML = getWildartIconHTML('deer', 30);
+        iconContainer.style.display = 'none';
         wildartEl.textContent = "Keine aktiven Jagdzeiten";
         datumEl.textContent = "Alle Wildarten haben aktuell Schonzeit";
         indicatorEl.className = "schonzeit-indicator closed";
@@ -757,7 +757,7 @@ function updateSchonzeitWidget() {
     }
 
     const wildart = jagdzeitWildarten[schonzeitIndex % jagdzeitWildarten.length];
-    iconContainer.innerHTML = getWildartIconHTML(wildart.iconClass, 48);
+    iconContainer.style.display = 'none';
     wildartEl.textContent = wildart.name;
     datumEl.textContent = getJagdzeitDatum(wildart);
     indicatorEl.className = "schonzeit-indicator open";

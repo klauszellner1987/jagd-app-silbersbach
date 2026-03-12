@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Notification Click Event - App öffnen (v3.3.0)
+// Notification Click Event - App öffnen (v4.1.1)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const targetUrl = self.registration.scope;
