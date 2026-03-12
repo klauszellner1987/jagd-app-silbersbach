@@ -697,13 +697,13 @@ function getWildartIconHTML(type, size = 30) {
         'iltis': 'iltis.png',
         'hermelin': 'hermelin.png',
         'mauswiesel': 'mauswiesel.png',
-        'ente': 'Ente.png',
+        'ente': 'ente.png',
         'fasan': 'fasan.png',
         'deer': 'rotwild_weiblich.png',
-        'crow': 'krähe.png',
-        'eichelhaeher': 'eichelhäher.png',
+        'crow': 'kraehe.png',
+        'eichelhaeher': 'eichelhaeher.png',
         'fox': 'fuchs.png',
-        'rabbit': 'haase.png'
+        'rabbit': 'hase.png'
     };
 
     const iconScales = {
