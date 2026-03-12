@@ -3302,6 +3302,7 @@ button:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    isolation: isolate;
 }
 
 .wildart-card:hover {
@@ -3322,13 +3323,14 @@ button:hover {
 
 .silhouette-icon {
     object-fit: contain;
-    filter: invert(1) contrast(20) brightness(1.2);
+    filter: invert(1) grayscale(1) contrast(4) brightness(1.3);
     mix-blend-mode: screen;
     display: block;
     margin: 0 auto;
     pointer-events: none;
     transform-origin: center;
     clip-path: inset(5px);
+    will-change: filter;
 }
 
 .wildart-icon svg {

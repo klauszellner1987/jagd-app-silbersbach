@@ -843,7 +843,7 @@ function renderSchonzeitListe() {
         return `
         <div class="wildart-card" >
                 <div class="wildart-icon">
-                    ${getWildartIconHTML(wildart.iconClass, 48)}
+                    ${getWildartIconHTML(wildart.iconClass, 44)}
                 </div>
                 <div class="wildart-info">
                     <h3 class="wildart-name">${wildart.name}</h3>
