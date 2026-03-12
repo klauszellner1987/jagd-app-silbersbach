@@ -2931,6 +2931,7 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    isolation: isolate;
 }
 
 .schonzeit-icon-container svg {
@@ -3317,16 +3318,18 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    isolation: isolate;
 }
 
 .silhouette-icon {
     object-fit: contain;
-    filter: invert(1) grayscale(1) contrast(8) brightness(1.2);
-    mix-blend-mode: lighten;
+    filter: invert(1) brightness(1.2);
+    mix-blend-mode: screen;
     display: block;
     margin: 0 auto;
     pointer-events: none;
     transform-origin: center;
+    clip-path: inset(2px);
 }
 
 .wildart-icon svg {
