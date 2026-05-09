@@ -1126,32 +1126,34 @@ async function initializeApp() {
             const li = document.createElement("li");
             li.className = "entry-item";
 
-            // Header: Name + Date + Delete Button
+            // Header im Feed-Card Style
             const header = document.createElement("div");
-            header.className = "entry-header";
+            header.className = "feed-card-header";
+            header.style.marginBottom = "0.2rem"; // Etwas kompakter
             header.innerHTML = `
-        <div class="entry-header-left" >
-            <span class="entry-name">${entry.erleger}</span>
-                </div>
-        <span class="entry-date">${entry.datum || ""}</span>
+        <div class="feed-card-icon-container">
+            <span style="font-size: 20px;">🦌</span>
+        </div>
+        <div class="feed-card-header-text">
+            <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>
+            <span class="feed-card-time">${entry.datum || ""} • ${entry.erleger}</span>
+        </div>
     `;
 
             const btn = document.createElement("button");
             btn.className = "entry-delete-btn";
             btn.dataset.idx = idx;
-            btn.textContent = "Löschen";
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>`;
+            btn.style.background = "rgba(255,255,255,0.1)";
+            btn.style.border = "none";
+            btn.style.color = "var(--primary-light)";
+            btn.style.padding = "0.5rem";
+            btn.style.borderRadius = "8px";
+            btn.style.cursor = "pointer";
+            btn.style.marginLeft = "auto";
+            
             header.appendChild(btn);
-
-            // Wildart Row
-            const wildart = document.createElement("div");
-            wildart.className = "entry-wildart";
-            wildart.innerHTML = `
-        <span class="entry-wildart-icon" >🦌</span>
-            <span>${entry.wildart} ${entry.unterart || ""}</span>
-    `;
-
             li.appendChild(header);
-            li.appendChild(wildart);
 
             // Notes (optional)
             if (entry.bemerkung) {

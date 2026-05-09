@@ -101,16 +101,26 @@ body::-webkit-scrollbar {
 ============================================ */
 body {
     font-family: 'Inter', sans-serif;
-    background-image: url('/jagd-app-silbersbach/assets/images/app-background-rothirsch.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: #0a110d;
     color: var(--text);
     margin: 0;
     line-height: 1.5;
     overflow-x: hidden;
     min-height: 100dvh;
+}
+
+/* Globaler, einheitlicher Hintergrund für ALLE Seiten (Wie im Mockup) */
+body::before {
+    content: "";
+    position: fixed;
+    inset: -10px; /* Leicht über den Rand, um Blur-Ränder zu verstecken */
+    background-image: url('/jagd-app-silbersbach/assets/images/premium-forest-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Angepasster Filter für das neue, bereits dunklere Bild */
+    filter: blur(4px) brightness(0.7) saturate(1.1);
+    z-index: -1;
 }
 
 
@@ -207,17 +217,7 @@ main {
         transform: translateX(-50%) !important;
     }
 
-    /* Hintergrundeinstellungen für Desktop */
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background-image: url('/jagd-app-silbersbach/assets/images/app-background-rothirsch.jpg');
-        background-size: cover;
-        background-position: center;
-        filter: blur(20px) brightness(0.4);
-        z-index: -1;
-    }
+
 
     /* WEB ANSICHT FIX: Widgets (Karten) oben etwas kleiner machen, aber volle Breite behalten */
     .app-card {
@@ -3658,59 +3658,7 @@ button:hover {
     margin: 0;
 }
 
-/* ============================================
-   NAVIGATION WIDGETS
-============================================ */
-.nav-widget {
-    cursor: pointer;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 1.5rem 1rem;
-    background: linear-gradient(180deg,
-            rgba(45, 90, 65, 0.8) 0%,
-            rgba(40, 80, 60, 0.35) 40%,
-            rgba(35, 70, 55, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
 
-.nav-widget:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(180deg,
-            rgba(50, 100, 70, 0.85) 0%,
-            rgba(45, 85, 65, 0.4) 40%,
-            rgba(40, 75, 60, 0.1) 100%);
-}
-
-.nav-widget:active {
-    transform: translateY(-2px) scale(0.98);
-}
-
-.nav-widget-icon {
-    margin-bottom: 0.75rem;
-    opacity: 0.9;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.nav-widget-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-    margin-bottom: 0.25rem;
-}
-
-.nav-widget-subtitle {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    margin: 0;
-}
 
 /* ============================================
    BACK TO HOME BUTTON
@@ -3749,8 +3697,14 @@ button:hover {
    STRECKENLISTE CONTAINER
 ============================================ */
 .streckenliste-container {
-    padding: 1.5rem;
-    padding-bottom: 2rem;
+    padding: 1.5rem 1.25rem 3rem 1.25rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: none;
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.1), 0 -4px 30px rgba(100, 200, 100, 0.05);
+    min-height: 80vh; /* Damit der Container bis unten reicht */
 }
 
 .streckenliste-title {
@@ -3786,25 +3740,23 @@ button:hover {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    background: linear-gradient(135deg,
-            rgba(60, 120, 80, 0.75) 0%,
-            rgba(50, 100, 70, 0.55) 50%,
-            rgba(40, 85, 60, 0.4) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    padding: 1rem 1.25rem;
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     color: var(--text);
 }
 
 .entry-item:hover {
     transform: translateY(-2px);
-    background: linear-gradient(135deg,
-            rgba(60, 120, 80, 0.85) 0%,
-            rgba(50, 100, 70, 0.65) 50%,
-            rgba(40, 85, 60, 0.5) 100%);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .entry-header {
@@ -4064,7 +4016,7 @@ button:hover {
 }
 
 
-/* Solider Hintergrund für Detail-Seiten - feste Position, Navbar bleibt sichtbar */
+/* Detail-Seiten Layout - feste Position, Navbar bleibt sichtbar */
 #revier.page.active,
 #streckenliste.page.active,
 #schonzeit-page.page.active,
@@ -4075,12 +4027,10 @@ button:hover {
     right: 0;
     bottom: 64px;
     /* Platz für die Navbar lassen */
-    background: linear-gradient(180deg,
-            #1a2f1e 0%,
-            #0d1a10 100%);
     overflow-y: auto;
     z-index: 1500;
     /* Unter der Navbar (z-index: 9999) */
+    background: transparent;
 }
 
 /* ============================================
