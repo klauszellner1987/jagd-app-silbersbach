@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./index.html", "./js/**/*.js"],
+  content: ["./src/**/*.{astro,html,js}", "./public/js/**/*.js"],
   theme: {
     extend: {
       backdropBlur: {

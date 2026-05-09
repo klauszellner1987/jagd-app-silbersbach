@@ -1,0 +1,70 @@
+---
+import '../../style/main.css';
+import '../../style/tailwind.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{title}</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <!-- Manifest für PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Theme Farbe für Android Toolbar -->
+    <meta name="theme-color" content="#2f6f4e">
+
+    <!-- Icons für Android / iOS -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
+    <!-- iOS Safari -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Silbersbach">
+</head>
+<body>
+    <slot />
+
+    <!-- Leaflet JS -->
+    <script is:inline src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Reviere Daten -->
+    <script is:inline src="assets/data/reviere.js"></script>
+    <script is:inline src="assets/data/eigengrundstuecke.js"></script>
+
+    <!-- Firebase App (Core) -->
+    <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- Firestore -->
+    <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Storage -->
+    <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- Messaging (FCM) -->
+    <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+    
+    <!-- Main App JS -->
+    <script is:inline src="js/app.js?release=20260222-final-fix"></script>
+</body>
+</html>
