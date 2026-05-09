@@ -401,6 +401,94 @@ function openProfileModal() {
     }
 }
 
+// ==============================
+// PRESENCE SYSTEM & DROPDOWN
+// ==============================
+
+async function updateUserStatus(user, isOnline) {
+    if (!user) return;
+    try {
+        const db = firebase.firestore();
+        await db.collection("users").doc(user.uid).set({
+            uid: user.uid,
+            displayName: user.displayName || "Unbekannter Jäger",
+            photoURL: user.photoURL || "",
+            isOnline: isOnline,
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch (error) {
+        console.error("Fehler beim Status-Update:", error);
+    }
+}
+
+function initOnlineUsersDropdown() {
+    const trigger = document.getElementById("profile-trigger");
+    const dropdown = document.getElementById("online-users-dropdown");
+    const userList = document.getElementById("online-users-list");
+    const onlineCount = document.getElementById("online-count");
+
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
+
+    // Listen for users
+    firebase.firestore().collection("users")
+        .orderBy("isOnline", "desc")
+        .limit(20)
+        .onSnapshot((snapshot) => {
+            let html = "";
+            let count = 0;
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.isOnline) count++;
+                
+                const lastSeenDate = data.lastSeen ? data.lastSeen.toDate() : new Date();
+                const timeStr = formatRelativeTime(lastSeenDate);
+                const statusClass = data.isOnline ? "online" : "offline";
+                const avatar = data.photoURL 
+                    ? `<img src="${data.photoURL}" alt="">` 
+                    : '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%;"><i class="ti ti-user" style="font-size: 1rem; color: rgba(255,255,255,0.4)"></i></div>';
+
+                html += `
+                    <div class="user-status-item">
+                        <div class="user-status-avatar">
+                            ${avatar}
+                            <div class="status-dot ${statusClass}"></div>
+                        </div>
+                        <div class="user-status-info">
+                            <span class="user-status-name">${data.displayName}</span>
+                            <span class="user-status-lastseen">${data.isOnline ? 'Jetzt aktiv' : timeStr}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (userList) userList.innerHTML = html || '<div class="dropdown-loading">Keine Mitglieder gefunden</div>';
+            if (onlineCount) onlineCount.textContent = count;
+        }, (error) => {
+            console.error("Firestore Snapshot Error:", error);
+            if (userList) userList.innerHTML = '<div class="dropdown-loading">Fehler beim Laden</div>';
+        });
+}
+
+function formatRelativeTime(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return "Gerade eben";
+    if (diff < 3600) return `Vor ${Math.floor(diff / 60)} Min.`;
+    if (diff < 86400) return `Vor ${Math.floor(diff / 3600)} Std.`;
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
 
 // iOS Bounce/Overscroll Prevention
 function preventIOSBounce() {
@@ -606,6 +694,12 @@ function initAuthListener() {
 
             // Benutzername in Hero und Einstellungen eintragen
             updateUserInfo(user);
+            updateUserStatus(user, true);
+
+            // Status auf Offline setzen, wenn Fenster geschlossen wird
+            window.addEventListener('beforeunload', () => {
+                updateUserStatus(user, false);
+            });
 
             // Tab Bar sofort nach Login anzeigen
             const bottomNav = document.getElementById("bottom-nav");
@@ -660,14 +754,23 @@ function initAuthListener() {
 }
 
 function logout() {
-    firebase.auth().signOut().then(() => {
-        console.log("User logged out");
-        showToast("Erfolgreich abgemeldet");
-        isAppInitialized=false;
-    }).catch((error) => {
-        console.error("Logout error:", error);
-        showToast("Fehler beim Abmelden", "error");
-    });
+    const user = firebase.auth().currentUser;
+    const performSignOut = () => {
+        firebase.auth().signOut().then(() => {
+            console.log("User logged out");
+            showToast("Erfolgreich abgemeldet");
+            isAppInitialized=false;
+        }).catch((error) => {
+            console.error("Logout error:", error);
+            showToast("Fehler beim Abmelden", "error");
+        });
+    };
+
+    if (user) {
+        updateUserStatus(user, false).finally(performSignOut);
+    } else {
+        performSignOut();
+    }
 }
 
 // ==============================
@@ -921,7 +1024,7 @@ function renderSchonzeitListe() {
         } else if (wildart.ganzjaehrig) {
             zeitInfo = 'Ganzjährig bejagbar';
         } else {
-            zeitInfo = `Jagdzeit: ${ wildart.jagdzeitStart } - ${ wildart.jagdzeitEnde } `;
+            zeitInfo = `Jagdzeit: ${ wildart.jagdzeitStart || '-' } - ${ wildart.jagdzeitEnde || '-' } `;
         }
 
         return `
@@ -3217,6 +3320,13 @@ function initAll() {
         console.log("Install Prompt OK");
     } catch (e) {
         console.error("Install Prompt init error:", e);
+    }
+
+    try {
+        initOnlineUsersDropdown();
+        console.log("Online Users Dropdown OK");
+    } catch (e) {
+        console.error("Online Users Dropdown init error:", e);
     }
 
     console.log("All initializations complete");

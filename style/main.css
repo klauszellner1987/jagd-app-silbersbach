@@ -4684,3 +4684,124 @@ button:hover {
 .settings-row-icon img {
     border-radius: 50%;
 }
+
+/* ==============================
+   ONLINE USERS DROPDOWN
+   ============================== */
+.dash-header-right {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 240px;
+    background: rgba(30, 48, 34, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    padding: 12px;
+    transform-origin: top right;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+}
+
+.dropdown-menu.hidden {
+    display: block; /* We use transform/opacity for animations */
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+    pointer-events: none;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.online-count {
+    background: #4CAF50;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.dropdown-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.user-status-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 10px;
+    transition: background 0.2s;
+    cursor: default;
+}
+
+.user-status-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.user-status-avatar {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 12px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.user-status-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #1e3022;
+}
+
+.status-dot.online { background-color: #4CAF50; }
+.status-dot.offline { background-color: #9e9e9e; }
+
+.user-status-info {
+    flex: 1;
+}
+
+.user-status-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+    display: block;
+}
+
+.user-status-lastseen {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.dropdown-loading {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+}
