@@ -108,6 +108,19 @@
     <div class="modal-content">
         <h2>Profil anpassen</h2>
         <form id="profile-form">
+            <div class="profile-image-upload-container">
+                <div class="profile-image-preview-wrapper" id="profile-image-preview-wrapper">
+                    <img id="profile-image-preview" src="" alt="Profilbild" class="hidden">
+                    <div id="profile-image-placeholder" class="profile-image-placeholder">
+                        <i class="ti ti-user"></i>
+                    </div>
+                    <div class="upload-overlay">
+                        <i class="ti ti-camera"></i>
+                    </div>
+                </div>
+                <input type="file" id="profile-image-input" accept="image/*" capture="user" class="hidden">
+            </div>
+
             <label>Dein Name
                 <input type="text" id="profile-name-input" placeholder="Wie möchtest du genannt werden?">
             </label>

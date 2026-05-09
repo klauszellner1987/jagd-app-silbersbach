@@ -1,4 +1,6 @@
 // ==============================
+// APP VERSION: 20260509-2218
+// ==============================
 // FIREBASE CONFIG
 // ==============================
 const firebaseConfig = {
@@ -285,12 +287,55 @@ function updateHeroWeather(current, today) {
     }
 }
 
+async function compressImage(file, maxWidth = 400, maxHeight = 400) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Compression failed"));
+                }, 'image/jpeg', 0.8);
+            };
+            img.onerror = () => reject(new Error("Image load error"));
+        };
+        reader.onerror = () => reject(new Error("File read error"));
+    });
+}
+
 // Benutzername für Begrüßung & Einstellungen laden
-function updateUserInfo(user) {
+function updateUserInfo(user, nameOverride = null, photoOverride = null) {
     if (!user) return;
     
     // Fallback falls kein Name existiert
-    const name = user.displayName ? user.displayName.split(" ")[0] : "Waidmann";
+    const fullDisplayName = nameOverride || user.displayName || "Waidmann";
+    const name = fullDisplayName.split(" ")[0];
+    const photoURL = photoOverride || user.photoURL;
+
     const hour = new Date().getHours();
     let greeting = "Guten Morgen";
     if (hour >= 12 && hour < 18) greeting = "Guten Nachmittag";
@@ -301,7 +346,32 @@ function updateUserInfo(user) {
 
     const settingsUser = document.getElementById("settings-username");
     if (settingsUser) {
-        settingsUser.textContent = user.displayName || "Name eintragen";
+        settingsUser.textContent = nameOverride || user.displayName || "Name eintragen";
+    }
+
+    // Profilbild in Header und Einstellungen aktualisieren
+    const headerImg = document.getElementById("header-profile-img");
+    const headerIcon = document.getElementById("header-profile-icon");
+    const settingsImg = document.getElementById("settings-profile-img");
+    const settingsIcon = document.getElementById("settings-profile-icon");
+
+    if (photoURL) {
+        if (headerImg) {
+            headerImg.src = photoURL;
+            headerImg.style.display = "block";
+        }
+        if (headerIcon) headerIcon.style.display = "none";
+
+        if (settingsImg) {
+            settingsImg.src = photoURL;
+            settingsImg.style.display = "block";
+        }
+        if (settingsIcon) settingsIcon.style.display = "none";
+    } else {
+        if (headerImg) headerImg.style.display = "none";
+        if (headerIcon) headerIcon.style.display = "block";
+        if (settingsImg) settingsImg.style.display = "none";
+        if (settingsIcon) settingsIcon.style.display = "block";
     }
 }
 
@@ -309,12 +379,23 @@ function updateUserInfo(user) {
 function openProfileModal() {
     const modal = document.getElementById("profile-modal");
     const nameInput = document.getElementById("profile-name-input");
+    const imgPreview = document.getElementById("profile-image-preview");
+    const imgPlaceholder = document.getElementById("profile-image-placeholder");
+
     if (modal && nameInput) {
         const user = firebase.auth().currentUser;
-        if (user && user.displayName) {
-            nameInput.value = user.displayName;
-        } else {
-            nameInput.value = "";
+        if (user) {
+            nameInput.value = user.displayName || "";
+            if (user.photoURL) {
+                if (imgPreview) {
+                    imgPreview.src = user.photoURL;
+                    imgPreview.classList.remove("hidden");
+                }
+                if (imgPlaceholder) imgPlaceholder.classList.add("hidden");
+            } else {
+                if (imgPreview) imgPreview.classList.add("hidden");
+                if (imgPlaceholder) imgPlaceholder.classList.remove("hidden");
+            }
         }
         modal.classList.remove("hidden");
     }
@@ -2965,6 +3046,33 @@ function initAll() {
     const profileModal = document.getElementById("profile-modal");
     const cancelProfileBtn = document.getElementById("cancel-profile-btn");
     const profileForm = document.getElementById("profile-form");
+    const profileImgInput = document.getElementById("profile-image-input");
+    const profileImgPreviewWrapper = document.getElementById("profile-image-preview-wrapper");
+    const profileImgPreview = document.getElementById("profile-image-preview");
+    const profileImgPlaceholder = document.getElementById("profile-image-placeholder");
+
+    if (profileImgPreviewWrapper && profileImgInput) {
+        profileImgPreviewWrapper.addEventListener("click", () => {
+            profileImgInput.click();
+        });
+
+        profileImgInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (profileImgPreview) {
+                        profileImgPreview.src = event.target.result;
+                        profileImgPreview.classList.remove("hidden");
+                    }
+                    if (profileImgPlaceholder) {
+                        profileImgPlaceholder.classList.add("hidden");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
     if (cancelProfileBtn && profileModal) {
         cancelProfileBtn.addEventListener("click", () => {
@@ -2975,18 +3083,88 @@ function initAll() {
     if (profileForm && profileModal) {
         profileForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const newName = document.getElementById("profile-name-input").value.trim();
+            console.log("Profile form submitted");
+            const nameInput = document.getElementById("profile-name-input");
+            const newName = nameInput ? nameInput.value.trim() : "";
             const user = firebase.auth().currentUser;
+            const file = profileImgInput ? profileImgInput.files[0] : null;
+
             if (user) {
                 try {
-                    await user.updateProfile({ displayName: newName });
+                    let photoURL = user.photoURL;
+
+                    if (file) {
+                        try {
+                            console.log("Processing image...");
+                            const uploadItem = await compressImage(file);
+                            
+                            const dataUrl = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = (e) => resolve(e.target.result);
+                                reader.onerror = (e) => reject(new Error("FileReader error"));
+                                reader.readAsDataURL(uploadItem);
+                            });
+
+                            console.log("Uploading image to Firebase...");
+                            showToast("Bild wird hochgeladen...", "info");
+
+                            if (typeof firebase.storage !== "function") {
+                                throw new Error("Firebase Storage ist nicht geladen.");
+                            }
+
+                            const storageRef = firebase.storage().ref();
+                            const fileRef = storageRef.child(`profile_pictures/${user.uid}.jpg`);
+                            
+                            // Timeout-Versprechen (30 Sekunden)
+                            const timeout = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error("Timeout (30s) - Verbindung zum Speicher fehlgeschlagen.")), 30000)
+                            );
+
+                            // Upload-Versprechen
+                            const upload = (async () => {
+                                console.log("Starting putString upload to:", `profile_pictures/${user.uid}.jpg`);
+                                await fileRef.putString(dataUrl, 'data_url', { contentType: 'image/jpeg' });
+                                console.log("Upload complete, fetching URL...");
+                                return await fileRef.getDownloadURL();
+                            })();
+
+                            photoURL = await Promise.race([upload, timeout]);
+                            console.log("File uploaded, new photoURL:", photoURL);
+                        } catch (uploadError) {
+                            console.error("Upload fehlgeschlagen:", uploadError);
+                            showToast("Foto-Upload fehlgeschlagen: " + uploadError.message, "error");
+                            // Wir fahren mit der Namensänderung fort, auch wenn das Foto fehlschlägt
+                        }
+                    }
+
+                    console.log("Updating user profile...", { newName, photoURL });
+                    await user.updateProfile({ 
+                        displayName: newName,
+                        photoURL: photoURL
+                    });
+
+                    // Update successful
+                    console.log("Profile update successful");
                     showToast("Profil aktualisiert!", "success");
-                    updateUserInfo(user);
-                    profileModal.classList.add("hidden");
+                    
+                    // Sofortige UI-Aktualisierung mit den neuen Werten
+                    updateUserInfo(user, newName, photoURL);
+                    
+                    // Optional: User im Hintergrund neu laden
+                    user.reload().catch(err => console.warn("User reload failed", err));
+
                 } catch (error) {
-                    console.error("Fehler beim Profil-Update", error);
-                    showToast("Es gab ein Problem beim Speichern.", "error");
+                    console.error("Fehler beim Profil-Update:", error);
+                    showToast("Es gab ein Problem beim Speichern: " + error.message, "error");
+                } finally {
+                    // Modal in jedem Fall schließen
+                    console.log("Closing profile modal (finally)");
+                    const profileModal = document.getElementById("profile-modal");
+                    if (profileModal) profileModal.classList.add("hidden");
                 }
+            } else {
+                console.error("No user logged in during profile update");
+                showToast("Nicht angemeldet.", "error");
             }
         });
     }

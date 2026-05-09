@@ -4626,3 +4626,61 @@ button:hover {
         font-size: 1rem;
     }
 }
+
+/* ==============================
+   PROFILE IMAGE UPLOAD
+   ============================== */
+.profile-image-upload-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.profile-image-preview-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-image-preview-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-placeholder {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.upload-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    transition: opacity 0.3s;
+}
+
+.profile-image-preview-wrapper:hover .upload-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.profile-avatar img,
+.settings-row-icon img {
+    border-radius: 50%;
+}
