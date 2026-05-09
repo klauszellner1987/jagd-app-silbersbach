@@ -1187,40 +1187,45 @@ button:hover {
 #login-overlay {
     position: fixed;
     inset: 0;
-    background-color: var(--bg);
-    /* Fallback Farbe */
-    background-image: url('/jagd-app-silbersbach/assets/images/login-background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 3000;
     color: white;
-    animation: fadeIn 0.4s ease-out;
+    overflow: hidden;
+    background: #1e3022; /* Fallback */
 }
 
 #login-overlay::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    /* Dunkleres Overlay für bessere Lesbarkeit */
+    inset: -10%; /* Slightly larger for the zoom effect */
+    background-image: linear-gradient(135deg, rgba(30, 48, 34, 0.85) 0%, rgba(30, 48, 34, 0.95) 100%), url('/jagd-app-silbersbach/assets/images/login-background.jpg');
+    background-size: cover;
+    background-position: center;
     z-index: -1;
+    animation: slowZoom 30s infinite alternate ease-in-out;
+}
+
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.1) rotate(1deg); }
 }
 
 .login-box {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--glass-shadow-lg);
-    border-radius: var(--radius-xl);
-    width: 100%;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    border-radius: 32px;
+    width: 90%;
     max-width: 420px;
-    padding: 3rem 2rem;
+    padding: 3.5rem 2.5rem;
     text-align: center;
-    animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .login-branding {
@@ -2168,49 +2173,34 @@ button:hover {
 ============================================ */
 
 .fab-add {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-
-    /* Größe */
-    width: 56px;
-    height: 56px;
+    position: absolute !important;
+    right: 65px;
+    top: 50%;
+    transform: translateY(-50%) !important;
+    
+    /* Kompakte Größe für den Footer */
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
 
-    /* App-Style Gradient wie Footer */
-    background: linear-gradient(135deg,
-            rgba(45, 90, 65, 1) 0%,
-            rgba(40, 80, 60, 0.98) 50%,
-            rgba(35, 70, 55, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Design-Sprache wie Home-Button */
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 
-    /* Icon-Farbe */
     color: white;
-
-    /* Komplett versteckt wenn nicht visible */
     display: none;
     opacity: 0;
     visibility: hidden;
     align-items: center;
     justify-content: center;
 
-    /* Schatten wie Footer */
-    box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 2100;
-}
-
-.fab-add.visible {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
+    transition: all 0.2s ease-out;
+    z-index: 10;
+    pointer-events: auto; /* Wichtig, da Parent pointer-events: none hat */
 }
 
 .fab-add.visible {

@@ -1200,7 +1200,8 @@ async function initializeApp() {
                 await bulletinCollection.add({
                     message: msg,
                     timestamp: Date.now(),
-                    sender: sender
+                    sender: sender,
+                    isDone: false
                 });
 
                 bulletinInput.value="";
