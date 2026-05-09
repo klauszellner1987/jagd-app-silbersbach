@@ -218,6 +218,29 @@ main {
         filter: blur(20px) brightness(0.4);
         z-index: -1;
     }
+
+    /* WEB ANSICHT FIX: Widgets (Karten) oben etwas kleiner machen */
+    .app-card {
+        padding: 0.85rem;
+        aspect-ratio: 1.25 / 1;
+        max-height: 120px;
+        justify-content: center;
+    }
+    .app-card-icon {
+        width: 42px;
+        height: 42px;
+        margin-bottom: 0.2rem;
+    }
+    .app-card-icon svg {
+        width: 26px;
+        height: 26px;
+    }
+    .app-card-title {
+        font-size: 0.9rem;
+    }
+    .app-card-sub {
+        font-size: 0.7rem;
+    }
 }
 
 /* Alle anderen aktiven Seiten scrollen mit Platz für die fixe Tab Bar */
