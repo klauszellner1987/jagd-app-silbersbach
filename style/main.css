@@ -250,23 +250,73 @@ main {
     padding-bottom: 80px;
 }
 
-/* Tab Bar - position:fixed, immer sichtbar */
+/* Tab Bar - Cutout Design */
 .bottom-nav {
     position: fixed !important;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    height: calc(70px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 9999;
+    pointer-events: none; /* Klicks auf transparente Bereiche durchlassen */
+}
+
+.nav-bg-shape {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: calc(70px + env(safe-area-inset-bottom, 0px));
+    z-index: 1;
+    pointer-events: auto; /* Die Leiste selbst fängt Klicks */
+    filter: drop-shadow(0 -4px 15px rgba(0,0,0,0.3));
+}
+
+.nav-bg-shape svg {
+    /* Damit es nach unten ausfüllt */
+    height: 100%;
+    width: 100%;
+    display: block;
+}
+
+.nav-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    background: rgba(30, 48, 34, 0.92);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: 2px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    z-index: 9999;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    pointer-events: auto;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: -10px; /* Ragt in den Cutout */
+}
+
+.nav-fab i {
+    font-size: 26px;
+}
+
+.nav-fab:active {
+    transform: scale(0.92);
 }
 
 .bottom-nav.hidden {
@@ -276,286 +326,270 @@ main {
 
 
 /* ============================================
-   HERO SECTION
+   DASHBOARD ACTION FEED LAYOUT
 ============================================ */
-.hero-section {
-    position: relative;
-    height: 165px;
-    /* Wieder etwas höher für die Optik */
-    background-image: url('/jagd-app-silbersbach/assets/images/app-background-rothirsch.jpg');
-    background-size: cover;
-    background-position: center top;
+#dashboard {
+    display: flex;
+    flex-direction: column;
+    height: calc(100svh - 64px - env(safe-area-inset-bottom, 0px));
     overflow: hidden;
-    flex-shrink: 0;
+    padding-top: max(env(safe-area-inset-top), 1rem);
 }
 
-.hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom,
-            rgba(0, 0, 0, 0.15) 0%,
-            rgba(30, 50, 35, 0.7) 70%,
-            rgba(30, 50, 35, 0.95) 100%);
-}
-
-.hero-content {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 1.25rem;
-    right: 1.25rem;
-    z-index: 2;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.hero-greeting {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.75);
-    margin: 0 0 0.3rem 0;
-    letter-spacing: 0.3px;
-}
-
-.hero-weather {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin-bottom: 0.75rem;
-}
-
-.hero-temp {
-    font-size: 3rem;
-    font-weight: 300;
-    color: white;
-    line-height: 1;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-.hero-desc {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight: 400;
-}
-
-.hero-pills {
-    display: flex;
-    gap: 0.6rem;
-}
-
-.hero-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 0.3rem 0.75rem;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 500;
-}
-
-/* ============================================
-   DASHBOARD CONTENT AREA
-============================================ */
-.dashboard-content {
-    flex: 1;
-    padding: 1.2rem 1.1rem;
-    /* Oben mehr Platz (nach unten schieben) */
-    padding-bottom: 2rem !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    /* Widgets oben halten */
-    gap: 0.9rem;
-    /* Größere Abstände für Premium-Look */
-    overflow: hidden;
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-/* Unsichtbarer Puffer am Ende des Dashboards */
-.dashboard-content::after {
-    content: "";
-    display: block;
-    height: 10px;
-    min-height: 10px;
-    width: 100%;
-    flex-shrink: 0;
-}
-
-/* ============================================
-   APP CARD GRID (2x Square)
-============================================ */
-.app-card-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.9rem;
-    /* Gap hier angepasst an dashboard-content */
-    flex: 0 1 auto;
-    /* Nicht unendlich wachsen lassen */
-    min-height: 0;
-}
-
-.app-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 20px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.6rem;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.app-card:active {
-    transform: scale(0.96);
-    background: rgba(255, 255, 255, 0.14);
-}
-
-.app-card-icon {
-    width: 52px;
-    height: 52px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.app-card-icon svg {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.app-card-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: white;
-    margin: 0;
-}
-
-.app-card-sub {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.55);
-    margin: 0;
-    margin-top: -0.5rem;
-}
-
-/* ============================================
-   INFO ROWS
-============================================ */
-.info-row {
+/* COMPACT HEADER */
+.dash-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    padding: 0.65rem 0.75rem 0.65rem 0.85rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
-    min-height: 58px;
-}
-
-#bulletin-widget {
-    padding-left: 0.75rem !important;
-    /* Spezieller Fix für den optischen Versatz */
-}
-
-#schonzeit-widget {
-    padding-left: 0.85rem !important;
-}
-
-.info-row:active {
-    background: rgba(255, 255, 255, 0.14);
-    transform: scale(0.98);
-}
-
-.info-row-left {
-    display: flex;
-    align-items: center;
-    gap: 1.1rem;
-    /* Etwas mehr Abstand für bessere Lesbarkeit */
-    flex: 1;
-    margin: 0;
-    padding: 0;
-}
-
-.info-row-icon {
-    width: 46px;
-    height: 46px;
-    min-width: 46px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    /* Angepasst an app-card-icon */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1.25rem 1rem 1.25rem;
     flex-shrink: 0;
 }
 
-.info-row-icon i,
-.info-row-icon svg {
-    font-size: 26px;
-    /* Gleiche Größe wie in den oberen Karten */
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.info-row-text {
+.dash-header-left {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
 }
 
-.info-row-title {
+.dash-greeting {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.dash-subtitle {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+}
+
+/* PROFILE / HEADER RIGHT */
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+    border-radius: 30px;
+    cursor: pointer;
+}
+
+.profile-avatar {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background-color: #4CAF50;
+    border: 2px solid rgba(30, 48, 34, 1);
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.profile-dropdown {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    margin-right: 0.2rem;
+}
+
+/* QUICK LINKS SCROLL (Horizontal) */
+.quick-links-container {
+    width: 100%;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+}
+
+.quick-links-scroll {
+    display: flex;
+    gap: 1.2rem;
+    padding: 0 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.quick-links-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+}
+
+.quick-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    scroll-snap-align: start;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+.quick-link:active {
+    transform: scale(0.92);
+}
+
+.quick-link-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-light);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.quick-link-icon i {
+    font-size: 24px;
+}
+
+.quick-link span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.3px;
+}
+
+/* SMART FEED CONTAINER (Scrollbar & Rahmen) */
+.smart-feed-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.15);
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    padding: 1.5rem 1.25rem 3rem 1.25rem;
+    
+    /* Der glühende Premium Rand */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: none;
+    box-shadow: inset 0 2px 20px rgba(0,0,0,0.1), 0 -4px 30px rgba(100, 200, 100, 0.05);
+    
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.feed-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 1.2rem 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.feed-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.feed-card:active {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(0.98);
+}
+.feed-card.static-card {
+    cursor: default;
+}
+.feed-card.static-card:active {
+    transform: none;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.feed-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+
+.feed-card-icon-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-light);
+    margin-right: 0.85rem;
+}
+.feed-card-icon-container i {
+    font-size: 22px;
+}
+
+.feed-card-header-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.feed-card-title {
     font-size: 0.95rem;
     font-weight: 600;
     color: white;
 }
 
-.info-row-sub {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.5);
+.feed-card-time {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 0.1rem;
 }
 
-.info-row-right {
+.feed-card-content p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+/* Stats Grid im Feed */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 14px;
+    padding: 1rem;
+}
+
+.stat-item {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.5);
-    /* Etwas heller */
+    flex-direction: column;
 }
 
-.info-row-right svg {
-    width: 20px;
-    height: 20px;
-    stroke-width: 2.5;
-    /* Etwas dickerer Strich für die Größe */
+.stat-label {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
 }
 
 /* TAB BAR - Zweite Definition entfernt (zusammengeführt mit erster) */
