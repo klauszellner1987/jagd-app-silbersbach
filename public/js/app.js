@@ -1,5 +1,8 @@
 // ==============================
-// APP VERSION: 20260509-2218
+// APP VERSION
+// ==============================
+const APP_VERSION = "v5.0.0";
+
 // ==============================
 // FIREBASE CONFIG
 // ==============================
@@ -3093,16 +3096,19 @@ async function checkForUpdates() {
         }
 
         const data = await response.json();
-        const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
+        const serverVersion = data.version;
 
-        // Update version display in login footer
-        const versionElement = document.getElementById("app-version");
-        if (versionElement) {
-            versionElement.textContent = `v${data.version}`;
+        console.log("[Version] Server:", serverVersion, "| Lokal (Code):", APP_VERSION);
+
+        // Wir überschreiben die Anzeige hier NICHT mehr, 
+        // da updateVersionDisplays() das bereits beim Start macht.
+        
+        if (serverVersion !== APP_VERSION.replace('v', '')) {
+            console.log("[Version] Update verfügbar!");
+            showUpdateToast(true, serverVersion);
         }
 
-        console.log("[Version] Server:", data.version, "| Lokal:", localVersion);
-
+        const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
         if (!localVersion) {
             // Erste Installation - Version speichern
             localStorage.setItem(LOCAL_VERSION_KEY, data.version);
@@ -3195,7 +3201,8 @@ function initAll() {
         return false;
     };
 
-    showToast("Reviersystem v5.0.0 bereit", "success");
+    updateVersionDisplays();
+    showToast(`Reviersystem ${APP_VERSION} bereit`, "success");
 
     // iOS Bounce/Overscroll Fix
     try {
@@ -3389,6 +3396,23 @@ function initAll() {
     }
 
     console.log("All initializations complete");
+}
+
+/**
+ * Updates all version strings in the UI automatically
+ */
+function updateVersionDisplays() {
+    // 1. Element mit ID 'app-version' (z.B. im Login)
+    const appVersionEl = document.getElementById("app-version");
+    if (appVersionEl) {
+        appVersionEl.textContent = APP_VERSION;
+    }
+
+    // 2. Elemente mit Klasse 'app-version-text' (z.B. in Einstellungen)
+    const versionTexts = document.querySelectorAll(".app-version-text");
+    versionTexts.forEach(el => {
+        el.textContent = APP_VERSION.replace('v', ''); // Nur die Nummer falls gewünscht
+    });
 }
 
 // Wait for DOM and external scripts to be ready
