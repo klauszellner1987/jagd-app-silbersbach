@@ -131,6 +131,7 @@ function showConfirm(message, title = "Bestätigung", okText = "Löschen") {
 function navigateToPage(targetId) {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
@@ -143,13 +144,16 @@ function navigateToPage(targetId) {
             setTimeout(() => window.mapInstance.invalidateSize(), 200);
         }
 
-        // FAB-Button nur in Streckenliste sichtbar
-        if (fabBtn) {
-            if (targetId === "streckenliste") {
-                fabBtn.classList.add("visible");
-            } else {
-                fabBtn.classList.remove("visible");
+        // FAB-Buttons nur in Streckenliste sichtbar
+        if (targetId === "streckenliste") {
+            if (fabBtn) fabBtn.classList.add("visible");
+            if (fabExportBtn) {
+                fabExportBtn.classList.add("visible");
+                console.log("Showing Export Button (from Page):", fabExportBtn.classList.contains("visible"));
             }
+        } else {
+            if (fabBtn) fabBtn.classList.remove("visible");
+            if (fabExportBtn) fabExportBtn.classList.remove("visible");
         }
 
         // Bottom Navigation immer anzeigen
@@ -228,7 +232,10 @@ function navigateToTab(pageId) {
     // FABs nur für Streckenliste
     if (pageId === "streckenliste") {
         if (fabBtn) fabBtn.classList.add("visible");
-        if (fabExportBtn) fabExportBtn.classList.add("visible");
+        if (fabExportBtn) {
+            fabExportBtn.classList.add("visible");
+            console.log("Showing Export Button:", fabExportBtn.classList.contains("visible"));
+        }
     } else {
         if (fabBtn) fabBtn.classList.remove("visible");
         if (fabExportBtn) fabExportBtn.classList.remove("visible");
@@ -1298,6 +1305,54 @@ async function initializeApp() {
     if (fabAddBtn) {
         fabAddBtn.addEventListener("click", () => {
             modal.classList.remove("hidden");
+        });
+    }
+
+    const fabExportBtn = document.getElementById("fab-export-btn");
+    if (fabExportBtn) {
+        fabExportBtn.addEventListener("click", () => {
+            if (entries.length === 0) {
+                showToast("Keine Einträge zum Exportieren vorhanden", "info");
+                return;
+            }
+
+            try {
+                // Daten für Excel vorbereiten
+                const exportData = entries.map(e => ({
+                    'Datum': e.datum || '',
+                    'Wildart': e.wildart || '',
+                    'Unterart': e.unterart || '',
+                    'Erleger': e.erleger || '',
+                    'Bemerkung': e.bemerkung || '',
+                    'Foto': (e.imageBase64 || e.imageUrl) ? 'Ja' : 'Nein'
+                }));
+
+                // Neues Workbook erstellen
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(exportData);
+
+                // Spaltenbreiten optimieren
+                const wscols = [
+                    {wch: 12}, // Datum
+                    {wch: 20}, // Wildart
+                    {wch: 20}, // Unterart
+                    {wch: 20}, // Erleger
+                    {wch: 40}, // Bemerkung
+                    {wch: 10}  // Foto
+                ];
+                ws['!cols'] = wscols;
+
+                XLSX.utils.book_append_sheet(wb, ws, "Streckenliste");
+
+                // Download auslösen
+                const filename = `Streckenliste_Silbersbach_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, filename);
+
+                showToast("Excel-Export erfolgreich", "success");
+            } catch (err) {
+                console.error("Export Fehler:", err);
+                showToast("Fehler beim Exportieren", "error");
+            }
         });
     }
 
@@ -3140,7 +3195,7 @@ function initAll() {
         return false;
     };
 
-    showToast("Reviersystem v4.0.0 bereit", "success");
+    showToast("Reviersystem v5.0.0 bereit", "success");
 
     // iOS Bounce/Overscroll Fix
     try {
