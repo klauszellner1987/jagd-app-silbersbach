@@ -191,14 +191,16 @@ function closeMapPanels() {
 function navigateToDashboard() {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
     const dashboard=document.getElementById("dashboard");
     if (dashboard) dashboard.classList.add("active");
 
-    // Hide FAB
+    // Hide FABs
     if (fabBtn) fabBtn.classList.remove("visible");
+    if (fabExportBtn) fabExportBtn.classList.remove("visible");
 
     // Tab Bar ANZEIGEN (nicht mehr ausblenden)
     if (bottomNav) bottomNav.classList.remove("hidden");
@@ -213,6 +215,7 @@ function navigateToDashboard() {
 function navigateToTab(pageId) {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
@@ -222,13 +225,13 @@ function navigateToTab(pageId) {
     // Tab Bar anzeigen
     if (bottomNav) bottomNav.classList.remove("hidden");
 
-    // FAB nur für Streckenliste
-    if (fabBtn) {
-        if (pageId === "streckenliste") {
-            fabBtn.classList.add("visible");
-        } else {
-            fabBtn.classList.remove("visible");
-        }
+    // FABs nur für Streckenliste
+    if (pageId === "streckenliste") {
+        if (fabBtn) fabBtn.classList.add("visible");
+        if (fabExportBtn) fabExportBtn.classList.add("visible");
+    } else {
+        if (fabBtn) fabBtn.classList.remove("visible");
+        if (fabExportBtn) fabExportBtn.classList.remove("visible");
     }
 
     // Tab aktiv markieren

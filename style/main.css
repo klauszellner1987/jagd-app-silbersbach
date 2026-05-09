@@ -2203,10 +2203,50 @@ button:hover {
     pointer-events: auto; /* Wichtig, da Parent pointer-events: none hat */
 }
 
-.fab-add.visible {
+.fab-add.visible,
+.fab-export.visible {
     display: flex;
     opacity: 1;
     visibility: visible;
+}
+
+.fab-export {
+    position: absolute !important;
+    left: 65px; /* Symmetrisch zu right: 65px */
+    top: 50%;
+    transform: translateY(-50%) !important;
+
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    color: rgba(255, 255, 255, 0.8);
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.fab-export i {
+    font-size: 22px;
+}
+
+.fab-export:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-50%) scale(1.05) !important;
 }
 
 /* Hover State */

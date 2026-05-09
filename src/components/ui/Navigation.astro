@@ -18,17 +18,14 @@
         <!-- Neuer Eintrag FAB ( Hirsch im Fadenkreuz ) -->
         <div class="fab-add" id="fab-add-btn">
             <svg viewBox="0 0 100 100" width="36" height="36" fill="currentColor" stroke="currentColor">
-                <!-- Fadenkreuz-Kreis -->
+                <!-- ... existing SVG content ... -->
                 <circle cx="50" cy="50" r="46" fill="none" stroke-width="4" />
-                <!-- Fadenkreuz-Linien mit Lücken -->
                 <line x1="50" y1="4" x2="50" y2="20" stroke-width="3" />
                 <line x1="50" y1="80" x2="50" y2="96" stroke-width="3" />
                 <line x1="4" y1="50" x2="20" y2="50" stroke-width="3" />
                 <line x1="80" y1="50" x2="96" y2="50" stroke-width="3" />
-                <!-- Kleine Striche am Kreuz -->
                 <line x1="47" y1="50" x2="53" y2="50" stroke-width="2" />
                 <line x1="50" y1="47" x2="50" y2="53" stroke-width="2" />
-                <!-- Stehender Hirsch mit Geweih -->
                 <ellipse cx="52" cy="58" rx="14" ry="10" stroke="none" />
                 <path d="M42 52 Q38 45 40 38" stroke-width="6" fill="none" stroke-linecap="round" />
                 <ellipse cx="38" cy="35" rx="5" ry="4" stroke="none" />
@@ -41,6 +38,11 @@
                 <line x1="66" y1="62" x2="70" y2="78" stroke-width="4" stroke-linecap="round" />
                 <path d="M66 52 Q72 48 74 52" stroke-width="3" fill="none" stroke-linecap="round" />
             </svg>
+        </div>
+
+        <!-- Export Button (Excel) auf der linken Seite -->
+        <div class="fab-export" id="fab-export-btn" title="Liste exportieren">
+            <i class="ti ti-file-download"></i>
         </div>
     </div>
 </nav>
