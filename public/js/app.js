@@ -13,20 +13,22 @@ window.toggleDashboardFeed = function(view) {
     const streckeFeed = document.getElementById("dashboard-strecke-feed");
     const schonzeitFeed = document.getElementById("dashboard-schonzeit-feed");
     const bulletinFeed = document.getElementById("dashboard-bulletin-feed");
+    const statistikFeed = document.getElementById("dashboard-statistik-feed");
     const fabBtn = document.getElementById("fab-add-btn");
     const fabExportBtn = document.getElementById("fab-export-btn");
-
+ 
     if (!standardFeed || !streckeFeed || !schonzeitFeed || !bulletinFeed) {
-        console.warn("Feed elements not found!");
+        console.warn("Standard Feed elements not found!");
         return;
     }
-
+ 
     // Hide all first
     standardFeed.classList.add("hidden");
     streckeFeed.classList.add("hidden");
     schonzeitFeed.classList.add("hidden");
     bulletinFeed.classList.add("hidden");
-
+    if (statistikFeed) statistikFeed.classList.add("hidden");
+ 
     if (view === 'strecke') {
         streckeFeed.classList.remove("hidden");
         if (fabBtn) fabBtn.classList.add("visible");
@@ -36,6 +38,12 @@ window.toggleDashboardFeed = function(view) {
         renderSchonzeitListe();
     } else if (view === 'bulletin') {
         bulletinFeed.classList.remove("hidden");
+    } else if (view === 'statistik') {
+        if (statistikFeed) {
+            statistikFeed.classList.remove("hidden");
+            // Wir nutzen setTimeout um sicherzugehen dass die Funktion bereit ist
+            if (typeof renderDetailStats === 'function') renderDetailStats();
+        }
     } else {
         standardFeed.classList.remove("hidden");
         if (fabBtn) fabBtn.classList.remove("visible");
@@ -1133,12 +1141,105 @@ async function initializeApp() {
     const bulletinBadge = document.getElementById("bulletin-badge");
     const bulletinSubmitBtn = document.getElementById("bulletin-submit-btn");
     const bulletinInput = document.getElementById("bulletin-input");
+    
+    let entries = [];
+    let bulletinItemsForStats = []; 
+
+    // Die Funktion definieren wir GANZ HIER OBEN im Scope von initializeApp
+    function renderDetailStats() {
+        try {
+            const streckeContainer = document.getElementById("stats-detail-strecke");
+            const rehwildContainer = document.getElementById("stats-detail-rehwild");
+            const bulletinContainer = document.getElementById("stats-detail-bulletin");
+            
+            if (!streckeContainer || !rehwildContainer) return;
+
+            // 1. Abschuss nach Wildarten
+            const statsMap = {};
+            entries.forEach(e => {
+                if (e.wildart) {
+                    statsMap[e.wildart] = (statsMap[e.wildart] || 0) + 1;
+                }
+            });
+
+            let streckeHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+            const sortedStats = Object.entries(statsMap).sort((a,b) => b[1] - a[1]);
+            if (sortedStats.length === 0) {
+                streckeHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
+            } else {
+                sortedStats.forEach(([art, count]) => {
+                    streckeHTML += `
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span>${art}</span>
+                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
+                        </div>
+                    `;
+                });
+            }
+            streckeHTML += '</div>';
+            streckeContainer.innerHTML = streckeHTML;
+
+            // 2. Rehwild Details
+            const rehEntries = entries.filter(e => e.wildart === "Rehwild");
+            const rehMap = {};
+            rehEntries.forEach(e => {
+                const kat = e.unterart || "Unbekannt";
+                rehMap[kat] = (rehMap[kat] || 0) + 1;
+            });
+
+            let rehHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+            const sortedReh = Object.entries(rehMap).sort((a,b) => b[1] - a[1]);
+            if (sortedReh.length === 0) {
+                rehHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
+            } else {
+                sortedReh.forEach(([kat, count]) => {
+                    rehHTML += `
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span>${kat}</span>
+                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
+                        </div>
+                    `;
+                });
+            }
+            rehHTML += '</div>';
+            rehwildContainer.innerHTML = rehHTML;
+
+            // 3. Schwarzes Brett (Offene Beiträge)
+            if (bulletinContainer) {
+                let bulletinHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+                const openItems = bulletinItemsForStats || [];
+                if (openItems.length === 0) {
+                    bulletinHTML += "<p style='opacity:0.5'>Keine offenen Aufgaben.</p>";
+                } else {
+                    openItems.forEach(item => {
+                        bulletinHTML += `
+                            <div style="padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.9rem;">
+                                <div style="font-weight: 500; margin-bottom: 4px;">${item.message}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.5;">Von ${item.sender || 'Unbekannt'}</div>
+                            </div>
+                        `;
+                    });
+                }
+                bulletinHTML += '</div>';
+                bulletinContainer.innerHTML = bulletinHTML;
+            }
+        } catch (err) {
+            console.error("renderDetailStats error:", err);
+        }
+    }
+    // Global für onclick Handler verfügbar machen
+    window.renderDetailStats = renderDetailStats;
 
     if (bulletinList || bulletinPreview || document.getElementById("bulletin-list-dashboard")) {
         bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
             const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             const items = allItems.filter(item => !item.isDone);
+            bulletinItemsForStats = items; // Für Statistik speichern
+            
             const dashboardList = document.getElementById("bulletin-list-dashboard");
+            
+            // Statistik aktualisieren falls Funktion schon da
+            if (typeof renderDetailStats === 'function') renderDetailStats();
 
             // 1. Listen rendern (Main Page & Dashboard Feed)
             const listHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
@@ -1363,6 +1464,12 @@ async function initializeApp() {
 
     if (panelContent) {
         hochsitzeCollection.onSnapshot(snapshot => {
+            // Live-Statistik im Dashboard aktualisieren
+            const hochsitzStats = document.getElementById("hochsitz-count");
+            if (hochsitzStats) {
+                hochsitzStats.textContent = snapshot.size;
+            }
+
             panelContent.innerHTML = "";
             snapshot.docs.forEach(doc => {
                 const data = doc.data();
@@ -1399,8 +1506,6 @@ async function initializeApp() {
     const wildSelect = document.getElementById("wildart");
     const subcategoryContainer = document.getElementById("subcategory-container");
     const fabAddBtn = document.getElementById("fab-add-btn");
-
-    let entries = [];
 
     if (fabAddBtn) {
         fabAddBtn.addEventListener("click", () => {
@@ -1460,8 +1565,21 @@ async function initializeApp() {
     entriesCollection.orderBy("datum", "desc")
         .onSnapshot(snapshot => {
             entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Counter im Dashboard-Widget aktualisieren
+            const streckeCountEl = document.getElementById("strecke-count");
+            if (streckeCountEl) streckeCountEl.textContent = entries.length;
+
+            const rehwildCountEl = document.getElementById("rehwild-count");
+            if (rehwildCountEl) {
+                const rehCount = entries.filter(e => e.wildart === "Rehwild").length;
+                rehwildCountEl.textContent = rehCount;
+            }
+
             renderEntries();
+            renderDetailStats();
         });
+
 
     function renderEntries() {
         const dashboardList = document.getElementById("entry-list-dashboard");
@@ -1472,13 +1590,17 @@ async function initializeApp() {
             const li = document.createElement("li");
             li.className = "entry-item";
 
+            // Das richtige Icon suchen
+            const wildartData = jagdzeitenBayern.find(w => w.name === entry.wildart || w.id === entry.wildart);
+            const iconHTML = wildartData ? getWildartIconHTML(wildartData.iconClass, 28) : '<span style="font-size: 20px;">🦌</span>';
+
             // Header im Feed-Card Style
             const header = document.createElement("div");
             header.className = "feed-card-header";
             header.style.marginBottom = "0.2rem"; // Etwas kompakter
             header.innerHTML = `
                 <div class="feed-card-icon-container">
-                    <span style="font-size: 20px;">🦌</span>
+                    ${iconHTML}
                 </div>
                 <div class="feed-card-header-text">
                     <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>

@@ -120,7 +120,7 @@
             </div>
 
             <!-- Feed Item: Statistik / Counters -->
-            <div class="feed-card static-card" onclick="toggleDashboardFeed('strecke')">
+            <div class="feed-card static-card" onclick="toggleDashboardFeed('statistik')">
                 <div class="feed-card-header">
                     <div class="feed-card-icon-container">
                         <i class="ti ti-chart-bar"></i>
@@ -134,6 +134,10 @@
                     <div class="stat-item">
                         <span class="stat-label">Hochsitze</span>
                         <span class="stat-value" id="hochsitz-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Rehwild</span>
+                        <span class="stat-value" id="rehwild-count">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Strecke</span>
@@ -196,6 +200,42 @@
 
             <div id="bulletin-list-dashboard" class="bulletin-list-container">
                 <!-- Wird dynamisch befüllt -->
+            </div>
+        </div>
+
+        <!-- STATISTIK FEED VIEW -->
+        <div id="dashboard-statistik-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Revier Statistik</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+
+            <div class="stats-detail-container">
+                <!-- Strecke Detail Card -->
+                <div class="stats-detail-card">
+                    <h4>Abschuss nach Wildarten</h4>
+                    <div id="stats-detail-strecke">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
+
+                <!-- Rehwild Detail Card -->
+                <div class="stats-detail-card">
+                    <h4>Rehwild Details</h4>
+                    <div id="stats-detail-rehwild">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
+
+                <!-- Bulletin Board Open Items Card -->
+                <div class="stats-detail-card">
+                    <h4>Offene Aufgaben</h4>
+                    <div id="stats-detail-bulletin">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
