@@ -80,63 +80,122 @@
 
     <!-- SMART FEED -->
     <div class="smart-feed-container">
-        <h3 class="feed-section-title">Feed</h3>
-        
-        <!-- Feed Item: Schwarzes Brett -->
-        <div class="feed-card nav-widget" data-target="bulletin-board" id="bulletin-widget">
-            <div class="feed-card-header">
-                <div class="feed-card-icon-container">
-                    <i class="ti ti-news"></i>
+        <!-- STANDARD FEED VIEW -->
+        <div id="dashboard-standard-feed">
+            <h3 class="feed-section-title">Feed</h3>
+            
+            <!-- Feed Item: Schwarzes Brett -->
+            <div class="feed-card nav-widget" data-target="bulletin-board" id="bulletin-widget">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container">
+                        <i class="ti ti-news"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title">Schwarzes Brett</span>
+                        <span class="feed-card-time">Live</span>
+                    </div>
+                    <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
                 </div>
-                <div class="feed-card-header-text">
-                    <span class="feed-card-title">Schwarzes Brett</span>
-                    <span class="feed-card-time">Live</span>
+                <div class="feed-card-content" id="bulletin-preview">
+                    <p id="bulletin-preview-text">Keine neuen Aushänge</p>
                 </div>
-                <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
             </div>
-            <div class="feed-card-content" id="bulletin-preview">
-                <p id="bulletin-preview-text">Keine neuen Aushänge</p>
+
+            <!-- Feed Item: Schonzeiten -->
+            <div class="feed-card nav-widget schonzeit-widget" data-target="schonzeit-page" id="schonzeit-widget">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container" id="schonzeit-icon">
+                        <i class="ti ti-leaf"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title" id="schonzeit-wildart">Schonzeiten</span>
+                        <span class="feed-card-time">Heute</span>
+                    </div>
+                    <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
+                </div>
+                <div class="feed-card-content">
+                    <p id="schonzeit-status-text">Lade...</p>
+                    <p id="schonzeit-datum" style="opacity: 0.6; font-size: 0.85em; margin-top: 4px;"></p>
+                </div>
+            </div>
+
+            <!-- Feed Item: Statistik / Counters -->
+            <div class="feed-card static-card" onclick="toggleDashboardFeed('strecke')">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container">
+                        <i class="ti ti-chart-bar"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title">Revier Statistik</span>
+                        <span class="feed-card-time">Gesamt</span>
+                    </div>
+                </div>
+                <div class="feed-card-content stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Hochsitze</span>
+                        <span class="stat-value" id="hochsitz-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Strecke</span>
+                        <span class="stat-value" id="strecke-count">0</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Feed Item: Schonzeiten -->
-        <div class="feed-card nav-widget" data-target="schonzeit-page" id="schonzeit-widget">
-            <div class="feed-card-header">
-                <div class="feed-card-icon-container" id="schonzeit-icon">
-                    <i class="ti ti-leaf"></i>
-                </div>
-                <div class="feed-card-header-text">
-                    <span class="feed-card-title" id="schonzeit-wildart">Schonzeiten</span>
-                    <span class="feed-card-time">Heute</span>
-                </div>
-                <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
+        <!-- STRECKENLISTE FEED VIEW -->
+        <div id="dashboard-strecke-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Streckenliste</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
             </div>
-            <div class="feed-card-content">
-                <p id="schonzeit-status-text">Lade...</p>
-                <p id="schonzeit-datum" style="opacity: 0.6; font-size: 0.85em; margin-top: 4px;"></p>
+            <ul id="entry-list-dashboard" class="entry-list">
+                <!-- Wird dynamisch befüllt -->
+            </ul>
+        </div>
+
+        <!-- SCHONZEIT FEED VIEW -->
+        <div id="dashboard-schonzeit-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Jagdzeiten Details</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+            
+            <!-- Filter Tabs im Feed -->
+            <div class="schonzeit-tabs-inline">
+                <button class="schonzeit-filter-btn active" onclick="filterSchonzeitListe('alle')">Alle</button>
+                <button class="schonzeit-filter-btn" onclick="filterSchonzeitListe('jagdzeit')">Offen</button>
+                <button class="schonzeit-filter-btn" onclick="filterSchonzeitListe('schonzeit')">Schonzeit</button>
+            </div>
+
+            <div id="schonzeit-liste-dashboard" class="schonzeit-liste">
+                <!-- Wird dynamisch befüllt -->
             </div>
         </div>
 
-        <!-- Feed Item: Statistik / Counters -->
-        <div class="feed-card static-card">
-            <div class="feed-card-header">
-                <div class="feed-card-icon-container">
-                    <i class="ti ti-chart-bar"></i>
-                </div>
-                <div class="feed-card-header-text">
-                    <span class="feed-card-title">Revier Statistik</span>
-                    <span class="feed-card-time">Gesamt</span>
-                </div>
+        <!-- BULLETIN FEED VIEW -->
+        <div id="dashboard-bulletin-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Schwarzes Brett</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
             </div>
-            <div class="feed-card-content stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label">Hochsitze</span>
-                    <span class="stat-value" id="hochsitz-count">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Strecke</span>
-                    <span class="stat-value" id="strecke-count">0</span>
-                </div>
+            
+            <!-- Neues Eingabefeld für Aushänge direkt im Dashboard -->
+            <div class="bulletin-input-dashboard">
+                <input type="text" id="bulletin-input-dashboard" placeholder="Neue Nachricht schreiben..." />
+                <button id="bulletin-submit-dashboard" title="Senden">
+                    <i class="ti ti-send"></i>
+                </button>
+            </div>
+
+            <div id="bulletin-list-dashboard" class="bulletin-list-container">
+                <!-- Wird dynamisch befüllt -->
             </div>
         </div>
 

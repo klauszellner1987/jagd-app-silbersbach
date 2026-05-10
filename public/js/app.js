@@ -3,6 +3,46 @@
 // ==============================
 const APP_VERSION = "v5.0.0";
 
+/**
+ * Toggles between dashboard feed views (standard vs strecke)
+ * Globally available for onclick handlers
+ */
+window.toggleDashboardFeed = function(view) {
+    console.log("Toggling dashboard feed to:", view);
+    const standardFeed = document.getElementById("dashboard-standard-feed");
+    const streckeFeed = document.getElementById("dashboard-strecke-feed");
+    const schonzeitFeed = document.getElementById("dashboard-schonzeit-feed");
+    const bulletinFeed = document.getElementById("dashboard-bulletin-feed");
+    const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
+
+    if (!standardFeed || !streckeFeed || !schonzeitFeed || !bulletinFeed) {
+        console.warn("Feed elements not found!");
+        return;
+    }
+
+    // Hide all first
+    standardFeed.classList.add("hidden");
+    streckeFeed.classList.add("hidden");
+    schonzeitFeed.classList.add("hidden");
+    bulletinFeed.classList.add("hidden");
+
+    if (view === 'strecke') {
+        streckeFeed.classList.remove("hidden");
+        if (fabBtn) fabBtn.classList.add("visible");
+        if (fabExportBtn) fabExportBtn.classList.add("visible");
+    } else if (view === 'schonzeit') {
+        schonzeitFeed.classList.remove("hidden");
+        renderSchonzeitListe();
+    } else if (view === 'bulletin') {
+        bulletinFeed.classList.remove("hidden");
+    } else {
+        standardFeed.classList.remove("hidden");
+        if (fabBtn) fabBtn.classList.remove("visible");
+        if (fabExportBtn) fabExportBtn.classList.remove("visible");
+    }
+};
+
 // ==============================
 // FIREBASE CONFIG
 // ==============================
@@ -149,11 +189,14 @@ function navigateToPage(targetId) {
 
         // FAB-Buttons nur in Streckenliste sichtbar
         if (targetId === "streckenliste") {
-            if (fabBtn) fabBtn.classList.add("visible");
-            if (fabExportBtn) {
-                fabExportBtn.classList.add("visible");
-                console.log("Showing Export Button (from Page):", fabExportBtn.classList.contains("visible"));
-            }
+            navigateToDashboard('strecke');
+            return;
+        } else if (targetId === "schonzeit-page") {
+            navigateToDashboard('schonzeit');
+            return;
+        } else if (targetId === "bulletin-board") {
+            navigateToDashboard('bulletin');
+            return;
         } else {
             if (fabBtn) fabBtn.classList.remove("visible");
             if (fabExportBtn) fabExportBtn.classList.remove("visible");
@@ -195,7 +238,7 @@ function closeMapPanels() {
 }
 
 // Navigate back to dashboard
-function navigateToDashboard() {
+function navigateToDashboard(view = 'standard') {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
     const fabExportBtn = document.getElementById("fab-export-btn");
@@ -211,6 +254,9 @@ function navigateToDashboard() {
 
     // Tab Bar ANZEIGEN (nicht mehr ausblenden)
     if (bottomNav) bottomNav.classList.remove("hidden");
+
+    // Reset Dashboard Feed to desired view
+    toggleDashboardFeed(view);
 
     // Tab aktiv markieren
     setActiveTab("dashboard");
@@ -915,7 +961,7 @@ function getWildartIconHTML(type, size = 30) {
         'dachs': 1.1,
         'ente': 1.05,
         'fasan': 1.05,
-        'deer': 1.1,
+        'deer': 1.15,
         'crow': 1.2,
         'eichelhaeher': 1.2,
         'fox': 1.25,
@@ -925,6 +971,24 @@ function getWildartIconHTML(type, size = 30) {
     const scale = iconScales[type] || 1.0;
 
     if (pngIcons[type]) {
+        const isDeer = type === 'deer';
+        // Für Rotwild (Schwarz-Weiß Bild mit Rahmen):
+        // Wir invertieren (Weiß -> Schwarz, Schwarz -> Weiß) und nutzen lighten, 
+        // um den schwarzen Hintergrund auf der dunklen Karte verschwinden zu lassen.
+        if (isDeer) {
+            // Der ultimative Fix für Rotwild: 
+            // 1. Wir erzwingen, dass alles Weiße transparent wird (durch screen blending)
+            // 2. Wir erzwingen, dass die Silhouette weiß wird (durch invert/brightness)
+            // 3. Wir nutzen ein Container-Div, um Clipping zu vermeiden
+            return `<div class="silhouette-icon-container" style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="icons/${pngIcons[type]}" 
+                             width="${size}" height="${size}" 
+                             style="width: 100%; height: 100%; object-fit: contain; transform: scale(${scale}); 
+                                    filter: invert(1) contrast(5) brightness(1.2) !important; 
+                                    mix-blend-mode: screen !important;">
+                    </div>`;
+        }
+        
         return `<img src="icons/${pngIcons[type]}" 
                      width="${size}" height="${size}" 
                      class="silhouette-icon"
@@ -1004,7 +1068,8 @@ function filterSchonzeitListe(filter) {
 
 function renderSchonzeitListe() {
     const container = document.getElementById('schonzeit-liste');
-    if (!container) return;
+    const dashboardContainer = document.getElementById('schonzeit-liste-dashboard');
+    if (!container && !dashboardContainer) return;
 
     let wildarten = jagdzeitenBayern.filter(w => 
         ['rehbock', 'reh', 'wildschwein', 'gams', 'muffelwild', 'dachs', 'marder', 'iltis', 'hermelin', 'mauswiesel', 'ente', 'fasan', 'deer', 'crow', 'eichelhaeher', 'fox', 'rabbit'].includes(w.iconClass)
@@ -1017,45 +1082,33 @@ function renderSchonzeitListe() {
         wildarten = wildarten.filter(w => !istSchonzeit(w));
     }
 
-    if (wildarten.length === 0) {
-        container.innerHTML = `
-        <div class="schonzeit-empty" >
-            <p>Keine Wildarten für diesen Filter gefunden.</p>
-            </div>
-        `;
-        return;
-    }
+    const html = wildarten.length === 0 
+        ? `<div class="schonzeit-empty"><p>Keine Wildarten gefunden.</p></div>`
+        : wildarten.map(wildart => {
+            const hatSchonzeit = istSchonzeit(wildart);
+            const statusClass = hatSchonzeit ? 'closed' : 'open';
+            const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
+            let zeitInfo = wildart.keineJagdzeit ? 'Ganzjährige Schonzeit' : (wildart.ganzjaehrig ? 'Ganzjährig bejagbar' : `Jagdzeit: ${wildart.jagdzeitStart || '-'} - ${wildart.jagdzeitEnde || '-'}`);
 
-    container.innerHTML = wildarten.map(wildart => {
-        const hatSchonzeit = istSchonzeit(wildart);
-        const statusClass = hatSchonzeit ? 'closed' : 'open';
-        const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
+            return `
+                <div class="wildart-card">
+                    <div class="wildart-icon">
+                        ${getWildartIconHTML(wildart.iconClass, 54)}
+                    </div>
+                    <div class="wildart-info">
+                        <h3 class="wildart-name">${wildart.name}</h3>
+                        <p class="wildart-zeit">${zeitInfo}</p>
+                    </div>
+                    <div class="wildart-status ${statusClass}">
+                        <div class="wildart-indicator"></div>
+                        <span>${statusText}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-        let zeitInfo;
-        if (wildart.keineJagdzeit) {
-            zeitInfo = 'Ganzjährige Schonzeit';
-        } else if (wildart.ganzjaehrig) {
-            zeitInfo = 'Ganzjährig bejagbar';
-        } else {
-            zeitInfo = `Jagdzeit: ${ wildart.jagdzeitStart || '-' } - ${ wildart.jagdzeitEnde || '-' } `;
-        }
-
-        return `
-        <div class="wildart-card" >
-                <div class="wildart-icon">
-                    ${getWildartIconHTML(wildart.iconClass, 54)}
-                </div>
-                <div class="wildart-info">
-                    <h3 class="wildart-name">${wildart.name}</h3>
-                    <p class="wildart-zeit">${zeitInfo}</p>
-                </div>
-                <div class="wildart-status ${statusClass}">
-                    <div class="wildart-indicator"></div>
-                    <span>${statusText}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
+    if (container) container.innerHTML = html;
+    if (dashboardContainer) dashboardContainer.innerHTML = html;
 }
 
 function closeSchonzeitPage() {
@@ -1081,48 +1134,57 @@ async function initializeApp() {
     const bulletinSubmitBtn = document.getElementById("bulletin-submit-btn");
     const bulletinInput = document.getElementById("bulletin-input");
 
-    if (bulletinList) {
+    if (bulletinList || bulletinPreview || document.getElementById("bulletin-list-dashboard")) {
         bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
             const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Nur aktive (nicht erledigte) Items anzeigen
             const items = allItems.filter(item => !item.isDone);
+            const dashboardList = document.getElementById("bulletin-list-dashboard");
 
-            // 1. Liste rendern
-            bulletinList.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+            // 1. Listen rendern (Main Page & Dashboard Feed)
+            const listHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+            if (bulletinList) bulletinList.innerHTML = listHTML;
+            if (dashboardList) dashboardList.innerHTML = listHTML;
+
             items.forEach(item => {
                 const date = item.timestamp ? new Date(item.timestamp).toLocaleString('de-DE', {
                     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                 }) : 'Unbekannt';
 
-                const el = document.createElement("div");
-                el.className = "bulletin-item";
-                el.innerHTML = `
-        <div class="bulletin-item-header" >
+                const html = `
+                    <div class="bulletin-item-header">
                         <span class="bulletin-item-sender">${item.sender || 'Unbekannt'}</span>
                         <span class="bulletin-item-date">${date}</span>
                     </div>
                     <div class="bulletin-item-content">${item.message}</div>
                     <div style="text-align: right; margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
                         <button class="bulletin-done-btn" data-id="${item.id}" title="Erledigt">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Erledigt
+                            <i class="ti ti-check"></i> Erledigt
                         </button>
                         <button class="bulletin-delete-btn" data-id="${item.id}" aria-label="Löschen">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
+                            <i class="ti ti-trash"></i>
                         </button>
                     </div>
-    `;
-                bulletinList.appendChild(el);
+                `;
+
+                if (bulletinList) {
+                    const el = document.createElement("div");
+                    el.className = "bulletin-item";
+                    el.innerHTML = html;
+                    bulletinList.appendChild(el);
+                }
+                
+                // Im Dashboard nur die ersten 3 anzeigen
+                if (dashboardList && Array.from(dashboardList.children).length < 3) {
+                    const el = document.createElement("div");
+                    el.className = "bulletin-item";
+                    el.innerHTML = html;
+                    dashboardList.appendChild(el);
+                }
             });
 
-            // Erledigt-Events
-            bulletinList.querySelectorAll(".bulletin-done-btn").forEach(btn => {
-                btn.onclick=async (e) => {
+            // Erledigt & Löschen Events (für beide Listen)
+            document.querySelectorAll(".bulletin-done-btn").forEach(btn => {
+                btn.onclick = async (e) => {
                     e.stopPropagation();
                     try {
                         await bulletinCollection.doc(btn.dataset.id).update({ isDone: true });
@@ -1134,28 +1196,20 @@ async function initializeApp() {
                 };
             });
 
-            // Lösch-Events für Bulletin Board
-            bulletinList.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
-                btn.onclick=async (e) => {
+            document.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
+                btn.onclick = async (e) => {
                     e.stopPropagation();
-                    const confirmed=await showConfirm(
-                        "Möchten Sie diesen Aushang wirklich löschen?",
-                        "Aushang löschen",
-                        "Löschen"
-                    );
-                    if (confirmed) {
-                        try {
-                            await bulletinCollection.doc(btn.dataset.id).delete();
-                            showToast("Aushang entfernt", "delete");
-                        } catch (err) {
-                            console.error(err);
-                            showToast("Fehler beim Löschen", "error");
-                        }
+                    if (!confirm("Aushang unwiderruflich löschen?")) return;
+                    try {
+                        await bulletinCollection.doc(btn.dataset.id).delete();
+                        showToast("Aushang gelöscht", "delete");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Fehler beim Löschen", "error");
                     }
                 };
             });
 
-            // 2. Badge & Dashboard Preview updaten
             if (bulletinBadge) {
                 bulletinBadge.textContent = items.length;
                 bulletinBadge.classList.toggle("hidden", items.length === 0);
@@ -1163,31 +1217,43 @@ async function initializeApp() {
 
             if (bulletinPreview) {
                 bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
-                // LIMIT: Zeige maximal 10 neueste Einträge in der Vorschau
-                items.slice(0, 10).forEach(item => {
+                // LIMIT: Zeige maximal 3 neueste Einträge im Dashboard-Widget
+                items.slice(0, 3).forEach(item => {
                     const el = document.createElement("div");
                     el.className = "bulletin-preview-item";
-                    el.textContent = item.message;
+                    el.innerHTML = `
+                        <span class="bulletin-preview-text">${item.message}</span>
+                        <div class="bulletin-preview-actions">
+                            <button class="bulletin-done-btn-sm" data-id="${item.id}" title="Erledigt">
+                                <i class="ti ti-check"></i>
+                            </button>
+                            <button class="bulletin-delete-btn-sm" data-id="${item.id}" title="Löschen">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    `;
 
-                    // Klick auf Eintrag im Widget
-                    el.onclick=async (e) => {
-                        e.stopPropagation(); // Verhindert das Öffnen der Seite
-                        // MODAL: Bestätigung einholen
-                        const confirmed=await showConfirm(
-                            "Möchten Sie diesen Aushang als erledigt markieren?",
-                            "Aushang erledigt",
-                            "Erledigen"
-                        );
+                    // Klick auf Text -> Feed öffnen
+                    el.querySelector('.bulletin-preview-text').onclick = () => {
+                        toggleDashboardFeed('bulletin');
+                    };
 
-                        if (confirmed) {
-                            try {
-                                await bulletinCollection.doc(item.id).update({ isDone: true });
-                                showToast("Erledigt!", "success");
-                            } catch (err) {
-                                console.error(err);
-                                showToast("Fehler beim Aktualisieren", "error");
-                            }
-                        }
+                    // Klick auf Buttons -> Aktionen
+                    el.querySelector('.bulletin-done-btn-sm').onclick = async (e) => {
+                        e.stopPropagation();
+                        try {
+                            await bulletinCollection.doc(item.id).update({ isDone: true });
+                            showToast("Aushang erledigt", "success");
+                        } catch (err) { console.error(err); }
+                    };
+
+                    el.querySelector('.bulletin-delete-btn-sm').onclick = async (e) => {
+                        e.stopPropagation();
+                        if (!confirm("Aushang löschen?")) return;
+                        try {
+                            await bulletinCollection.doc(item.id).delete();
+                            showToast("Aushang gelöscht", "delete");
+                        } catch (err) { console.error(err); }
                     };
                     bulletinPreview.appendChild(el);
                 });
@@ -1195,7 +1261,38 @@ async function initializeApp() {
         });
     }
 
-    // Nachricht senden
+    // Nachricht senden (Dashboard)
+    const bulletinSubmitDashboard = document.getElementById("bulletin-submit-dashboard");
+    const bulletinInputDashboard = document.getElementById("bulletin-input-dashboard");
+
+    if (bulletinSubmitDashboard && bulletinInputDashboard) {
+        bulletinSubmitDashboard.onclick = async () => {
+            const msg = bulletinInputDashboard.value.trim();
+            if (!msg) return;
+
+            bulletinSubmitDashboard.disabled = true;
+            const user = firebase.auth().currentUser;
+            const senderName = user ? (user.displayName || user.email.split('@')[0]) : "Unbekannt";
+
+            try {
+                await bulletinCollection.add({
+                    message: msg,
+                    sender: senderName,
+                    timestamp: Date.now(),
+                    isDone: false
+                });
+                bulletinInputDashboard.value = "";
+                showToast("Aushang gepostet!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Fehler beim Senden", "error");
+            } finally {
+                bulletinSubmitDashboard.disabled = false;
+            }
+        };
+    }
+
+    // Nachricht senden (Main Page)
     if (bulletinSubmitBtn && bulletinInput) {
         bulletinSubmitBtn.onclick=async () => {
             const msg = bulletinInput.value.trim();
@@ -1367,7 +1464,10 @@ async function initializeApp() {
         });
 
     function renderEntries() {
-        entryList.innerHTML = "";
+        const dashboardList = document.getElementById("entry-list-dashboard");
+        if (entryList) entryList.innerHTML = "";
+        if (dashboardList) dashboardList.innerHTML = "";
+
         entries.forEach((entry, idx) => {
             const li = document.createElement("li");
             li.className = "entry-item";
@@ -1377,14 +1477,14 @@ async function initializeApp() {
             header.className = "feed-card-header";
             header.style.marginBottom = "0.2rem"; // Etwas kompakter
             header.innerHTML = `
-        <div class="feed-card-icon-container">
-            <span style="font-size: 20px;">🦌</span>
-        </div>
-        <div class="feed-card-header-text">
-            <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>
-            <span class="feed-card-time">${entry.datum || ""} • ${entry.erleger}</span>
-        </div>
-    `;
+                <div class="feed-card-icon-container">
+                    <span style="font-size: 20px;">🦌</span>
+                </div>
+                <div class="feed-card-header-text">
+                    <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>
+                    <span class="feed-card-time">${entry.datum || ""} • ${entry.erleger}</span>
+                </div>
+            `;
 
             const btn = document.createElement("button");
             btn.className = "entry-delete-btn";
@@ -1409,42 +1509,41 @@ async function initializeApp() {
                 li.appendChild(notes);
             }
 
-            // Foto-Bereich (nur wenn Bild vorhanden oder Button gewünscht)
+            // Foto-Bereich
             const fotoSection = document.createElement("div");
             fotoSection.className = "entry-foto-section";
 
-            // Bild aus Base64 oder URL anzeigen (Thumbnail mit Lösch-Button)
             const imageSrc = entry.imageBase64 || entry.imageUrl;
             if (imageSrc) {
                 fotoSection.innerHTML = `
-        <div class="entry-foto-thumbnail" >
-            <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
-                <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
-                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
-                    </svg>
-                </button>
-            </div>
-    `;
+                    <div class="entry-foto-thumbnail">
+                        <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
+                        <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
             }
 
-            // Foto-Button (hinzufügen oder ändern)
             const fotoBtn = document.createElement("button");
             fotoBtn.className = "entry-foto-btn";
-            fotoBtn.dataset.id=entry.id;
+            fotoBtn.dataset.id = entry.id;
             fotoBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
-        ${ imageSrc ? "Ändern" : "Foto hinzufügen" }
-    `;
+                ${imageSrc ? "Ändern" : "Foto hinzufügen"}
+            `;
             fotoSection.appendChild(fotoBtn);
-
             li.appendChild(fotoSection);
 
-            entryList.appendChild(li);
+            // In beide Listen einfügen
+            if (entryList) entryList.appendChild(li.cloneNode(true));
+            if (dashboardList) dashboardList.appendChild(li.cloneNode(true));
         });
         attachDeleteEvents();
         attachFotoEvents();

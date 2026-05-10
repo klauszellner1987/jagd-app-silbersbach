@@ -505,6 +505,106 @@ main {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
+
+.feed-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.feed-back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 6px 14px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.feed-back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-4px);
+}
+
+.feed-back-btn i {
+    font-size: 1.1rem;
+}
+
+.schonzeit-tabs-inline {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+}
+
+.schonzeit-tabs-inline::-webkit-scrollbar {
+    display: none;
+}
+
+.schonzeit-tabs-inline .schonzeit-filter-btn {
+    flex: 1;
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.schonzeit-tabs-inline .schonzeit-filter-btn.active {
+    background: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.bulletin-input-dashboard {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bulletin-input-dashboard input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.bulletin-input-dashboard button {
+    background: var(--primary-light);
+    color: white;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bulletin-input-dashboard button:active {
+    transform: scale(0.9);
+}
+
 .feed-card:active {
     background: rgba(255, 255, 255, 0.1);
     transform: scale(0.98);
@@ -561,6 +661,16 @@ main {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.85);
     line-height: 1.5;
+}
+
+#bulletin-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Stats Grid im Feed */
@@ -3003,15 +3113,12 @@ button:hover {
     padding: 1.25rem 1.5rem;
     margin-bottom: 1rem;
     min-height: 100px;
-    /* Feste Mindesthoehe verhindert Layout-Shift */
-    background: linear-gradient(180deg,
-            rgba(45, 90, 65, 0.8) 0%,
-            rgba(40, 80, 60, 0.35) 40%,
-            rgba(35, 70, 55, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .schonzeit-icon-container {
@@ -3383,15 +3490,15 @@ button:hover {
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    background: linear-gradient(180deg,
-            rgba(60, 120, 80, 0.75) 0%,
-            rgba(50, 100, 70, 0.55) 50%,
-            rgba(40, 85, 60, 0.4) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0.75rem;
 }
 
 .wildart-card:hover {
@@ -3402,11 +3509,13 @@ button:hover {
 
 .wildart-icon {
     flex-shrink: 0;
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
 }
 
 .silhouette-icon {
@@ -4438,25 +4547,72 @@ button:hover {
 }
 
 .bulletin-preview-item {
-    flex: 0 0 auto;
-    /* width: 160px; -> Geändert für genau 2 sichtbare Kacheln: */
-    width: calc(50% - 0.3rem);
-    /* 50% abzüglich der halben gap (0.6rem) */
-    background: rgba(0, 0, 0, 0.25);
-    padding: 0.6rem 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.6rem 0.8rem;
     border-radius: 12px;
-    font-size: 0.85rem;
-    border-left: 3px solid rgba(124, 255, 155, 0.6);
+    font-size: 0.9rem;
+    border-left: 3px solid var(--primary-light);
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.bulletin-preview-text {
+    flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: rgba(255, 255, 255, 0.9);
-    height: 1.4rem;
-    line-height: 1.4rem;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-    scroll-snap-align: start;
-    /* Hinzugefügt für Snapping */
+}
+
+.bulletin-preview-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.bulletin-done-btn-sm, .bulletin-delete-btn-sm {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.bulletin-done-btn-sm {
+    color: var(--primary-light);
+    background: rgba(124, 255, 155, 0.15);
+}
+
+.bulletin-delete-btn-sm {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.15);
+}
+
+.bulletin-done-btn-sm:active, .bulletin-delete-btn-sm:active {
+    transform: scale(0.85);
+}
+
+.bulletin-preview-item:last-child {
+    margin-bottom: 0;
+}
+
+.bulletin-preview-item:active {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(0.98);
 }
 
 .bulletin-preview-item:hover {
@@ -4548,19 +4704,21 @@ button:hover {
 .bulletin-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
 .bulletin-item {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur-sm));
-    -webkit-backdrop-filter: blur(var(--blur-sm));
-    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 1.25rem;
+    padding: 1.5rem 1.75rem;
     position: relative;
     animation: bulletinSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--glass-shadow);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
 }
 
 .bulletin-item-header {
