@@ -34,7 +34,27 @@ jobs:
         continue-on-error: true
 
       - name: Run unit tests (Vitest)
-        run: npx vitest run
+        id: vitest
+        run: |
+          set +e
+          npx vitest run --reporter=verbose 2>&1 | tee vitest.log
+          EXIT=${PIPESTATUS[0]}
+          echo "VITEST_EXIT=$EXIT" >> $GITHUB_OUTPUT
+          exit 0
+
+      - name: Show last lines of vitest log on failure
+        if: steps.vitest.outputs.VITEST_EXIT != '0'
+        run: |
+          echo "::group::Vitest output (last 200 lines)"
+          tail -n 200 vitest.log
+          echo "::endgroup::"
+          # Letzte 60 Zeilen als annotations -> via API abrufbar
+          tail -n 60 vitest.log | while IFS= read -r line; do
+            # Vermeide Probleme mit GitHub-Actions-Logging-Tokens
+            cleaned=$(echo "$line" | tr -d '\r' | sed 's/::/__/g')
+            echo "::error::$cleaned"
+          done
+          exit ${{ steps.vitest.outputs.VITEST_EXIT }}
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
