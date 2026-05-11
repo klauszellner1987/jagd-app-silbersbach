@@ -3,7 +3,7 @@ import {
     isUserCurrentlyOnline,
     formatRelativeTime,
     ONLINE_THRESHOLD_MS,
-} from '../../public/js/lib/pure.js';
+} from '../../src/scripts/features/presence/presence.pure.js';
 
 /**
  * Hilfsfunktion: simuliert die Firestore-Timestamp Schnittstelle.

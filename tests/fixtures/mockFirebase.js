@@ -136,7 +136,14 @@
         collection: makeCollection,
         enablePersistence: async () => {},
     });
-    fakeFirestore.FieldValue = { serverTimestamp: () => new Date() };
+    // serverTimestamp liefert ein Firestore-Timestamp-shaped Objekt
+    // (mit .toDate()), damit Code wie `data.lastSeen.toDate()` funktioniert.
+    fakeFirestore.FieldValue = {
+        serverTimestamp: () => {
+            const d = new Date();
+            return { toDate: () => d };
+        },
+    };
 
     const fakeStorage = () => ({
         ref: () => ({
