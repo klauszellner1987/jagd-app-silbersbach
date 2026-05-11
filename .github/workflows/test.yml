@@ -47,9 +47,30 @@ jobs:
           cat package.json | grep -A 20 '"scripts"'
 
       - name: Run unit tests (Vitest)
-        run: npx vitest run --reporter=verbose 2>&1
-        env:
-          DEBUG: 'vite-node:*'
+        id: vitest
+        run: |
+          set +e
+          npx vitest run --reporter=verbose --no-coverage > vitest.log 2>&1
+          echo "VITEST_EXIT=$?" >> $GITHUB_OUTPUT
+          echo "==== VITEST LOG START ===="
+          cat vitest.log
+          echo "==== VITEST LOG END ===="
+          # nicht hier abbrechen, damit der Upload noch laufen kann
+          true
+
+      - name: Upload Vitest log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-log
+          path: vitest.log
+          retention-days: 7
+
+      - name: Fail if Vitest exit != 0
+        if: steps.vitest.outputs.VITEST_EXIT != '0'
+        run: |
+          echo "Vitest failed with exit code ${{ steps.vitest.outputs.VITEST_EXIT }}"
+          exit 1
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
