@@ -27,3 +27,9 @@ npm-debug.log*
 playwright-report/
 test-results/
 coverage/
+
+# Vite-/Astro-Build-Artefakte (Hash-Outputs werden bei jedem astro build neu generiert)
+# Nur die gehashten Bundle-Outputs ignorieren, NICHT die getrackten statischen Assets
+# (Bilder, Backgrounds, Daten unter docs/_astro/ und docs/assets/ bleiben tracked).
+docs/assets/index-*.js
+docs/assets/index-*.css
