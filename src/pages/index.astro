@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoginOverlay from '../components/ui/LoginOverlay.astro';
+import GlobalModals from '../components/ui/GlobalModals.astro';
+import Navigation from '../components/ui/Navigation.astro';
+
+import Dashboard from '../components/views/Dashboard.astro';
+import SchwarzesBrett from '../components/views/SchwarzesBrett.astro';
+import RevierMap from '../components/views/RevierMap.astro';
+import Streckenliste from '../components/views/Streckenliste.astro';
+import Schonzeiten from '../components/views/Schonzeiten.astro';
+import Wetter from '../components/views/Wetter.astro';
+import Einstellungen from '../components/views/Einstellungen.astro';
+---
+
+<Layout title="GJR Silbersbach">
+    <LoginOverlay />
+    <GlobalModals />
+
+    <header class="app-header">
+        <h1>GJR Silbersbach</h1>
+    </header>
+
+    <main>
+        <Dashboard />
+        <SchwarzesBrett />
+        <RevierMap />
+        <Streckenliste />
+        <Schonzeiten />
+        <Wetter />
+        <Einstellungen />
+        <Navigation />
+    </main>
+</Layout>

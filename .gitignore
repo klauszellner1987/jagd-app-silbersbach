@@ -19,3 +19,11 @@ npm-debug.log*
 
 # Vite cache
 .vite/
+
+# Astro auto-generated types
+.astro/
+
+# Playwright + Vitest artifacts
+playwright-report/
+test-results/
+coverage/

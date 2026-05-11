@@ -1,4 +1,69 @@
 // ==============================
+// APP VERSION
+// ==============================
+const APP_VERSION = "v5.0.0";
+
+/**
+ * Toggles between dashboard feed views (standard vs strecke)
+ * Globally available for onclick handlers
+ */
+window.toggleDashboardFeed = function(view) {
+    const standardFeed = document.getElementById("dashboard-standard-feed");
+    const streckeFeed = document.getElementById("dashboard-strecke-feed");
+    const schonzeitFeed = document.getElementById("dashboard-schonzeit-feed");
+    const bulletinFeed = document.getElementById("dashboard-bulletin-feed");
+    const statistikFeed = document.getElementById("dashboard-statistik-feed");
+    const wetterFeed = document.getElementById("dashboard-wetter-feed");
+    const dokumenteFeed = document.getElementById("dashboard-dokumente-feed");
+    const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
+ 
+    if (!standardFeed || !streckeFeed || !schonzeitFeed || !bulletinFeed) {
+        console.warn("Standard Feed elements not found!");
+        return;
+    }
+ 
+    // Hide all first
+    standardFeed.classList.add("hidden");
+    streckeFeed.classList.add("hidden");
+    schonzeitFeed.classList.add("hidden");
+    bulletinFeed.classList.add("hidden");
+    if (statistikFeed) statistikFeed.classList.add("hidden");
+    if (wetterFeed) wetterFeed.classList.add("hidden");
+    if (dokumenteFeed) dokumenteFeed.classList.add("hidden");
+ 
+    if (view === 'strecke') {
+        streckeFeed.classList.remove("hidden");
+        if (fabBtn) fabBtn.classList.add("visible");
+        if (fabExportBtn) fabExportBtn.classList.add("visible");
+    } else if (view === 'schonzeit') {
+        schonzeitFeed.classList.remove("hidden");
+        renderSchonzeitListe();
+    } else if (view === 'bulletin') {
+        bulletinFeed.classList.remove("hidden");
+    } else if (view === 'statistik') {
+        if (statistikFeed) {
+            statistikFeed.classList.remove("hidden");
+            if (typeof renderDetailStats === 'function') renderDetailStats();
+        }
+    } else if (view === 'wetter') {
+        if (wetterFeed) {
+            wetterFeed.classList.remove("hidden");
+            renderWetterDetailPage();
+        }
+    } else if (view === 'dokumente') {
+        if (dokumenteFeed) {
+            dokumenteFeed.classList.remove("hidden");
+            initDokumenteSafe();
+        }
+    } else {
+        standardFeed.classList.remove("hidden");
+        if (fabBtn) fabBtn.classList.remove("visible");
+        if (fabExportBtn) fabExportBtn.classList.remove("visible");
+    }
+};
+
+// ==============================
 // FIREBASE CONFIG
 // ==============================
 const firebaseConfig = {
@@ -18,9 +83,6 @@ function isNativeApp() {
     return window.Capacitor && window.Capacitor.getPlatform() !== 'web';
 }
 
-// ==============================
-// JAGDZEITEN BAYERN - Daten
-// ==============================
 // ==============================
 // JAGDZEITEN BAYERN - Daten
 // ==============================
@@ -129,6 +191,7 @@ function showConfirm(message, title = "Bestätigung", okText = "Löschen") {
 function navigateToPage(targetId) {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
@@ -141,13 +204,22 @@ function navigateToPage(targetId) {
             setTimeout(() => window.mapInstance.invalidateSize(), 200);
         }
 
-        // FAB-Button nur in Streckenliste sichtbar
-        if (fabBtn) {
-            if (targetId === "streckenliste") {
-                fabBtn.classList.add("visible");
-            } else {
-                fabBtn.classList.remove("visible");
-            }
+        // FAB-Buttons nur in Streckenliste sichtbar
+        if (targetId === "streckenliste") {
+            navigateToDashboard('strecke');
+            return;
+        } else if (targetId === "schonzeit-page") {
+            navigateToDashboard('schonzeit');
+            return;
+        } else if (targetId === "bulletin-board") {
+            navigateToDashboard('bulletin');
+            return;
+        } else if (targetId === "wetter-page") {
+            navigateToDashboard('wetter');
+            return;
+        } else {
+            if (fabBtn) fabBtn.classList.remove("visible");
+            if (fabExportBtn) fabExportBtn.classList.remove("visible");
         }
 
         // Bottom Navigation immer anzeigen
@@ -160,10 +232,6 @@ function navigateToPage(targetId) {
         // Seite initial rendern falls nötig
         if (targetId === 'schonzeit-page') {
             renderSchonzeitListe();
-        } else if (targetId === 'wetter-page') {
-            if (typeof renderWetterDetailPage === 'function') {
-                renderWetterDetailPage();
-            }
         }
     }
 
@@ -186,20 +254,25 @@ function closeMapPanels() {
 }
 
 // Navigate back to dashboard
-function navigateToDashboard() {
+function navigateToDashboard(view = 'standard') {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
     const dashboard=document.getElementById("dashboard");
     if (dashboard) dashboard.classList.add("active");
 
-    // Hide FAB
+    // Hide FABs
     if (fabBtn) fabBtn.classList.remove("visible");
+    if (fabExportBtn) fabExportBtn.classList.remove("visible");
 
     // Tab Bar ANZEIGEN (nicht mehr ausblenden)
     if (bottomNav) bottomNav.classList.remove("hidden");
+
+    // Reset Dashboard Feed to desired view
+    toggleDashboardFeed(view);
 
     // Tab aktiv markieren
     setActiveTab("dashboard");
@@ -211,6 +284,7 @@ function navigateToDashboard() {
 function navigateToTab(pageId) {
     const allPages = document.querySelectorAll(".page");
     const fabBtn = document.getElementById("fab-add-btn");
+    const fabExportBtn = document.getElementById("fab-export-btn");
     const bottomNav = document.getElementById("bottom-nav");
 
     allPages.forEach(p => p.classList.remove("active"));
@@ -220,13 +294,15 @@ function navigateToTab(pageId) {
     // Tab Bar anzeigen
     if (bottomNav) bottomNav.classList.remove("hidden");
 
-    // FAB nur für Streckenliste
-    if (fabBtn) {
-        if (pageId === "streckenliste") {
-            fabBtn.classList.add("visible");
-        } else {
-            fabBtn.classList.remove("visible");
+    // FABs nur für Streckenliste
+    if (pageId === "streckenliste") {
+        if (fabBtn) fabBtn.classList.add("visible");
+        if (fabExportBtn) {
+            fabExportBtn.classList.add("visible");
         }
+    } else {
+        if (fabBtn) fabBtn.classList.remove("visible");
+        if (fabExportBtn) fabExportBtn.classList.remove("visible");
     }
 
     // Tab aktiv markieren
@@ -285,12 +361,55 @@ function updateHeroWeather(current, today) {
     }
 }
 
+async function compressImage(file, maxWidth = 400, maxHeight = 400) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Compression failed"));
+                }, 'image/jpeg', 0.8);
+            };
+            img.onerror = () => reject(new Error("Image load error"));
+        };
+        reader.onerror = () => reject(new Error("File read error"));
+    });
+}
+
 // Benutzername für Begrüßung & Einstellungen laden
-function updateUserInfo(user) {
+function updateUserInfo(user, nameOverride = null, photoOverride = null) {
     if (!user) return;
     
     // Fallback falls kein Name existiert
-    const name = user.displayName ? user.displayName.split(" ")[0] : "Waidmann";
+    const fullDisplayName = nameOverride || user.displayName || "Waidmann";
+    const name = fullDisplayName.split(" ")[0];
+    const photoURL = photoOverride || user.photoURL;
+
     const hour = new Date().getHours();
     let greeting = "Guten Morgen";
     if (hour >= 12 && hour < 18) greeting = "Guten Nachmittag";
@@ -301,7 +420,32 @@ function updateUserInfo(user) {
 
     const settingsUser = document.getElementById("settings-username");
     if (settingsUser) {
-        settingsUser.textContent = user.displayName || "Name eintragen";
+        settingsUser.textContent = nameOverride || user.displayName || "Name eintragen";
+    }
+
+    // Profilbild in Header und Einstellungen aktualisieren
+    const headerImg = document.getElementById("header-profile-img");
+    const headerIcon = document.getElementById("header-profile-icon");
+    const settingsImg = document.getElementById("settings-profile-img");
+    const settingsIcon = document.getElementById("settings-profile-icon");
+
+    if (photoURL) {
+        if (headerImg) {
+            headerImg.src = photoURL;
+            headerImg.style.display = "block";
+        }
+        if (headerIcon) headerIcon.style.display = "none";
+
+        if (settingsImg) {
+            settingsImg.src = photoURL;
+            settingsImg.style.display = "block";
+        }
+        if (settingsIcon) settingsIcon.style.display = "none";
+    } else {
+        if (headerImg) headerImg.style.display = "none";
+        if (headerIcon) headerIcon.style.display = "block";
+        if (settingsImg) settingsImg.style.display = "none";
+        if (settingsIcon) settingsIcon.style.display = "block";
     }
 }
 
@@ -309,15 +453,264 @@ function updateUserInfo(user) {
 function openProfileModal() {
     const modal = document.getElementById("profile-modal");
     const nameInput = document.getElementById("profile-name-input");
+    const imgPreview = document.getElementById("profile-image-preview");
+    const imgPlaceholder = document.getElementById("profile-image-placeholder");
+
     if (modal && nameInput) {
         const user = firebase.auth().currentUser;
-        if (user && user.displayName) {
-            nameInput.value = user.displayName;
-        } else {
-            nameInput.value = "";
+        if (user) {
+            nameInput.value = user.displayName || "";
+            if (user.photoURL) {
+                if (imgPreview) {
+                    imgPreview.src = user.photoURL;
+                    imgPreview.classList.remove("hidden");
+                }
+                if (imgPlaceholder) imgPlaceholder.classList.add("hidden");
+            } else {
+                if (imgPreview) imgPreview.classList.add("hidden");
+                if (imgPlaceholder) imgPlaceholder.classList.remove("hidden");
+            }
         }
         modal.classList.remove("hidden");
     }
+}
+
+// ==============================
+// PRESENCE SYSTEM & DROPDOWN
+// ==============================
+// Mehrschichtiges Presence-System:
+// 1. Heartbeat alle HEARTBEAT_INTERVAL_MS während App sichtbar ist
+// 2. visibilitychange-Listener für sofortiges Umschalten beim Tab-/App-Wechsel
+// 3. Capacitor App.addListener('appStateChange') für native Apps
+// 4. beforeunload als Best-Effort beim sauberen Schließen
+// 5. Stale-Detection beim Lesen: nur "online" wenn lastSeen < ONLINE_THRESHOLD_MS
+
+const HEARTBEAT_INTERVAL_MS = 30_000;          // alle 30s lastSeen aktualisieren
+const ONLINE_THRESHOLD_MS = 90_000;            // > 90s ohne Heartbeat = offline
+const PRESENCE_RENDER_REFRESH_MS = 30_000;     // alle 30s Online-Liste neu rendern
+
+let presenceState = {
+    user: null,
+    heartbeatTimer: null,
+    visibilityHandler: null,
+    beforeUnloadHandler: null,
+    capacitorAppListener: null,
+    capacitorPauseListener: null,
+    capacitorResumeListener: null,
+    rendererTimer: null,
+    lastSnapshotDocs: [],
+    listenersAttached: false,
+};
+
+async function writeUserPresence(user, isOnline) {
+    if (!user) return;
+    try {
+        const db = firebase.firestore();
+        await db.collection("users").doc(user.uid).set({
+            uid: user.uid,
+            displayName: user.displayName || "Unbekannter Jäger",
+            photoURL: user.photoURL || "",
+            isOnline: isOnline,
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch (error) {
+        console.warn("[Presence] Status-Update fehlgeschlagen:", error.code || error.message);
+    }
+}
+
+function startPresenceHeartbeat(user) {
+    if (presenceState.heartbeatTimer) return;
+    writeUserPresence(user, true);
+    presenceState.heartbeatTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            writeUserPresence(user, true);
+        }
+    }, HEARTBEAT_INTERVAL_MS);
+}
+
+function stopPresenceHeartbeat() {
+    if (presenceState.heartbeatTimer) {
+        clearInterval(presenceState.heartbeatTimer);
+        presenceState.heartbeatTimer = null;
+    }
+}
+
+function initPresence(user) {
+    teardownPresence();
+    presenceState.user = user;
+
+    startPresenceHeartbeat(user);
+
+    presenceState.visibilityHandler = () => {
+        if (!presenceState.user) return;
+        if (document.visibilityState === 'visible') {
+            startPresenceHeartbeat(presenceState.user);
+        } else {
+            stopPresenceHeartbeat();
+            writeUserPresence(presenceState.user, false);
+        }
+    };
+    document.addEventListener('visibilitychange', presenceState.visibilityHandler);
+
+    presenceState.beforeUnloadHandler = () => {
+        try {
+            const db = firebase.firestore();
+            db.collection("users").doc(user.uid).set({
+                isOnline: false,
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        } catch (_) { /* best effort */ }
+    };
+    window.addEventListener('beforeunload', presenceState.beforeUnloadHandler);
+
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        const { App } = window.Capacitor.Plugins;
+        App.addListener('appStateChange', ({ isActive }) => {
+            if (!presenceState.user) return;
+            if (isActive) {
+                startPresenceHeartbeat(presenceState.user);
+            } else {
+                stopPresenceHeartbeat();
+                writeUserPresence(presenceState.user, false);
+            }
+        }).then(handle => { presenceState.capacitorAppListener = handle; }).catch(() => {});
+
+        App.addListener('pause', () => {
+            if (presenceState.user) {
+                stopPresenceHeartbeat();
+                writeUserPresence(presenceState.user, false);
+            }
+        }).then(handle => { presenceState.capacitorPauseListener = handle; }).catch(() => {});
+
+        App.addListener('resume', () => {
+            if (presenceState.user) {
+                startPresenceHeartbeat(presenceState.user);
+            }
+        }).then(handle => { presenceState.capacitorResumeListener = handle; }).catch(() => {});
+    }
+}
+
+function teardownPresence() {
+    stopPresenceHeartbeat();
+    if (presenceState.visibilityHandler) {
+        document.removeEventListener('visibilitychange', presenceState.visibilityHandler);
+        presenceState.visibilityHandler = null;
+    }
+    if (presenceState.beforeUnloadHandler) {
+        window.removeEventListener('beforeunload', presenceState.beforeUnloadHandler);
+        presenceState.beforeUnloadHandler = null;
+    }
+    [presenceState.capacitorAppListener, presenceState.capacitorPauseListener, presenceState.capacitorResumeListener].forEach(handle => {
+        if (handle && typeof handle.remove === 'function') {
+            try { handle.remove(); } catch (_) {}
+        }
+    });
+    presenceState.capacitorAppListener = null;
+    presenceState.capacitorPauseListener = null;
+    presenceState.capacitorResumeListener = null;
+    presenceState.user = null;
+}
+
+function isUserCurrentlyOnline(data) {
+    if (!data) return false;
+    if (!data.isOnline) return false;
+    const lastSeen = data.lastSeen && typeof data.lastSeen.toDate === 'function'
+        ? data.lastSeen.toDate()
+        : null;
+    if (!lastSeen) return false;
+    return (Date.now() - lastSeen.getTime()) < ONLINE_THRESHOLD_MS;
+}
+
+function renderOnlineUsers(docs) {
+    const userList = document.getElementById("online-users-list");
+    const onlineCount = document.getElementById("online-count");
+    if (!userList || !onlineCount) return;
+
+    let count = 0;
+    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const sortedDocs = docs.slice().sort((a, b) => {
+        const aOnline = isUserCurrentlyOnline(a) ? 1 : 0;
+        const bOnline = isUserCurrentlyOnline(b) ? 1 : 0;
+        if (aOnline !== bOnline) return bOnline - aOnline;
+        const aTime = a.lastSeen && typeof a.lastSeen.toDate === 'function' ? a.lastSeen.toDate().getTime() : 0;
+        const bTime = b.lastSeen && typeof b.lastSeen.toDate === 'function' ? b.lastSeen.toDate().getTime() : 0;
+        return bTime - aTime;
+    });
+
+    const html = sortedDocs.map(data => {
+        const live = isUserCurrentlyOnline(data);
+        if (live) count++;
+        const lastSeenDate = data.lastSeen && typeof data.lastSeen.toDate === 'function' ? data.lastSeen.toDate() : null;
+        const timeStr = lastSeenDate ? formatRelativeTime(lastSeenDate) : 'Unbekannt';
+        const statusClass = live ? 'online' : 'offline';
+        const name = escapeHtml(data.displayName || 'Unbekannter Jäger');
+        const avatar = data.photoURL
+            ? `<img src="${escapeHtml(data.photoURL)}" alt="">`
+            : '<div class="user-status-avatar-placeholder"><i class="ti ti-user"></i></div>';
+        return `
+            <div class="user-status-item">
+                <div class="user-status-avatar">
+                    ${avatar}
+                    <div class="status-dot ${statusClass}"></div>
+                </div>
+                <div class="user-status-info">
+                    <span class="user-status-name">${name}</span>
+                    <span class="user-status-lastseen">${live ? 'Jetzt aktiv' : timeStr}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    userList.innerHTML = html || '<div class="dropdown-loading">Keine Mitglieder gefunden</div>';
+    onlineCount.textContent = count;
+}
+
+function initOnlineUsersDropdown() {
+    const trigger = document.getElementById("profile-trigger");
+    const dropdown = document.getElementById("online-users-dropdown");
+
+    if (!trigger || !dropdown) return;
+    if (presenceState.listenersAttached) return;
+    presenceState.listenersAttached = true;
+
+    trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
+
+    firebase.firestore().collection("users")
+        .limit(50)
+        .onSnapshot((snapshot) => {
+            presenceState.lastSnapshotDocs = snapshot.docs.map(d => d.data());
+            renderOnlineUsers(presenceState.lastSnapshotDocs);
+        }, (error) => {
+            console.error("[Presence] Firestore Snapshot Error:", error);
+            const userList = document.getElementById("online-users-list");
+            if (userList) userList.innerHTML = '<div class="dropdown-loading">Fehler beim Laden</div>';
+        });
+
+    if (presenceState.rendererTimer) clearInterval(presenceState.rendererTimer);
+    presenceState.rendererTimer = setInterval(() => {
+        if (presenceState.lastSnapshotDocs.length > 0) {
+            renderOnlineUsers(presenceState.lastSnapshotDocs);
+        }
+    }, PRESENCE_RENDER_REFRESH_MS);
+}
+
+function formatRelativeTime(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return "Gerade eben";
+    if (diff < 3600) return `Vor ${Math.floor(diff / 60)} Min.`;
+    if (diff < 86400) return `Vor ${Math.floor(diff / 3600)} Std.`;
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 
@@ -390,7 +783,6 @@ function initNavigation() {
         }
     });
 
-    console.log("Navigation initialized:", navWidgets.length, "widgets,", backButtons.length, "back buttons");
 }
 
 
@@ -501,7 +893,6 @@ function initLogin() {
         });
     }
 
-    console.log("Login initialized");
 }
 
 function initAuthListener() {
@@ -525,6 +916,7 @@ function initAuthListener() {
 
             // Benutzername in Hero und Einstellungen eintragen
             updateUserInfo(user);
+            initPresence(user);
 
             // Tab Bar sofort nach Login anzeigen
             const bottomNav = document.getElementById("bottom-nav");
@@ -579,14 +971,23 @@ function initAuthListener() {
 }
 
 function logout() {
-    firebase.auth().signOut().then(() => {
-        console.log("User logged out");
-        showToast("Erfolgreich abgemeldet");
-        isAppInitialized=false;
-    }).catch((error) => {
-        console.error("Logout error:", error);
-        showToast("Fehler beim Abmelden", "error");
-    });
+    const user = firebase.auth().currentUser;
+    const performSignOut = () => {
+        firebase.auth().signOut().then(() => {
+            showToast("Erfolgreich abgemeldet");
+            isAppInitialized=false;
+        }).catch((error) => {
+            console.error("Logout error:", error);
+            showToast("Fehler beim Abmelden", "error");
+        });
+    };
+
+    if (user) {
+        teardownPresence();
+        writeUserPresence(user, false).finally(performSignOut);
+    } else {
+        performSignOut();
+    }
 }
 
 // ==============================
@@ -607,7 +1008,6 @@ function updateClock() {
 function initClock() {
     updateClock();
     setInterval(updateClock, 1000);
-    console.log("Clock initialized");
 }
 
 // ==============================
@@ -700,8 +1100,8 @@ function getWildartIconHTML(type, size = 30) {
         'iltis': 'iltis.png',
         'hermelin': 'hermelin.png',
         'mauswiesel': 'mauswiesel.png',
-        'ente': 'ente.png',
-        'fasan': 'fasan.png',
+        'ente': 'Ente.png',
+        'fasan': 'Fasan.png',
         'deer': 'rotwild_weiblich.png',
         'crow': 'kraehe.png',
         'eichelhaeher': 'eichelhaeher.png',
@@ -718,7 +1118,7 @@ function getWildartIconHTML(type, size = 30) {
         'dachs': 1.1,
         'ente': 1.05,
         'fasan': 1.05,
-        'deer': 1.1,
+        'deer': 1.15,
         'crow': 1.2,
         'eichelhaeher': 1.2,
         'fox': 1.25,
@@ -728,6 +1128,24 @@ function getWildartIconHTML(type, size = 30) {
     const scale = iconScales[type] || 1.0;
 
     if (pngIcons[type]) {
+        const isDeer = type === 'deer';
+        // Für Rotwild (Schwarz-Weiß Bild mit Rahmen):
+        // Wir invertieren (Weiß -> Schwarz, Schwarz -> Weiß) und nutzen lighten, 
+        // um den schwarzen Hintergrund auf der dunklen Karte verschwinden zu lassen.
+        if (isDeer) {
+            // Der ultimative Fix für Rotwild: 
+            // 1. Wir erzwingen, dass alles Weiße transparent wird (durch screen blending)
+            // 2. Wir erzwingen, dass die Silhouette weiß wird (durch invert/brightness)
+            // 3. Wir nutzen ein Container-Div, um Clipping zu vermeiden
+            return `<div class="silhouette-icon-container" style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="icons/${pngIcons[type]}" 
+                             width="${size}" height="${size}" 
+                             style="width: 100%; height: 100%; object-fit: contain; transform: scale(${scale}); 
+                                    filter: invert(1) contrast(5) brightness(1.2) !important; 
+                                    mix-blend-mode: screen !important;">
+                    </div>`;
+        }
+        
         return `<img src="icons/${pngIcons[type]}" 
                      width="${size}" height="${size}" 
                      class="silhouette-icon"
@@ -781,7 +1199,6 @@ function initSchonzeitWidget() {
         });
     }
 
-    console.log("Schonzeit Widget initialized");
 }
 
 function showSchonzeitDetails() {
@@ -807,7 +1224,8 @@ function filterSchonzeitListe(filter) {
 
 function renderSchonzeitListe() {
     const container = document.getElementById('schonzeit-liste');
-    if (!container) return;
+    const dashboardContainer = document.getElementById('schonzeit-liste-dashboard');
+    if (!container && !dashboardContainer) return;
 
     let wildarten = jagdzeitenBayern.filter(w => 
         ['rehbock', 'reh', 'wildschwein', 'gams', 'muffelwild', 'dachs', 'marder', 'iltis', 'hermelin', 'mauswiesel', 'ente', 'fasan', 'deer', 'crow', 'eichelhaeher', 'fox', 'rabbit'].includes(w.iconClass)
@@ -820,45 +1238,33 @@ function renderSchonzeitListe() {
         wildarten = wildarten.filter(w => !istSchonzeit(w));
     }
 
-    if (wildarten.length === 0) {
-        container.innerHTML = `
-        <div class="schonzeit-empty" >
-            <p>Keine Wildarten für diesen Filter gefunden.</p>
-            </div>
-        `;
-        return;
-    }
+    const html = wildarten.length === 0 
+        ? `<div class="schonzeit-empty"><p>Keine Wildarten gefunden.</p></div>`
+        : wildarten.map(wildart => {
+            const hatSchonzeit = istSchonzeit(wildart);
+            const statusClass = hatSchonzeit ? 'closed' : 'open';
+            const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
+            let zeitInfo = wildart.keineJagdzeit ? 'Ganzjährige Schonzeit' : (wildart.ganzjaehrig ? 'Ganzjährig bejagbar' : `Jagdzeit: ${wildart.jagdzeitStart || '-'} - ${wildart.jagdzeitEnde || '-'}`);
 
-    container.innerHTML = wildarten.map(wildart => {
-        const hatSchonzeit = istSchonzeit(wildart);
-        const statusClass = hatSchonzeit ? 'closed' : 'open';
-        const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
+            return `
+                <div class="wildart-card">
+                    <div class="wildart-icon">
+                        ${getWildartIconHTML(wildart.iconClass, 44)}
+                    </div>
+                    <div class="wildart-info">
+                        <h3 class="wildart-name">${wildart.name}</h3>
+                        <p class="wildart-zeit">${zeitInfo}</p>
+                    </div>
+                    <div class="wildart-status ${statusClass}">
+                        <div class="wildart-indicator"></div>
+                        <span>${statusText}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-        let zeitInfo;
-        if (wildart.keineJagdzeit) {
-            zeitInfo = 'Ganzjährige Schonzeit';
-        } else if (wildart.ganzjaehrig) {
-            zeitInfo = 'Ganzjährig bejagbar';
-        } else {
-            zeitInfo = `Jagdzeit: ${ wildart.jagdzeitStart } - ${ wildart.jagdzeitEnde } `;
-        }
-
-        return `
-        <div class="wildart-card" >
-                <div class="wildart-icon">
-                    ${getWildartIconHTML(wildart.iconClass, 54)}
-                </div>
-                <div class="wildart-info">
-                    <h3 class="wildart-name">${wildart.name}</h3>
-                    <p class="wildart-zeit">${zeitInfo}</p>
-                </div>
-                <div class="wildart-status ${statusClass}">
-                    <div class="wildart-indicator"></div>
-                    <span>${statusText}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
+    if (container) container.innerHTML = html;
+    if (dashboardContainer) dashboardContainer.innerHTML = html;
 }
 
 function closeSchonzeitPage() {
@@ -883,49 +1289,151 @@ async function initializeApp() {
     const bulletinBadge = document.getElementById("bulletin-badge");
     const bulletinSubmitBtn = document.getElementById("bulletin-submit-btn");
     const bulletinInput = document.getElementById("bulletin-input");
+    
+    let entries = [];
+    let bulletinItemsForStats = []; 
 
-    if (bulletinList) {
+    // Die Funktion definieren wir GANZ HIER OBEN im Scope von initializeApp
+    function renderDetailStats() {
+        try {
+            const streckeContainer = document.getElementById("stats-detail-strecke");
+            const rehwildContainer = document.getElementById("stats-detail-rehwild");
+            const bulletinContainer = document.getElementById("stats-detail-bulletin");
+            
+            if (!streckeContainer || !rehwildContainer) return;
+
+            // 1. Abschuss nach Wildarten
+            const statsMap = {};
+            entries.forEach(e => {
+                if (e.wildart) {
+                    statsMap[e.wildart] = (statsMap[e.wildart] || 0) + 1;
+                }
+            });
+
+            let streckeHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+            const sortedStats = Object.entries(statsMap).sort((a,b) => b[1] - a[1]);
+            if (sortedStats.length === 0) {
+                streckeHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
+            } else {
+                sortedStats.forEach(([art, count]) => {
+                    streckeHTML += `
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span>${art}</span>
+                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
+                        </div>
+                    `;
+                });
+            }
+            streckeHTML += '</div>';
+            streckeContainer.innerHTML = streckeHTML;
+
+            // 2. Rehwild Details
+            const rehEntries = entries.filter(e => e.wildart === "Rehwild");
+            const rehMap = {};
+            rehEntries.forEach(e => {
+                const kat = e.unterart || "Unbekannt";
+                rehMap[kat] = (rehMap[kat] || 0) + 1;
+            });
+
+            let rehHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+            const sortedReh = Object.entries(rehMap).sort((a,b) => b[1] - a[1]);
+            if (sortedReh.length === 0) {
+                rehHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
+            } else {
+                sortedReh.forEach(([kat, count]) => {
+                    rehHTML += `
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span>${kat}</span>
+                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
+                        </div>
+                    `;
+                });
+            }
+            rehHTML += '</div>';
+            rehwildContainer.innerHTML = rehHTML;
+
+            // 3. Schwarzes Brett (Offene Beiträge)
+            if (bulletinContainer) {
+                let bulletinHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+                const openItems = bulletinItemsForStats || [];
+                if (openItems.length === 0) {
+                    bulletinHTML += "<p style='opacity:0.5'>Keine offenen Aufgaben.</p>";
+                } else {
+                    openItems.forEach(item => {
+                        bulletinHTML += `
+                            <div style="padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.9rem;">
+                                <div style="font-weight: 500; margin-bottom: 4px;">${item.message}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.5;">Von ${item.sender || 'Unbekannt'}</div>
+                            </div>
+                        `;
+                    });
+                }
+                bulletinHTML += '</div>';
+                bulletinContainer.innerHTML = bulletinHTML;
+            }
+        } catch (err) {
+            console.error("renderDetailStats error:", err);
+        }
+    }
+    // Global für onclick Handler verfügbar machen
+    window.renderDetailStats = renderDetailStats;
+
+    if (bulletinList || bulletinPreview || document.getElementById("bulletin-list-dashboard")) {
         bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
             const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Nur aktive (nicht erledigte) Items anzeigen
             const items = allItems.filter(item => !item.isDone);
+            bulletinItemsForStats = items; // Für Statistik speichern
+            
+            const dashboardList = document.getElementById("bulletin-list-dashboard");
+            
+            // Statistik aktualisieren falls Funktion schon da
+            if (typeof renderDetailStats === 'function') renderDetailStats();
 
-            // 1. Liste rendern
-            bulletinList.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+            // 1. Listen rendern (Main Page & Dashboard Feed)
+            const listHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+            if (bulletinList) bulletinList.innerHTML = listHTML;
+            if (dashboardList) dashboardList.innerHTML = listHTML;
+
             items.forEach(item => {
                 const date = item.timestamp ? new Date(item.timestamp).toLocaleString('de-DE', {
                     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                 }) : 'Unbekannt';
 
-                const el = document.createElement("div");
-                el.className = "bulletin-item";
-                el.innerHTML = `
-        <div class="bulletin-item-header" >
+                const html = `
+                    <div class="bulletin-item-header">
                         <span class="bulletin-item-sender">${item.sender || 'Unbekannt'}</span>
                         <span class="bulletin-item-date">${date}</span>
                     </div>
                     <div class="bulletin-item-content">${item.message}</div>
                     <div style="text-align: right; margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
                         <button class="bulletin-done-btn" data-id="${item.id}" title="Erledigt">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            Erledigt
+                            <i class="ti ti-check"></i> Erledigt
                         </button>
                         <button class="bulletin-delete-btn" data-id="${item.id}" aria-label="Löschen">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
+                            <i class="ti ti-trash"></i>
                         </button>
                     </div>
-    `;
-                bulletinList.appendChild(el);
+                `;
+
+                if (bulletinList) {
+                    const el = document.createElement("div");
+                    el.className = "bulletin-item";
+                    el.innerHTML = html;
+                    bulletinList.appendChild(el);
+                }
+                
+                // Im Dashboard nur die ersten 3 anzeigen
+                if (dashboardList && Array.from(dashboardList.children).length < 3) {
+                    const el = document.createElement("div");
+                    el.className = "bulletin-item";
+                    el.innerHTML = html;
+                    dashboardList.appendChild(el);
+                }
             });
 
-            // Erledigt-Events
-            bulletinList.querySelectorAll(".bulletin-done-btn").forEach(btn => {
-                btn.onclick=async (e) => {
+            // Erledigt & Löschen Events (für beide Listen)
+            document.querySelectorAll(".bulletin-done-btn").forEach(btn => {
+                btn.onclick = async (e) => {
                     e.stopPropagation();
                     try {
                         await bulletinCollection.doc(btn.dataset.id).update({ isDone: true });
@@ -937,28 +1445,25 @@ async function initializeApp() {
                 };
             });
 
-            // Lösch-Events für Bulletin Board
-            bulletinList.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
-                btn.onclick=async (e) => {
+            document.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
+                btn.onclick = async (e) => {
                     e.stopPropagation();
-                    const confirmed=await showConfirm(
-                        "Möchten Sie diesen Aushang wirklich löschen?",
+                    const confirmed = await showConfirm(
+                        "Aushang unwiderruflich löschen?",
                         "Aushang löschen",
                         "Löschen"
                     );
-                    if (confirmed) {
-                        try {
-                            await bulletinCollection.doc(btn.dataset.id).delete();
-                            showToast("Aushang entfernt", "delete");
-                        } catch (err) {
-                            console.error(err);
-                            showToast("Fehler beim Löschen", "error");
-                        }
+                    if (!confirmed) return;
+                    try {
+                        await bulletinCollection.doc(btn.dataset.id).delete();
+                        showToast("Aushang gelöscht", "delete");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Fehler beim Löschen", "error");
                     }
                 };
             });
 
-            // 2. Badge & Dashboard Preview updaten
             if (bulletinBadge) {
                 bulletinBadge.textContent = items.length;
                 bulletinBadge.classList.toggle("hidden", items.length === 0);
@@ -966,31 +1471,48 @@ async function initializeApp() {
 
             if (bulletinPreview) {
                 bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
-                // LIMIT: Zeige maximal 10 neueste Einträge in der Vorschau
-                items.slice(0, 10).forEach(item => {
+                // LIMIT: Zeige maximal 3 neueste Einträge im Dashboard-Widget
+                items.slice(0, 3).forEach(item => {
                     const el = document.createElement("div");
                     el.className = "bulletin-preview-item";
-                    el.textContent = item.message;
+                    el.innerHTML = `
+                        <span class="bulletin-preview-text">${item.message}</span>
+                        <div class="bulletin-preview-actions">
+                            <button class="bulletin-done-btn-sm" data-id="${item.id}" title="Erledigt">
+                                <i class="ti ti-check"></i>
+                            </button>
+                            <button class="bulletin-delete-btn-sm" data-id="${item.id}" title="Löschen">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    `;
 
-                    // Klick auf Eintrag im Widget
-                    el.onclick=async (e) => {
-                        e.stopPropagation(); // Verhindert das Öffnen der Seite
-                        // MODAL: Bestätigung einholen
-                        const confirmed=await showConfirm(
-                            "Möchten Sie diesen Aushang als erledigt markieren?",
-                            "Aushang erledigt",
-                            "Erledigen"
+                    // Klick auf Text -> Feed öffnen
+                    el.querySelector('.bulletin-preview-text').onclick = () => {
+                        toggleDashboardFeed('bulletin');
+                    };
+
+                    // Klick auf Buttons -> Aktionen
+                    el.querySelector('.bulletin-done-btn-sm').onclick = async (e) => {
+                        e.stopPropagation();
+                        try {
+                            await bulletinCollection.doc(item.id).update({ isDone: true });
+                            showToast("Aushang erledigt", "success");
+                        } catch (err) { console.error(err); }
+                    };
+
+                    el.querySelector('.bulletin-delete-btn-sm').onclick = async (e) => {
+                        e.stopPropagation();
+                        const confirmed = await showConfirm(
+                            "Aushang löschen?",
+                            "Aushang löschen",
+                            "Löschen"
                         );
-
-                        if (confirmed) {
-                            try {
-                                await bulletinCollection.doc(item.id).update({ isDone: true });
-                                showToast("Erledigt!", "success");
-                            } catch (err) {
-                                console.error(err);
-                                showToast("Fehler beim Aktualisieren", "error");
-                            }
-                        }
+                        if (!confirmed) return;
+                        try {
+                            await bulletinCollection.doc(item.id).delete();
+                            showToast("Aushang gelöscht", "delete");
+                        } catch (err) { console.error(err); }
                     };
                     bulletinPreview.appendChild(el);
                 });
@@ -998,7 +1520,38 @@ async function initializeApp() {
         });
     }
 
-    // Nachricht senden
+    // Nachricht senden (Dashboard)
+    const bulletinSubmitDashboard = document.getElementById("bulletin-submit-dashboard");
+    const bulletinInputDashboard = document.getElementById("bulletin-input-dashboard");
+
+    if (bulletinSubmitDashboard && bulletinInputDashboard) {
+        bulletinSubmitDashboard.onclick = async () => {
+            const msg = bulletinInputDashboard.value.trim();
+            if (!msg) return;
+
+            bulletinSubmitDashboard.disabled = true;
+            const user = firebase.auth().currentUser;
+            const senderName = user ? (user.displayName || user.email.split('@')[0]) : "Unbekannt";
+
+            try {
+                await bulletinCollection.add({
+                    message: msg,
+                    sender: senderName,
+                    timestamp: Date.now(),
+                    isDone: false
+                });
+                bulletinInputDashboard.value = "";
+                showToast("Aushang gepostet!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Fehler beim Senden", "error");
+            } finally {
+                bulletinSubmitDashboard.disabled = false;
+            }
+        };
+    }
+
+    // Nachricht senden (Main Page)
     if (bulletinSubmitBtn && bulletinInput) {
         bulletinSubmitBtn.onclick=async () => {
             const msg = bulletinInput.value.trim();
@@ -1016,7 +1569,8 @@ async function initializeApp() {
                 await bulletinCollection.add({
                     message: msg,
                     timestamp: Date.now(),
-                    sender: sender
+                    sender: sender,
+                    isDone: false
                 });
 
                 bulletinInput.value="";
@@ -1068,6 +1622,12 @@ async function initializeApp() {
 
     if (panelContent) {
         hochsitzeCollection.onSnapshot(snapshot => {
+            // Live-Statistik im Dashboard aktualisieren
+            const hochsitzStats = document.getElementById("hochsitz-count");
+            if (hochsitzStats) {
+                hochsitzStats.textContent = snapshot.size;
+            }
+
             panelContent.innerHTML = "";
             snapshot.docs.forEach(doc => {
                 const data = doc.data();
@@ -1105,11 +1665,57 @@ async function initializeApp() {
     const subcategoryContainer = document.getElementById("subcategory-container");
     const fabAddBtn = document.getElementById("fab-add-btn");
 
-    let entries = [];
-
     if (fabAddBtn) {
         fabAddBtn.addEventListener("click", () => {
             modal.classList.remove("hidden");
+        });
+    }
+
+    const fabExportBtn = document.getElementById("fab-export-btn");
+    if (fabExportBtn) {
+        fabExportBtn.addEventListener("click", () => {
+            if (entries.length === 0) {
+                showToast("Keine Einträge zum Exportieren vorhanden", "info");
+                return;
+            }
+
+            try {
+                // Daten für Excel vorbereiten
+                const exportData = entries.map(e => ({
+                    'Datum': e.datum || '',
+                    'Wildart': e.wildart || '',
+                    'Unterart': e.unterart || '',
+                    'Erleger': e.erleger || '',
+                    'Bemerkung': e.bemerkung || '',
+                    'Foto': (e.imageBase64 || e.imageUrl) ? 'Ja' : 'Nein'
+                }));
+
+                // Neues Workbook erstellen
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(exportData);
+
+                // Spaltenbreiten optimieren
+                const wscols = [
+                    {wch: 12}, // Datum
+                    {wch: 20}, // Wildart
+                    {wch: 20}, // Unterart
+                    {wch: 20}, // Erleger
+                    {wch: 40}, // Bemerkung
+                    {wch: 10}  // Foto
+                ];
+                ws['!cols'] = wscols;
+
+                XLSX.utils.book_append_sheet(wb, ws, "Streckenliste");
+
+                // Download auslösen
+                const filename = `Streckenliste_Silbersbach_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, filename);
+
+                showToast("Excel-Export erfolgreich", "success");
+            } catch (err) {
+                console.error("Export Fehler:", err);
+                showToast("Fehler beim Exportieren", "error");
+            }
         });
     }
 
@@ -1117,41 +1723,63 @@ async function initializeApp() {
     entriesCollection.orderBy("datum", "desc")
         .onSnapshot(snapshot => {
             entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Counter im Dashboard-Widget aktualisieren
+            const streckeCountEl = document.getElementById("strecke-count");
+            if (streckeCountEl) streckeCountEl.textContent = entries.length;
+
+            const rehwildCountEl = document.getElementById("rehwild-count");
+            if (rehwildCountEl) {
+                const rehCount = entries.filter(e => e.wildart === "Rehwild").length;
+                rehwildCountEl.textContent = rehCount;
+            }
+
             renderEntries();
+            renderDetailStats();
         });
 
+
     function renderEntries() {
-        entryList.innerHTML = "";
+        const dashboardList = document.getElementById("entry-list-dashboard");
+        if (entryList) entryList.innerHTML = "";
+        if (dashboardList) dashboardList.innerHTML = "";
+
         entries.forEach((entry, idx) => {
             const li = document.createElement("li");
             li.className = "entry-item";
 
-            // Header: Name + Date + Delete Button
+            // Das richtige Icon suchen
+            const wildartData = jagdzeitenBayern.find(w => w.name === entry.wildart || w.id === entry.wildart);
+            const iconHTML = wildartData ? getWildartIconHTML(wildartData.iconClass, 28) : '<span style="font-size: 20px;">🦌</span>';
+
+            // Header im Feed-Card Style
             const header = document.createElement("div");
-            header.className = "entry-header";
+            header.className = "feed-card-header";
+            header.style.marginBottom = "0.2rem"; // Etwas kompakter
             header.innerHTML = `
-        <div class="entry-header-left" >
-            <span class="entry-name">${entry.erleger}</span>
+                <div class="feed-card-icon-container">
+                    ${iconHTML}
                 </div>
-        <span class="entry-date">${entry.datum || ""}</span>
-    `;
+                <div class="feed-card-header-text">
+                    <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>
+                    <span class="feed-card-time">${entry.datum || ""} • ${entry.erleger}</span>
+                </div>
+            `;
 
             const btn = document.createElement("button");
             btn.className = "entry-delete-btn";
             btn.dataset.idx = idx;
-            btn.textContent = "Löschen";
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>`;
+            btn.style.background = "rgba(255,255,255,0.1)";
+            btn.style.border = "none";
+            btn.style.color = "var(--primary-light)";
+            btn.style.padding = "0.5rem";
+            btn.style.borderRadius = "8px";
+            btn.style.cursor = "pointer";
+            btn.style.marginLeft = "auto";
+            
             header.appendChild(btn);
-
-            // Wildart Row
-            const wildart = document.createElement("div");
-            wildart.className = "entry-wildart";
-            wildart.innerHTML = `
-        <span class="entry-wildart-icon" >🦌</span>
-            <span>${entry.wildart} ${entry.unterart || ""}</span>
-    `;
-
             li.appendChild(header);
-            li.appendChild(wildart);
 
             // Notes (optional)
             if (entry.bemerkung) {
@@ -1161,42 +1789,41 @@ async function initializeApp() {
                 li.appendChild(notes);
             }
 
-            // Foto-Bereich (nur wenn Bild vorhanden oder Button gewünscht)
+            // Foto-Bereich
             const fotoSection = document.createElement("div");
             fotoSection.className = "entry-foto-section";
 
-            // Bild aus Base64 oder URL anzeigen (Thumbnail mit Lösch-Button)
             const imageSrc = entry.imageBase64 || entry.imageUrl;
             if (imageSrc) {
                 fotoSection.innerHTML = `
-        <div class="entry-foto-thumbnail" >
-            <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
-                <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
-                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
-                    </svg>
-                </button>
-            </div>
-    `;
+                    <div class="entry-foto-thumbnail">
+                        <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
+                        <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
             }
 
-            // Foto-Button (hinzufügen oder ändern)
             const fotoBtn = document.createElement("button");
             fotoBtn.className = "entry-foto-btn";
-            fotoBtn.dataset.id=entry.id;
+            fotoBtn.dataset.id = entry.id;
             fotoBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <path d="M21 15l-5-5L5 21"/>
                 </svg>
-        ${ imageSrc ? "Ändern" : "Foto hinzufügen" }
-    `;
+                ${imageSrc ? "Ändern" : "Foto hinzufügen"}
+            `;
             fotoSection.appendChild(fotoBtn);
-
             li.appendChild(fotoSection);
 
-            entryList.appendChild(li);
+            // In beide Listen einfügen
+            if (entryList) entryList.appendChild(li.cloneNode(true));
+            if (dashboardList) dashboardList.appendChild(li.cloneNode(true));
         });
         attachDeleteEvents();
         attachFotoEvents();
@@ -1243,7 +1870,6 @@ async function initializeApp() {
 
                     // Als JPEG mit Kompression
                     const base64 = canvas.toDataURL("image/jpeg", quality);
-                    console.log("[Foto] Komprimiert:", Math.round(base64.length / 1024), "KB");
                     resolve(base64);
                 };
                 img.onerror = reject;
@@ -1340,13 +1966,13 @@ async function initializeApp() {
         });
     }
 
-    // Bild-Vollansicht Modal
-    function openImageModal(src) {
+    // Bild-Vollansicht Modal (global verfuegbar)
+    window.openImageModal = function(src) {
         const overlay = document.createElement("div");
         overlay.className = "image-modal-overlay";
         overlay.innerHTML = `
         <div class="image-modal-content" >
-            <img src="${src}" alt="Streckenfoto">
+            <img src="${src}" alt="Foto">
                 <button class="image-modal-close" aria-label="Schließen">
                     ✕
                 </button>
@@ -1359,7 +1985,7 @@ async function initializeApp() {
                 overlay.remove();
             }
         });
-    }
+    };
 
     addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
     cancelBtn.addEventListener("click", () => {
@@ -1468,7 +2094,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 saveBtn.onclick = async () => {
                     const name = input.value.trim();
-                    if (!name) return alert("Bitte einen Namen eingeben");
+                    if (!name) {
+                        showToast("Bitte einen Namen eingeben", "error");
+                        return;
+                    }
                     try {
                         await hochsitzeCollection.add({
                             lat: e.latlng.lat,
@@ -1966,7 +2595,6 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 if (navigator.permissions) {
                     navigator.permissions.query({ name: "geolocation" }).then(result => {
-                        console.log("GPS Berechtigung Status:", result.state);
                         if (result.state === "denied") {
                             showToast("GPS ist blockiert. Bitte in den Browser-Einstellungen unter 'Website-Berechtigungen' den Standort erlauben.", "error");
                             stopGpsSearching();
@@ -2110,17 +2738,14 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 let cachedWeatherData = null;
 
 async function fetchLiveWeather() {
-    console.log("[Wetter] Starte Wetter-Abruf...");
     const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
     const LAT = 49.2, LON = 13.05;
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current,days`;
 
     try {
         const response = await fetch(url);
-        console.log("[Wetter] Response Status:", response.status);
         if (!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
-        console.log("[Wetter] Daten erhalten:", data);
 
         // Cache weather data for detail page
         cachedWeatherData = data;
@@ -2128,7 +2753,6 @@ async function fetchLiveWeather() {
         const current = data.currentConditions;
         const today = data.days && data.days[0];
         const tomorrow = data.days && data.days[1];
-        console.log("[Wetter] Current:", current, "Today:", today);
 
         // Temperatur Karte
         const tempCard=document.getElementById("wetter-temp");
@@ -2278,19 +2902,18 @@ function initWetterWidgetClick() {
     const wetterWidget = document.getElementById('wetter-widget');
     if (wetterWidget) {
         wetterWidget.style.cursor = 'pointer';
-        wetterWidget.addEventListener('click', showWetterDetails);
+        wetterWidget.addEventListener('click', () => toggleDashboardFeed('wetter'));
     }
 }
 
-// Wetter Detail-Seite anzeigen
+// Wetter Detail-Seite anzeigen (Feed-basiert)
 function showWetterDetails() {
-    navigateToPage('wetter-page');
-    renderWetterDetailPage();
+    toggleDashboardFeed('wetter');
 }
 
 // Wetter Detail-Seite rendern
 function renderWetterDetailPage() {
-    const container = document.getElementById('wetter-detail-grid');
+    const container = document.getElementById('wetter-detail-grid-dashboard') || document.getElementById('wetter-detail-grid');
     if (!container) return;
 
     if (!cachedWeatherData) {
@@ -2519,7 +3142,6 @@ function initInstallPrompt() {
     // Check if already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true) {
-        console.log('App already installed');
         return;
     }
 
@@ -2530,7 +3152,6 @@ function initInstallPrompt() {
         const now = Date.now();
         const cooldown = 24 * 60 * 60 * 1000; // 24 hours
         if (now - dismissedTime < cooldown) {
-            console.log('Install prompt in cooldown');
             return;
         }
     }
@@ -2542,7 +3163,9 @@ function initInstallPrompt() {
 
         // Show banner after short delay (after login)
         setTimeout(() => {
-            if (deferredPrompt && !document.getElementById('login-overlay').classList.contains('hidden') === false) {
+            const overlay = document.getElementById('login-overlay');
+            const isLoggedIn = overlay && overlay.style.display === 'none';
+            if (deferredPrompt && isLoggedIn) {
                 banner.classList.remove('hidden');
             }
         }, 2000);
@@ -2556,7 +3179,6 @@ function initInstallPrompt() {
         deferredPrompt.prompt();
 
         const { outcome } = await deferredPrompt.userChoice;
-        console.log('Install prompt outcome:', outcome);
 
         deferredPrompt = null;
     });
@@ -2572,7 +3194,6 @@ function initInstallPrompt() {
     window.addEventListener('appinstalled', () => {
         banner.classList.add('hidden');
         deferredPrompt = null;
-        console.log('App was installed');
     });
 }
 
@@ -2601,10 +3222,8 @@ if ("serviceWorker" in navigator) {
             // SOFORT nach Updates prüfen beim Laden
             reg.update().catch(err => console.log("[SW] Update-Check Fehler:", err));
 
-            // Prüfe alle 30 Sekunden auf Updates (aggressiver für Mobile)
             setInterval(() => {
                 reg.update();
-                console.log("[SW] Periodischer Update-Check...");
             }, 30000);
 
             // Wenn neuer SW gefunden wird
@@ -2719,7 +3338,6 @@ async function initNativePush(db) {
     // Listener für erfolgreiche Token-Registrierung
     PushNotifications.addListener('registration', async (token) => {
         const fcmToken = token.value;
-        console.log('Native Push Token:', fcmToken);
 
         let user = firebase.auth().currentUser;
         const tokenData = {
@@ -2728,7 +3346,7 @@ async function initNativePush(db) {
             userId: user ? user.uid : 'anon',
             userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
             device: 'Android Native App',
-            version: '4.0.0'
+            version: APP_VERSION
         };
 
         await db.collection('fcmTokens').doc(fcmToken).set(tokenData, { merge: true });
@@ -2758,29 +3376,38 @@ async function initNativePush(db) {
 
 async function fetchAndSaveToken(db, swReg) {
     if (!swReg) {
-        showToast("Fehler: System-Modul fehlt", "error");
+        console.warn("[FCM] Kein Service Worker vorhanden");
         return;
     }
 
-    // Sicherstellen, dass der Worker aktiv ist (v2.9.0)
     let worker = swReg.active;
     if (!worker || worker.state !== 'activated') {
-        showToast("Warte auf Aktivierung...", "info");
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 2500));
         worker = swReg.active;
+        if (!worker || worker.state !== 'activated') {
+            console.warn("[FCM] Service Worker nicht aktiviert, überspringe");
+            return;
+        }
     }
 
     if (Notification.permission !== 'granted') {
-        showToast("Berechtigung fehlt: " + Notification.permission, "error");
         return;
     }
 
+    let user = firebase.auth().currentUser;
+    if (!user) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        user = firebase.auth().currentUser;
+        if (!user) {
+            console.warn("[FCM] Kein User nach Warten, überspringe");
+            return;
+        }
+    }
+
     const messaging = firebase.messaging();
-    let attempts = 0;
     const maxAttempts = 3;
 
-    while (attempts < maxAttempts) {
-        attempts++;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
             const currentToken = await messaging.getToken({
                 vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
@@ -2788,41 +3415,32 @@ async function fetchAndSaveToken(db, swReg) {
             });
 
             if (currentToken) {
-                let user = firebase.auth().currentUser;
-                if (!user) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    user = firebase.auth().currentUser;
-                }
-
+                user = firebase.auth().currentUser;
                 const tokenData = {
                     token: currentToken,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     userId: user ? user.uid : 'anon',
                     userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                     device: navigator.userAgent.substring(0, 100),
-                    version: '3.3.0'
+                    version: APP_VERSION
                 };
 
                 await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-                showToast("Push-Benachrichtigungen aktiv! 🔔", "success");
-                return;
-            } else {
-                showToast("System gibt keinen Schlüssel frei.", "error");
+                showToast("Push-Benachrichtigungen aktiv!", "success");
                 return;
             }
+            return;
         } catch (err) {
-            console.warn(`FCM Versuch ${attempts} fehlgeschlagen:`, err);
+            console.warn(`[FCM] Versuch ${attempt}/${maxAttempts}:`, err.code || err.name);
 
-            // Wenn Code 20 (Abort), versuchen wir es nochmal
-            if ((err.code === 20 || err.name === 'AbortError') && attempts < maxAttempts) {
-                showToast("System hakt (20), ich probiere es nochmal...", "info");
-                await new Promise(r => setTimeout(r, 2000));
+            if ((err.code === 20 || err.name === 'AbortError') && attempt < maxAttempts) {
+                await new Promise(r => setTimeout(r, 3000 * attempt));
                 continue;
             }
 
-            let msg = err.message || err.code || "Fehler";
-            if (msg.includes("subscribe")) msg = "System blockiert Push";
-            showToast("FCM: " + msg.substring(0, 50), "error");
+            if (attempt === maxAttempts) {
+                console.error("[FCM] Token-Registrierung fehlgeschlagen nach", maxAttempts, "Versuchen");
+            }
             break;
         }
     }
@@ -2836,41 +3454,27 @@ const LOCAL_VERSION_KEY = "app_version";
 
 async function checkForUpdates() {
     try {
-        // Cache-Busting: Timestamp anhängen
         const response = await fetch(`./version.json?t=${Date.now()}`, {
             cache: 'no-store',
             headers: { 'Cache-Control': 'no-cache' }
         });
 
-        if (!response.ok) {
-            console.log("[Version] version.json nicht gefunden");
-            return;
-        }
+        if (!response.ok) return;
 
         const data = await response.json();
+        const serverVersion = data.version;
         const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
 
-        // Update version display in login footer
-        const versionElement = document.getElementById("app-version");
-        if (versionElement) {
-            versionElement.textContent = `v${data.version}`;
-        }
-
-        console.log("[Version] Server:", data.version, "| Lokal:", localVersion);
-
         if (!localVersion) {
-            // Erste Installation - Version speichern
-            localStorage.setItem(LOCAL_VERSION_KEY, data.version);
-            console.log("[Version] Erste Installation, Version gespeichert:", data.version);
+            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
             return;
         }
 
-        if (data.version !== localVersion) {
-            console.log("[Version] Update verfügbar!");
-            showUpdateToast(true, data.version);
+        if (serverVersion !== APP_VERSION.replace('v', '') || serverVersion !== localVersion) {
+            showUpdateToast(true, serverVersion);
         }
     } catch (err) {
-        console.log("[Version] Check fehlgeschlagen:", err);
+        // Version check silently fails - no user impact
     }
 }
 
@@ -2941,16 +3545,277 @@ function showUpdateToast(forceReload=false, newVersion = null) {
 }
 
 // ==============================
+// DOKUMENTENSAFE
+// ==============================
+const DOKUMENT_KATEGORIEN = [
+    { id: 'jagderlaubnisschein', name: 'Jagderlaubnisschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'jagdschein', name: 'Jagdschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>' },
+    { id: 'waffenbesitzkarte', name: 'Waffenbesitzkarte', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>' },
+    { id: 'begehungsschein', name: 'Begehungsschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="15" r="2"/></svg>' }
+];
+
+let dokumenteCache = {};
+
+function initDokumenteSafe() {
+    const wizardDone = localStorage.getItem('dokumente_wizard_done');
+    const wizard = document.getElementById('dokumente-wizard');
+    const grid = document.getElementById('dokumente-grid');
+    if (!wizard || !grid) return;
+
+    if (!wizardDone) {
+        wizard.classList.remove('hidden');
+        grid.classList.add('hidden');
+        initDokumenteWizard();
+    } else {
+        wizard.classList.add('hidden');
+        grid.classList.remove('hidden');
+        renderDokumenteSafe();
+    }
+}
+
+function initDokumenteWizard() {
+    const steps = document.querySelectorAll('.dok-wizard-step');
+    const dots = document.querySelectorAll('.dok-wizard-dot');
+    const prevBtn = document.getElementById('dok-wizard-prev');
+    const nextBtn = document.getElementById('dok-wizard-next');
+    if (!steps.length || !prevBtn || !nextBtn) return;
+
+    let currentStep = 0;
+    const totalSteps = steps.length;
+
+    function showStep(idx) {
+        steps.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => d.classList.remove('active'));
+        steps[idx].classList.add('active');
+        dots[idx].classList.add('active');
+
+        prevBtn.classList.toggle('hidden', idx === 0);
+
+        if (idx === totalSteps - 1) {
+            nextBtn.textContent = 'Fertig';
+        } else {
+            nextBtn.textContent = 'Weiter';
+        }
+    }
+
+    prevBtn.onclick = () => {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    };
+
+    nextBtn.onclick = () => {
+        if (currentStep < totalSteps - 1) {
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            localStorage.setItem('dokumente_wizard_done', 'true');
+            const wizard = document.getElementById('dokumente-wizard');
+            const grid = document.getElementById('dokumente-grid');
+            if (wizard) wizard.classList.add('hidden');
+            if (grid) grid.classList.remove('hidden');
+            renderDokumenteSafe();
+        }
+    };
+
+    showStep(0);
+}
+
+async function renderDokumenteSafe() {
+    const grid = document.getElementById('dokumente-grid');
+    if (!grid) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        grid.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">Bitte zuerst anmelden.</p>';
+        return;
+    }
+
+    grid.innerHTML = DOKUMENT_KATEGORIEN.map(kat => `
+        <div class="wetter-detail-widget dok-widget" data-kategorie="${kat.id}">
+            <div class="wetter-detail-header">
+                ${kat.icon}
+                <span>${kat.name}</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="dok-thumbnails" id="dok-thumbs-${kat.id}">
+                    <div class="dok-loading">Lade...</div>
+                </div>
+                <button class="dok-upload-btn" onclick="uploadDokument('${kat.id}')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Foto hinzufügen
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    await loadDokumente(user.uid);
+}
+
+async function loadDokumente(uid) {
+    const db = firebase.firestore();
+    try {
+        const snapshot = await db.collection('users').doc(uid).collection('documents').get();
+        dokumenteCache = {};
+        snapshot.forEach(doc => {
+            dokumenteCache[doc.id] = doc.data();
+        });
+        DOKUMENT_KATEGORIEN.forEach(kat => renderDokumentThumbnails(kat.id));
+    } catch (err) {
+        console.error("Dokumente laden Fehler:", err);
+        showToast("Fehler beim Laden der Dokumente", "error");
+    }
+}
+
+function renderDokumentThumbnails(kategorie) {
+    const container = document.getElementById(`dok-thumbs-${kategorie}`);
+    const wizardContainer = document.getElementById(`wizard-thumbs-${kategorie}`);
+    const data = dokumenteCache[kategorie];
+    const images = (data && data.images) || [];
+
+    const html = images.length === 0
+        ? '<span class="dok-empty">Keine Dokumente</span>'
+        : images.map((img, idx) => `
+            <div class="dok-thumb-wrap">
+                <img src="${img.url}" alt="${kategorie}" class="dok-thumb-img" onclick="openImageModal('${img.url}')">
+                <button class="dok-thumb-delete" onclick="deleteDokument('${kategorie}', ${idx})" aria-label="Löschen">
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        `).join('');
+
+    if (container) container.innerHTML = html;
+    if (wizardContainer) wizardContainer.innerHTML = html;
+}
+
+async function uploadDokument(kategorie) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        showToast("Bitte zuerst anmelden", "error");
+        return;
+    }
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.click();
+
+    fileInput.onchange = async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        try {
+            showToast("Dokument wird hochgeladen...", "info");
+
+            const blob = await compressImage(file, 1200, 1200);
+
+            const storageRef = firebase.storage().ref();
+            const filename = `${Date.now()}.jpg`;
+            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${filename}`);
+
+            await fileRef.put(blob, { contentType: 'image/jpeg' });
+            const url = await fileRef.getDownloadURL();
+
+            const db = firebase.firestore();
+            const docRef = db.collection('users').doc(user.uid).collection('documents').doc(kategorie);
+            const docSnap = await docRef.get();
+            const existing = docSnap.exists ? (docSnap.data().images || []) : [];
+
+            existing.push({
+                url: url,
+                name: filename,
+                uploadedAt: Date.now()
+            });
+
+            await docRef.set({
+                images: existing,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            if (!dokumenteCache[kategorie]) dokumenteCache[kategorie] = { images: [] };
+            dokumenteCache[kategorie].images = existing;
+            renderDokumentThumbnails(kategorie);
+
+            showToast("Dokument gespeichert", "success");
+        } catch (err) {
+            console.error("Dokument Upload Fehler:", err);
+            showToast("Fehler beim Hochladen: " + err.message, "error");
+        }
+    };
+}
+
+async function deleteDokument(kategorie, imageIndex) {
+    const confirmed = await showConfirm(
+        "Möchtest du dieses Dokument wirklich löschen?",
+        "Dokument löschen",
+        "Löschen"
+    );
+    if (!confirmed) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        const data = dokumenteCache[kategorie];
+        if (!data || !data.images || !data.images[imageIndex]) return;
+
+        const image = data.images[imageIndex];
+
+        // Storage-Datei loeschen
+        try {
+            const storageRef = firebase.storage().ref();
+            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${image.name}`);
+            await fileRef.delete();
+        } catch (storageErr) {
+            console.warn("Storage Datei konnte nicht gelöscht werden:", storageErr);
+        }
+
+        // Firestore aktualisieren
+        data.images.splice(imageIndex, 1);
+        const db = firebase.firestore();
+        await db.collection('users').doc(user.uid).collection('documents').doc(kategorie).set({
+            images: data.images,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        renderDokumentThumbnails(kategorie);
+        showToast("Dokument gelöscht", "delete");
+    } catch (err) {
+        console.error("Dokument löschen Fehler:", err);
+        showToast("Fehler beim Löschen", "error");
+    }
+}
+
+// ==============================
 // MAIN INITIALIZATION
 // ==============================
 function initAll() {
-    // Globaler Error-Handler für Toasts (Debug v2.2.7)
-    window.onerror = function (msg, url, line) {
-        showToast("Fehler: " + msg + " (L" + line + ")", "error");
+    // Globaler Error-Handler: nur kritische Fehler als Toast,
+    // Rest still in der Console (verhindert Toast-Spam bei Bilder/CDN-Issues).
+    window.onerror = function (msg, url, line, col, error) {
+        const message = String(msg || '');
+        const ignorePatterns = [
+            'ResizeObserver',
+            'Script error',
+            'Non-Error promise rejection',
+            'Loading chunk',
+            'NotAllowedError',
+        ];
+        if (ignorePatterns.some(p => message.includes(p))) {
+            console.warn('[onerror gefiltert]', message);
+            return false;
+        }
+        console.error('[onerror]', message, 'at', url, 'L' + line, error);
         return false;
     };
 
-    showToast("Reviersystem v4.0.0 bereit", "success");
+    window.addEventListener('unhandledrejection', (event) => {
+        console.warn('[unhandledrejection]', event.reason);
+    });
+
+    updateVersionDisplays();
+    showToast(`Reviersystem ${APP_VERSION} bereit`, "success");
 
     // iOS Bounce/Overscroll Fix
     try {
@@ -2963,6 +3828,33 @@ function initAll() {
     const profileModal = document.getElementById("profile-modal");
     const cancelProfileBtn = document.getElementById("cancel-profile-btn");
     const profileForm = document.getElementById("profile-form");
+    const profileImgInput = document.getElementById("profile-image-input");
+    const profileImgPreviewWrapper = document.getElementById("profile-image-preview-wrapper");
+    const profileImgPreview = document.getElementById("profile-image-preview");
+    const profileImgPlaceholder = document.getElementById("profile-image-placeholder");
+
+    if (profileImgPreviewWrapper && profileImgInput) {
+        profileImgPreviewWrapper.addEventListener("click", () => {
+            profileImgInput.click();
+        });
+
+        profileImgInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    if (profileImgPreview) {
+                        profileImgPreview.src = event.target.result;
+                        profileImgPreview.classList.remove("hidden");
+                    }
+                    if (profileImgPlaceholder) {
+                        profileImgPlaceholder.classList.add("hidden");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 
     if (cancelProfileBtn && profileModal) {
         cancelProfileBtn.addEventListener("click", () => {
@@ -2973,73 +3865,123 @@ function initAll() {
     if (profileForm && profileModal) {
         profileForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const newName = document.getElementById("profile-name-input").value.trim();
+            const nameInput = document.getElementById("profile-name-input");
+            const newName = nameInput ? nameInput.value.trim() : "";
             const user = firebase.auth().currentUser;
+            const file = profileImgInput ? profileImgInput.files[0] : null;
+
             if (user) {
                 try {
-                    await user.updateProfile({ displayName: newName });
+                    let photoURL = user.photoURL;
+
+                    if (file) {
+                        try {
+                            const uploadItem = await compressImage(file);
+                            
+                            const dataUrl = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = (e) => resolve(e.target.result);
+                                reader.onerror = (e) => reject(new Error("FileReader error"));
+                                reader.readAsDataURL(uploadItem);
+                            });
+
+                            showToast("Bild wird hochgeladen...", "info");
+
+                            if (typeof firebase.storage !== "function") {
+                                throw new Error("Firebase Storage ist nicht geladen.");
+                            }
+
+                            const storageRef = firebase.storage().ref();
+                            const fileRef = storageRef.child(`profile_pictures/${user.uid}.jpg`);
+                            
+                            const timeout = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error("Timeout (30s) - Verbindung zum Speicher fehlgeschlagen.")), 30000)
+                            );
+
+                            const upload = (async () => {
+                                await fileRef.putString(dataUrl, 'data_url', { contentType: 'image/jpeg' });
+                                return await fileRef.getDownloadURL();
+                            })();
+
+                            photoURL = await Promise.race([upload, timeout]);
+                        } catch (uploadError) {
+                            console.error("Upload fehlgeschlagen:", uploadError);
+                            showToast("Foto-Upload fehlgeschlagen: " + uploadError.message, "error");
+                        }
+                    }
+
+                    await user.updateProfile({ 
+                        displayName: newName,
+                        photoURL: photoURL
+                    });
+
                     showToast("Profil aktualisiert!", "success");
-                    updateUserInfo(user);
-                    profileModal.classList.add("hidden");
+                    updateUserInfo(user, newName, photoURL);
+                    user.reload().catch(() => {});
+
                 } catch (error) {
-                    console.error("Fehler beim Profil-Update", error);
-                    showToast("Es gab ein Problem beim Speichern.", "error");
+                    console.error("Fehler beim Profil-Update:", error);
+                    showToast("Es gab ein Problem beim Speichern: " + error.message, "error");
+                } finally {
+                    const profileModal = document.getElementById("profile-modal");
+                    if (profileModal) profileModal.classList.add("hidden");
                 }
+            } else {
+                console.error("No user logged in during profile update");
+                showToast("Nicht angemeldet.", "error");
             }
         });
     }
 
-    try {
-        initLogin();
-        console.log("Login OK");
-    } catch (e) {
+    try { initLogin(); } catch (e) {
         console.error("Login init error:", e);
         showToast("Login Init Fehler", "error");
     }
 
-    try {
-        initNavigation();
-        console.log("Navigation OK");
-    } catch (e) {
+    try { initNavigation(); } catch (e) {
         console.error("Navigation init error:", e);
     }
 
-    try {
-        initClock();
-        console.log("Clock OK");
-    } catch (e) {
+    try { initClock(); } catch (e) {
         console.error("Clock init error:", e);
     }
 
-    try {
-        initSchonzeitWidget();
-        console.log("Schonzeit Widget OK");
-    } catch (e) {
+    try { initSchonzeitWidget(); } catch (e) {
         console.error("Schonzeit Widget init error:", e);
     }
 
-    try {
-        initWetterWidgetClick();
-        console.log("Wetter Widget Click OK");
-    } catch (e) {
+    try { initWetterWidgetClick(); } catch (e) {
         console.error("Wetter Widget Click init error:", e);
     }
 
-    try {
-        initAuthListener();
-        console.log("Auth Listener OK");
-    } catch (e) {
+    try { initAuthListener(); } catch (e) {
         console.error("Auth Listener init error:", e);
     }
 
-    try {
-        initInstallPrompt();
-        console.log("Install Prompt OK");
-    } catch (e) {
+    try { initInstallPrompt(); } catch (e) {
         console.error("Install Prompt init error:", e);
     }
 
-    console.log("All initializations complete");
+    try { initOnlineUsersDropdown(); } catch (e) {
+        console.error("Online Users Dropdown init error:", e);
+    }
+}
+
+/**
+ * Updates all version strings in the UI automatically
+ */
+function updateVersionDisplays() {
+    // 1. Element mit ID 'app-version' (z.B. im Login)
+    const appVersionEl = document.getElementById("app-version");
+    if (appVersionEl) {
+        appVersionEl.textContent = APP_VERSION;
+    }
+
+    // 2. Elemente mit Klasse 'app-version-text' (z.B. in Einstellungen)
+    const versionTexts = document.querySelectorAll(".app-version-text");
+    versionTexts.forEach(el => {
+        el.textContent = APP_VERSION.replace('v', ''); // Nur die Nummer falls gewünscht
+    });
 }
 
 // Wait for DOM and external scripts to be ready

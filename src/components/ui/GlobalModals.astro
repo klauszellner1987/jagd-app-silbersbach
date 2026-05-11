@@ -1,0 +1,151 @@
+---
+// GlobalModals.astro
+---
+<div id="toast-container"></div>
+
+<!-- INSTALL BANNER (Top) -->
+<div id="install-banner" class="install-banner hidden">
+    <div class="install-banner-content">
+        <div class="install-banner-icon">
+            <i class="ti ti-download"></i>
+        </div>
+        <div class="install-banner-text">
+            <strong>App installieren</strong>
+            <span>Für schnellen Zugriff auf dem Homescreen</span>
+        </div>
+    </div>
+    <div class="install-banner-actions">
+        <button id="install-dismiss" class="install-btn-dismiss">Später</button>
+        <button id="install-accept" class="install-btn-accept">Installieren</button>
+    </div>
+</div>
+
+<div id="hochsitz-modal">
+    <h3>Hochsitz Name</h3>
+    <input type="text" id="hochsitz-name-input" placeholder="Name eingeben..." />
+    <div class="hoch-buttons">
+        <button id="hochsitz-save-btn">Speichern</button>
+        <button id="hochsitz-cancel-btn">Abbrechen</button>
+    </div>
+</div>
+
+<!-- Modal für Streckeneintrag -->
+<div id="entry-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Neuer Eintrag</h2>
+        <form id="entry-form">
+            <label>Erleger
+                <select name="erleger">
+                    <option>Anton</option>
+                    <option>Tobias</option>
+                    <option>Patrick</option>
+                    <option>Klaus</option>
+                </select>
+            </label>
+
+            <label>Wildart
+                <select name="wildart" id="wildart">
+                    <option value="">Bitte wählen</option>
+                    <option value="Rehwild">Rehwild</option>
+                    <option value="Rotwild">Rotwild</option>
+                    <option value="Dammwild">Dammwild</option>
+                    <option value="Schwarzwild">Schwarzwild</option>
+                    <option value="Raubwild">Raubwild</option>
+                    <option value="Federwild">Federwild</option>
+                </select>
+            </label>
+
+            <div id="subcategory-container"></div>
+
+            <label>Datum
+                <input type="date" name="datum">
+            </label>
+
+            <label>Bemerkung
+                <textarea name="bemerkung" rows="2"></textarea>
+            </label>
+
+            <label>Gewicht (kg)
+                <input type="number" step="0.1" name="gewicht">
+            </label>
+
+            <div class="modal-actions">
+                <button type="button" id="cancel-entry">Abbrechen</button>
+                <button type="submit">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Profile Modal (Personalisierung) -->
+<div id="profile-modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Profil anpassen</h2>
+        <form id="profile-form">
+            <div class="profile-image-upload-container">
+                <div class="profile-image-preview-wrapper" id="profile-image-preview-wrapper">
+                    <img id="profile-image-preview" src="" alt="Profilbild" class="hidden">
+                    <div id="profile-image-placeholder" class="profile-image-placeholder">
+                        <i class="ti ti-user"></i>
+                    </div>
+                    <div class="upload-overlay">
+                        <i class="ti ti-camera"></i>
+                    </div>
+                </div>
+                <input type="file" id="profile-image-input" accept="image/*" capture="user" class="hidden">
+            </div>
+
+            <label>Dein Name
+                <input type="text" id="profile-name-input" placeholder="Wie möchtest du genannt werden?">
+            </label>
+
+            <div class="modal-actions">
+                <button type="button" id="cancel-profile-btn">Abbrechen</button>
+                <button type="submit">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div id="confirm-modal" class="confirm-modal hidden">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-content">
+        <div class="confirm-modal-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+        </div>
+        <h3 id="confirm-title">Bestätigung</h3>
+        <p id="confirm-message">Möchten Sie fortfahren?</p>
+        <div class="confirm-buttons">
+            <button id="confirm-cancel-btn">Abbrechen</button>
+            <button id="confirm-ok-btn">Löschen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hochsitz Listen Panel -->
+<div id="hochsitz-panel" class="hochsitz-panel hidden">
+    <div class="panel-header">
+        <span>Hochsitze</span>
+        <button id="close-hochsitz-panel">✖</button>
+    </div>
+    <div class="panel-content"></div>
+</div>
+
+<!-- Eigengrundstücke Listen Panel -->
+<div id="eigengrundstuecke-panel" class="hochsitz-panel hidden">
+    <div class="panel-header">
+        <span>Eigengrundstücke</span>
+        <button id="close-eigengrundstuecke-panel">✖</button>
+    </div>
+    <div class="panel-content" id="eigengrundstuecke-content">
+        <!-- Platzhalter für die zukünftige Liste -->
+        <div style="text-align: center; color: rgba(255,255,255,0.7); margin-top: 2rem;">
+            Noch keine Grundstücke hinterlegt.
+        </div>
+    </div>
+</div>

@@ -1,32 +1,48 @@
 {
   "name": "jagd-app-silbersbach",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "Dies ist eine kleine Web-App für euer Jagd-Revier. Jeder Nutzer kann die Seite auf dem Handy öffnen.",
   "main": "service-worker.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "astro dev --port 5176",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
     "cap:sync": "npx cap sync",
     "cap:open": "npx cap open android",
-    "cap:build": "npm run build && npx cap sync"
+    "cap:build": "npm run build && npx cap sync",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/tailwind": "^6.0.2",
+    "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/device": "^6.0.0",
     "@capacitor/geolocation": "^6.0.0",
     "@capacitor/push-notifications": "^6.0.0",
+    "astro": "^5.18.1",
     "autoprefixer": "^10.4.24",
+    "firebase": "^12.13.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3",
     "vite": "^5.4.21"
   },
   "devDependencies": {
     "@capacitor/android": "^6.0.0",
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^6.0.0"
+    "@capacitor/cli": "^6.0.0",
+    "@playwright/test": "^1.59.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "happy-dom": "^20.9.0",
+    "vitest": "^3.2.4"
   }
 }

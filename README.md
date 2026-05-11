@@ -68,20 +68,71 @@ npm run cap:open
 
 Stelle sicher, dass **Android Studio** und das **Android SDK** installiert sind.
 
+## Tests ausführen
+
+Die App hat eine zweistufige Testsuite, die vor jedem Release laufen sollte.
+
+### Setup (einmalig)
+
+```bash
+# Dependencies installieren (enthält Vitest + Playwright)
+npm install
+
+# Playwright-Browser einmalig herunterladen
+npx playwright install --with-deps chromium
+```
+
+### Befehle
+
+| Befehl                  | Was passiert                                                        |
+| ----------------------- | ------------------------------------------------------------------- |
+| `npm test`              | Vitest Unit-Tests einmalig ausführen (Pure-Functions in `lib/pure.js`) |
+| `npm run test:watch`    | Vitest Watch-Mode für Entwicklung                                   |
+| `npm run test:coverage` | Vitest mit V8-Coverage-Report (HTML in `coverage/`)                  |
+| `npm run test:e2e`      | Playwright E2E-Tests gegen `npm run dev` (Desktop + Mobile Pixel 7) |
+| `npm run test:e2e:ui`   | Playwright UI-Mode (interaktiv)                                     |
+| `npm run test:all`      | Beides nacheinander (Unit + E2E)                                    |
+
+### Was wird getestet?
+
+- **Unit (`tests/unit/`)**: Reine Logik - Online-Status (`isUserCurrentlyOnline`), Schonzeiten-Berechnung (`istSchonzeit`, inkl. Wraparound), Bild-Komprimierung (`compressImage`).
+- **E2E (`tests/e2e/`)**: Login-Overlay, Dashboard-Quick-Links, Feed-Navigation (Wetter / Dokus / Schonzeit), Mobile-Viewport-Check (keine horizontale Scrollbar).
+
+Firebase wird in E2E-Tests durch einen In-Memory-Stub (`tests/fixtures/mockFirebase.js`) ersetzt, der vor jedem Page-Load injiziert wird. Echte CDN-Skripte werden via `page.route()` blockiert. **Es wird kein echter Firebase-Account benötigt.**
+
+### CI
+
+GitHub Actions läuft automatisch bei Push auf `main`/`release/**` und bei Pull Requests gegen `main`:
+
+- `astro check` (Linting + TypeScript)
+- `npm test` (Vitest)
+- `npm run test:e2e` (Playwright Chromium + Pixel 7)
+- Bei Failure wird der HTML-Report als Artifact hochgeladen.
+
+Workflow-Datei: `.github/workflows/test.yml`.
+
 ## Ordnerstruktur
 
 ```
-├── index.html          # Hauptseite
-├── style/
-│   ├── main.css        # Haupt-Styles
-│   └── tailwind.css    # Tailwind Imports
-├── js/
-│   └── app.js          # JavaScript-Logik
-├── assets/
-│   ├── images/         # Bilder (Hintergründe, etc.)
-│   └── data/           # Daten (Reviere, Einträge)
+├── src/
+│   ├── components/     # Astro-Komponenten (Views, UI)
+│   └── layouts/        # Page-Layout
+├── public/
+│   ├── js/
+│   │   ├── app.js      # Monolithische Client-Logik
+│   │   └── lib/
+│   │       └── pure.js # Reine Hilfsfunktionen (testbar)
+│   ├── style/main.css  # Haupt-Styles
+│   └── assets/         # Bilder, Daten
+├── tests/
+│   ├── unit/           # Vitest Unit-Tests
+│   ├── e2e/            # Playwright E2E-Tests
+│   └── fixtures/       # Firebase-Stub + Test-Helper
+├── .github/workflows/  # CI: deploy.yml + test.yml
 ├── docs/               # Production Build (GitHub Pages)
-├── vite.config.js      # Vite Konfiguration
+├── astro.config.mjs    # Astro Konfiguration
+├── vitest.config.ts    # Vitest Konfiguration
+├── playwright.config.ts # Playwright Konfiguration
 ├── tailwind.config.js  # Tailwind Konfiguration
 └── package.json        # Dependencies
 ```

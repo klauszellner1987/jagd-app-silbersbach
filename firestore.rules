@@ -1,0 +1,99 @@
+rules_version = '2';
+
+// Firestore Security Rules - GJR Silbersbach
+// Status: v5.0.0
+//
+// Konvention:
+// - Alle Schreibzugriffe verlangen einen authentifizierten User.
+// - Nutzerprofile in /users/{uid}: jeder kann lesen (Mitgliederliste/Online-Anzeige),
+//   nur der eigene User darf das eigene Profil schreiben.
+// - Private Dokumentensafe-Daten unter /users/{uid}/documents/{kategorie}:
+//   nur der Owner darf lesen UND schreiben (kein Cross-Read zwischen Mitgliedern).
+// - Bulletins, Hochsitze, Eigengrundstuecke, Entries: alle eingeloggten Mitglieder
+//   duerfen lesen und schreiben (Vereins-Modell).
+// - FCM-Tokens: jeder eingeloggte User darf eigene Tokens schreiben, nur Cloud Functions
+//   lesen sie (also Lesen ueber Client-SDK gesperrt).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // ============================================
+    // USERS / PRESENCE
+    // ============================================
+    match /users/{uid} {
+      // Lesen: alle eingeloggten Mitglieder (fuer Online-Anzeige)
+      allow read: if isSignedIn();
+      // Schreiben (inkl. presence isOnline / lastSeen): nur eigener User
+      allow create, update: if isOwner(uid);
+      allow delete: if false;
+
+      // PRIVATE Dokumentensafe - strikt nur Owner
+      match /documents/{kategorie} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Optional: weitere private Subcollections sollen demselben Schema folgen
+      match /{subcoll}/{docId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // ============================================
+    // BULLETIN BOARD (Schwarzes Brett)
+    // ============================================
+    match /bulletinBoard/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() < 2000;
+      // Update / Delete: jeder eingeloggte User darf erledigt setzen / loeschen
+      // (Vereins-Modell - Vertrauen unter Mitgliedern). Bei Bedarf einschraenken.
+      allow update, delete: if isSignedIn();
+    }
+
+    // ============================================
+    // STRECKE (Eintraege)
+    // ============================================
+    match /entries/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    // ============================================
+    // HOCHSITZE
+    // ============================================
+    match /hochsitze/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // ============================================
+    // FCM TOKENS
+    // ============================================
+    // Token-Schreiben darf jeder eingeloggte User; Lesen ist nur fuer
+    // Cloud Functions (Admin-SDK ueberspringt Rules) - Client kann nicht enumerieren.
+    match /fcmTokens/{tokenId} {
+      allow read: if false;
+      allow create, update: if isSignedIn()
+                            && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn();
+    }
+
+    // ============================================
+    // CATCH-ALL: ablehnen, was nicht oben definiert ist
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

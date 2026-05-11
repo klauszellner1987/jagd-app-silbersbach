@@ -1,0 +1,365 @@
+---
+// Dashboard.astro
+---
+<div id="dashboard" class="page active">
+
+    <!-- COMPACT HEADER -->
+    <div class="dash-header" id="hero-section" onclick="toggleDashboardFeed('wetter')">
+        <div class="dash-header-left">
+            <h2 class="dash-greeting" id="hero-greeting">Willkommen</h2>
+            <p class="dash-subtitle">Jagdrevier Silbersbach</p>
+        </div>
+        <div class="dash-header-right">
+            <!-- Profil Bild mit Active-Punkt -->
+            <div class="profile-container" id="profile-trigger">
+                <div class="profile-avatar">
+                    <img id="header-profile-img" src="" alt="Profilbild" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                    <i class="ti ti-user" id="header-profile-icon"></i>
+                    <div class="online-indicator"></div>
+                </div>
+                <i class="ti ti-chevron-down profile-dropdown"></i>
+            </div>
+
+            <!-- Online Users Dropdown -->
+            <div id="online-users-dropdown" class="dropdown-menu hidden">
+                <div class="dropdown-header">
+                    <span>Mitglieder online</span>
+                    <span class="online-count" id="online-count">0</span>
+                </div>
+                <div class="dropdown-content" id="online-users-list">
+                    <div class="dropdown-loading">Lade...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK LINKS SCROLL (Horizontal) -->
+    <div class="quick-links-container">
+        <div class="quick-links-scroll">
+            <div class="quick-link nav-widget" data-target="revier">
+                <div class="quick-link-icon">
+                    <i class="ti ti-map-2"></i>
+                </div>
+                <span>Karte</span>
+            </div>
+            <div class="quick-link nav-widget" data-target="streckenliste">
+                <div class="quick-link-icon">
+                    <i class="ti ti-list-details"></i>
+                </div>
+                <span>Strecke</span>
+            </div>
+            <div class="quick-link static-card" onclick="toggleDashboardFeed('dokumente')">
+                <div class="quick-link-icon">
+                    <i class="ti ti-file-text"></i>
+                </div>
+                <span>Dokus</span>
+            </div>
+            <div class="quick-link static-card" onclick="toggleDashboardFeed('wetter')">
+                <div class="quick-link-icon">
+                    <i class="ti ti-cloud"></i>
+                </div>
+                <span>Wetter</span>
+            </div>
+            <div class="quick-link nav-widget" data-target="einstellungen-page">
+                <div class="quick-link-icon">
+                    <i class="ti ti-settings"></i>
+                </div>
+                <span>Optionen</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Versteckte Elemente für app.js -->
+    <div class="hidden">
+        <span id="hero-temp">--°</span>
+        <span id="hero-desc">Lade...</span>
+        <span id="hero-wind-text"></span>
+        <span id="hero-sun-text"></span>
+    </div>
+
+    <!-- SMART FEED -->
+    <div class="smart-feed-container">
+        <!-- STANDARD FEED VIEW -->
+        <div id="dashboard-standard-feed">
+            <h3 class="feed-section-title">Feed</h3>
+            
+            <!-- Feed Item: Schwarzes Brett -->
+            <div class="feed-card nav-widget" data-target="bulletin-board" id="bulletin-widget">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container">
+                        <i class="ti ti-news"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title">Schwarzes Brett</span>
+                        <span class="feed-card-time">Live</span>
+                    </div>
+                    <span class="bulletin-badge hidden" id="bulletin-badge">0</span>
+                </div>
+                <div class="feed-card-content" id="bulletin-preview">
+                    <p id="bulletin-preview-text">Keine neuen Aushänge</p>
+                </div>
+            </div>
+
+            <!-- Feed Item: Schonzeiten -->
+            <div class="feed-card nav-widget schonzeit-widget" data-target="schonzeit-page" id="schonzeit-widget">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container" id="schonzeit-icon">
+                        <i class="ti ti-leaf"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title" id="schonzeit-wildart">Schonzeiten</span>
+                        <span class="feed-card-time">Heute</span>
+                    </div>
+                    <div class="schonzeit-indicator" id="schonzeit-indicator"></div>
+                </div>
+                <div class="feed-card-content">
+                    <p id="schonzeit-status-text">Lade...</p>
+                    <p id="schonzeit-datum" style="opacity: 0.6; font-size: 0.75em; margin-top: 3px;"></p>
+                </div>
+            </div>
+
+            <!-- Feed Item: Statistik / Counters -->
+            <div class="feed-card static-card" onclick="toggleDashboardFeed('statistik')">
+                <div class="feed-card-header">
+                    <div class="feed-card-icon-container">
+                        <i class="ti ti-chart-bar"></i>
+                    </div>
+                    <div class="feed-card-header-text">
+                        <span class="feed-card-title">Revier Statistik</span>
+                        <span class="feed-card-time">Gesamt</span>
+                    </div>
+                </div>
+                <div class="feed-card-content stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Hochsitze</span>
+                        <span class="stat-value" id="hochsitz-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Rehwild</span>
+                        <span class="stat-value" id="rehwild-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Strecke</span>
+                        <span class="stat-value" id="strecke-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STRECKENLISTE FEED VIEW -->
+        <div id="dashboard-strecke-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Streckenliste</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+            <ul id="entry-list-dashboard" class="entry-list">
+                <!-- Wird dynamisch befüllt -->
+            </ul>
+        </div>
+
+        <!-- SCHONZEIT FEED VIEW -->
+        <div id="dashboard-schonzeit-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Jagdzeiten Details</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+            
+            <!-- Filter Tabs im Feed -->
+            <div class="schonzeit-tabs-inline">
+                <button class="schonzeit-filter-btn active" data-filter="alle" onclick="filterSchonzeitListe('alle')">Alle</button>
+                <button class="schonzeit-filter-btn" data-filter="jagdzeit" onclick="filterSchonzeitListe('jagdzeit')">Offen</button>
+                <button class="schonzeit-filter-btn" data-filter="schonzeit" onclick="filterSchonzeitListe('schonzeit')">Schonzeit</button>
+            </div>
+
+            <div id="schonzeit-liste-dashboard" class="schonzeit-liste">
+                <!-- Wird dynamisch befüllt -->
+            </div>
+        </div>
+
+        <!-- BULLETIN FEED VIEW -->
+        <div id="dashboard-bulletin-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Schwarzes Brett</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+            
+            <!-- Neues Eingabefeld für Aushänge direkt im Dashboard -->
+            <div class="bulletin-input-dashboard">
+                <input type="text" id="bulletin-input-dashboard" placeholder="Neue Nachricht schreiben..." />
+                <button id="bulletin-submit-dashboard" title="Senden">
+                    <i class="ti ti-send"></i>
+                </button>
+            </div>
+
+            <div id="bulletin-list-dashboard" class="bulletin-list-container">
+                <!-- Wird dynamisch befüllt -->
+            </div>
+        </div>
+
+        <!-- STATISTIK FEED VIEW -->
+        <div id="dashboard-statistik-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Revier Statistik</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+
+            <div class="stats-detail-container">
+                <!-- Strecke Detail Card -->
+                <div class="stats-detail-card">
+                    <h4>Abschuss nach Wildarten</h4>
+                    <div id="stats-detail-strecke">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
+
+                <!-- Rehwild Detail Card -->
+                <div class="stats-detail-card">
+                    <h4>Rehwild Details</h4>
+                    <div id="stats-detail-rehwild">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
+
+                <!-- Bulletin Board Open Items Card -->
+                <div class="stats-detail-card">
+                    <h4>Offene Aufgaben</h4>
+                    <div id="stats-detail-bulletin">
+                        <p style="opacity:0.5">Lade Daten...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WETTER FEED VIEW -->
+        <div id="dashboard-wetter-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Wetter Details</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+            <div id="wetter-detail-grid-dashboard" class="wetter-detail-grid">
+                <!-- Widgets werden per JS eingefügt -->
+            </div>
+        </div>
+
+        <!-- DOKUMENTE FEED VIEW -->
+        <div id="dashboard-dokumente-feed" class="hidden">
+            <div class="feed-header-inline">
+                <h3 class="feed-section-title">Dokumentensafe</h3>
+                <button class="feed-back-btn" onclick="toggleDashboardFeed('standard')">
+                    <i class="ti ti-chevron-left"></i> Zurück
+                </button>
+            </div>
+
+            <!-- Wizard -->
+            <div id="dokumente-wizard" class="hidden">
+                <div class="dok-wizard-steps">
+                    <!-- Step 1: Willkommen -->
+                    <div class="dok-wizard-step active" data-step="0">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M12 8v8M8 12h8"/>
+                            </svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Dokumentensafe einrichten</h4>
+                        <p class="dok-wizard-desc">Speichere deine Jagddokumente sicher und privat. Nur du kannst deine Dokumente sehen.</p>
+                    </div>
+                    <!-- Step 2: Jagderlaubnisschein -->
+                    <div class="dok-wizard-step" data-step="1">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Jagderlaubnisschein</h4>
+                        <p class="dok-wizard-desc">Lade ein Foto deines Jagderlaubnisscheins hoch.</p>
+                        <div class="dok-wizard-upload-area" data-kategorie="jagderlaubnisschein">
+                            <div class="dok-wizard-thumbnails" id="wizard-thumbs-jagderlaubnisschein"></div>
+                            <button class="dok-wizard-upload-btn" onclick="uploadDokument('jagderlaubnisschein')">
+                                <i class="ti ti-camera"></i> Foto hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Step 3: Jagdschein -->
+                    <div class="dok-wizard-step" data-step="2">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Jagdschein</h4>
+                        <p class="dok-wizard-desc">Lade ein Foto deines Jagdscheins hoch.</p>
+                        <div class="dok-wizard-upload-area" data-kategorie="jagdschein">
+                            <div class="dok-wizard-thumbnails" id="wizard-thumbs-jagdschein"></div>
+                            <button class="dok-wizard-upload-btn" onclick="uploadDokument('jagdschein')">
+                                <i class="ti ti-camera"></i> Foto hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Step 4: Waffenbesitzkarte -->
+                    <div class="dok-wizard-step" data-step="3">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Waffenbesitzkarte</h4>
+                        <p class="dok-wizard-desc">Lade ein Foto deiner Waffenbesitzkarte hoch.</p>
+                        <div class="dok-wizard-upload-area" data-kategorie="waffenbesitzkarte">
+                            <div class="dok-wizard-thumbnails" id="wizard-thumbs-waffenbesitzkarte"></div>
+                            <button class="dok-wizard-upload-btn" onclick="uploadDokument('waffenbesitzkarte')">
+                                <i class="ti ti-camera"></i> Foto hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Step 5: Begehungsschein -->
+                    <div class="dok-wizard-step" data-step="4">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="15" r="2"/></svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Begehungsschein</h4>
+                        <p class="dok-wizard-desc">Lade ein Foto deines Begehungsscheins hoch.</p>
+                        <div class="dok-wizard-upload-area" data-kategorie="begehungsschein">
+                            <div class="dok-wizard-thumbnails" id="wizard-thumbs-begehungsschein"></div>
+                            <button class="dok-wizard-upload-btn" onclick="uploadDokument('begehungsschein')">
+                                <i class="ti ti-camera"></i> Foto hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Step 6: Fertig -->
+                    <div class="dok-wizard-step" data-step="5">
+                        <div class="dok-wizard-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <h4 class="dok-wizard-title">Alles bereit!</h4>
+                        <p class="dok-wizard-desc">Dein Dokumentensafe ist eingerichtet. Du kannst jederzeit Dokumente hinzufügen oder entfernen.</p>
+                    </div>
+                </div>
+                <!-- Step Indicator -->
+                <div class="dok-wizard-indicator">
+                    <span class="dok-wizard-dot active" data-dot="0"></span>
+                    <span class="dok-wizard-dot" data-dot="1"></span>
+                    <span class="dok-wizard-dot" data-dot="2"></span>
+                    <span class="dok-wizard-dot" data-dot="3"></span>
+                    <span class="dok-wizard-dot" data-dot="4"></span>
+                    <span class="dok-wizard-dot" data-dot="5"></span>
+                </div>
+                <!-- Wizard Buttons -->
+                <div class="dok-wizard-actions">
+                    <button class="dok-wizard-btn dok-wizard-prev hidden" id="dok-wizard-prev">Zurück</button>
+                    <button class="dok-wizard-btn dok-wizard-next" id="dok-wizard-next">Weiter</button>
+                </div>
+            </div>
+
+            <!-- Dokumente Grid -->
+            <div id="dokumente-grid" class="wetter-detail-grid">
+                <!-- Widgets werden per JS eingefügt -->
+            </div>
+        </div>
+
+    </div>
+</div>
