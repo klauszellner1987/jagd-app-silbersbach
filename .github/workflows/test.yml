@@ -33,55 +33,8 @@ jobs:
         run: npx astro check
         continue-on-error: true
 
-      - name: Diagnose environment
-        run: |
-          echo "=== Node / NPM / OS ==="
-          node -v
-          npm -v
-          uname -a
-          echo "=== Vitest binary present? ==="
-          ls -la node_modules/.bin/vitest || echo "VITEST BINARY MISSING"
-          echo "=== Vitest version ==="
-          npx vitest --version || echo "VITEST VERSION CALL FAILED"
-          echo "=== package.json scripts ==="
-          cat package.json | grep -A 20 '"scripts"'
-
       - name: Run unit tests (Vitest)
-        id: vitest
-        run: |
-          set +e
-          npx vitest run --reporter=verbose --no-coverage > vitest.log 2>&1
-          echo "VITEST_EXIT=$?" >> $GITHUB_OUTPUT
-          echo "==== VITEST LOG START ===="
-          cat vitest.log
-          echo "==== VITEST LOG END ===="
-          # nicht hier abbrechen, damit der Upload noch laufen kann
-          true
-
-      - name: Upload Vitest log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vitest-log
-          path: vitest.log
-          retention-days: 7
-
-      - name: Emit Vitest log line-by-line as annotations on failure
-        if: steps.vitest.outputs.VITEST_EXIT != '0'
-        run: |
-          echo "::group::Vitest output"
-          cat vitest.log
-          echo "::endgroup::"
-          # Jede der letzten 80 Zeilen als eigene ::error:: Annotation
-          tail -n 80 vitest.log | nl -ba | while IFS= read -r line; do
-            echo "::error::$line"
-          done
-
-      - name: Fail if Vitest exit != 0
-        if: steps.vitest.outputs.VITEST_EXIT != '0'
-        run: |
-          echo "Vitest failed with exit code ${{ steps.vitest.outputs.VITEST_EXIT }}"
-          exit 1
+        run: npx vitest run
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
