@@ -22,21 +22,25 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      # Hinweis: package-lock.json wurde auf Windows erzeugt und verpasst
+      # einige Linux-spezifische optionalDependencies (rollup, esbuild,
+      # vitest pretty-format etc.). Workaround: npm install statt npm ci.
+      # Siehe https://github.com/npm/cli/issues/4828
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Astro check (Lint + TypeScript)
         run: npx astro check
         continue-on-error: true
 
       - name: Run unit tests (Vitest)
-        run: npm test
+        run: npx vitest run
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests (Playwright)
-        run: npm run test:e2e
+        run: npx playwright test
         env:
           CI: 'true'
 
