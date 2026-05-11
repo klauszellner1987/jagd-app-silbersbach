@@ -478,240 +478,12 @@ function openProfileModal() {
 // ==============================
 // PRESENCE SYSTEM & DROPDOWN
 // ==============================
-// Mehrschichtiges Presence-System:
-// 1. Heartbeat alle HEARTBEAT_INTERVAL_MS während App sichtbar ist
-// 2. visibilitychange-Listener für sofortiges Umschalten beim Tab-/App-Wechsel
-// 3. Capacitor App.addListener('appStateChange') für native Apps
-// 4. beforeunload als Best-Effort beim sauberen Schließen
-// 5. Stale-Detection beim Lesen: nur "online" wenn lastSeen < ONLINE_THRESHOLD_MS
-
-const HEARTBEAT_INTERVAL_MS = 30_000;          // alle 30s lastSeen aktualisieren
-const ONLINE_THRESHOLD_MS = 90_000;            // > 90s ohne Heartbeat = offline
-const PRESENCE_RENDER_REFRESH_MS = 30_000;     // alle 30s Online-Liste neu rendern
-
-let presenceState = {
-    user: null,
-    heartbeatTimer: null,
-    visibilityHandler: null,
-    beforeUnloadHandler: null,
-    capacitorAppListener: null,
-    capacitorPauseListener: null,
-    capacitorResumeListener: null,
-    rendererTimer: null,
-    lastSnapshotDocs: [],
-    listenersAttached: false,
-};
-
-async function writeUserPresence(user, isOnline) {
-    if (!user) return;
-    try {
-        const db = firebase.firestore();
-        await db.collection("users").doc(user.uid).set({
-            uid: user.uid,
-            displayName: user.displayName || "Unbekannter Jäger",
-            photoURL: user.photoURL || "",
-            isOnline: isOnline,
-            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-    } catch (error) {
-        console.warn("[Presence] Status-Update fehlgeschlagen:", error.code || error.message);
-    }
-}
-
-function startPresenceHeartbeat(user) {
-    if (presenceState.heartbeatTimer) return;
-    writeUserPresence(user, true);
-    presenceState.heartbeatTimer = setInterval(() => {
-        if (document.visibilityState === 'visible') {
-            writeUserPresence(user, true);
-        }
-    }, HEARTBEAT_INTERVAL_MS);
-}
-
-function stopPresenceHeartbeat() {
-    if (presenceState.heartbeatTimer) {
-        clearInterval(presenceState.heartbeatTimer);
-        presenceState.heartbeatTimer = null;
-    }
-}
-
-function initPresence(user) {
-    teardownPresence();
-    presenceState.user = user;
-
-    startPresenceHeartbeat(user);
-
-    presenceState.visibilityHandler = () => {
-        if (!presenceState.user) return;
-        if (document.visibilityState === 'visible') {
-            startPresenceHeartbeat(presenceState.user);
-        } else {
-            stopPresenceHeartbeat();
-            writeUserPresence(presenceState.user, false);
-        }
-    };
-    document.addEventListener('visibilitychange', presenceState.visibilityHandler);
-
-    presenceState.beforeUnloadHandler = () => {
-        try {
-            const db = firebase.firestore();
-            db.collection("users").doc(user.uid).set({
-                isOnline: false,
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-        } catch (_) { /* best effort */ }
-    };
-    window.addEventListener('beforeunload', presenceState.beforeUnloadHandler);
-
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        const { App } = window.Capacitor.Plugins;
-        App.addListener('appStateChange', ({ isActive }) => {
-            if (!presenceState.user) return;
-            if (isActive) {
-                startPresenceHeartbeat(presenceState.user);
-            } else {
-                stopPresenceHeartbeat();
-                writeUserPresence(presenceState.user, false);
-            }
-        }).then(handle => { presenceState.capacitorAppListener = handle; }).catch(() => {});
-
-        App.addListener('pause', () => {
-            if (presenceState.user) {
-                stopPresenceHeartbeat();
-                writeUserPresence(presenceState.user, false);
-            }
-        }).then(handle => { presenceState.capacitorPauseListener = handle; }).catch(() => {});
-
-        App.addListener('resume', () => {
-            if (presenceState.user) {
-                startPresenceHeartbeat(presenceState.user);
-            }
-        }).then(handle => { presenceState.capacitorResumeListener = handle; }).catch(() => {});
-    }
-}
-
-function teardownPresence() {
-    stopPresenceHeartbeat();
-    if (presenceState.visibilityHandler) {
-        document.removeEventListener('visibilitychange', presenceState.visibilityHandler);
-        presenceState.visibilityHandler = null;
-    }
-    if (presenceState.beforeUnloadHandler) {
-        window.removeEventListener('beforeunload', presenceState.beforeUnloadHandler);
-        presenceState.beforeUnloadHandler = null;
-    }
-    [presenceState.capacitorAppListener, presenceState.capacitorPauseListener, presenceState.capacitorResumeListener].forEach(handle => {
-        if (handle && typeof handle.remove === 'function') {
-            try { handle.remove(); } catch (_) {}
-        }
-    });
-    presenceState.capacitorAppListener = null;
-    presenceState.capacitorPauseListener = null;
-    presenceState.capacitorResumeListener = null;
-    presenceState.user = null;
-}
-
-function isUserCurrentlyOnline(data) {
-    if (!data) return false;
-    if (!data.isOnline) return false;
-    const lastSeen = data.lastSeen && typeof data.lastSeen.toDate === 'function'
-        ? data.lastSeen.toDate()
-        : null;
-    if (!lastSeen) return false;
-    return (Date.now() - lastSeen.getTime()) < ONLINE_THRESHOLD_MS;
-}
-
-function renderOnlineUsers(docs) {
-    const userList = document.getElementById("online-users-list");
-    const onlineCount = document.getElementById("online-count");
-    if (!userList || !onlineCount) return;
-
-    let count = 0;
-    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-    const sortedDocs = docs.slice().sort((a, b) => {
-        const aOnline = isUserCurrentlyOnline(a) ? 1 : 0;
-        const bOnline = isUserCurrentlyOnline(b) ? 1 : 0;
-        if (aOnline !== bOnline) return bOnline - aOnline;
-        const aTime = a.lastSeen && typeof a.lastSeen.toDate === 'function' ? a.lastSeen.toDate().getTime() : 0;
-        const bTime = b.lastSeen && typeof b.lastSeen.toDate === 'function' ? b.lastSeen.toDate().getTime() : 0;
-        return bTime - aTime;
-    });
-
-    const html = sortedDocs.map(data => {
-        const live = isUserCurrentlyOnline(data);
-        if (live) count++;
-        const lastSeenDate = data.lastSeen && typeof data.lastSeen.toDate === 'function' ? data.lastSeen.toDate() : null;
-        const timeStr = lastSeenDate ? formatRelativeTime(lastSeenDate) : 'Unbekannt';
-        const statusClass = live ? 'online' : 'offline';
-        const name = escapeHtml(data.displayName || 'Unbekannter Jäger');
-        const avatar = data.photoURL
-            ? `<img src="${escapeHtml(data.photoURL)}" alt="">`
-            : '<div class="user-status-avatar-placeholder"><i class="ti ti-user"></i></div>';
-        return `
-            <div class="user-status-item">
-                <div class="user-status-avatar">
-                    ${avatar}
-                    <div class="status-dot ${statusClass}"></div>
-                </div>
-                <div class="user-status-info">
-                    <span class="user-status-name">${name}</span>
-                    <span class="user-status-lastseen">${live ? 'Jetzt aktiv' : timeStr}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    userList.innerHTML = html || '<div class="dropdown-loading">Keine Mitglieder gefunden</div>';
-    onlineCount.textContent = count;
-}
-
-function initOnlineUsersDropdown() {
-    const trigger = document.getElementById("profile-trigger");
-    const dropdown = document.getElementById("online-users-dropdown");
-
-    if (!trigger || !dropdown) return;
-    if (presenceState.listenersAttached) return;
-    presenceState.listenersAttached = true;
-
-    trigger.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle("hidden");
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
-            dropdown.classList.add("hidden");
-        }
-    });
-
-    firebase.firestore().collection("users")
-        .limit(50)
-        .onSnapshot((snapshot) => {
-            presenceState.lastSnapshotDocs = snapshot.docs.map(d => d.data());
-            renderOnlineUsers(presenceState.lastSnapshotDocs);
-        }, (error) => {
-            console.error("[Presence] Firestore Snapshot Error:", error);
-            const userList = document.getElementById("online-users-list");
-            if (userList) userList.innerHTML = '<div class="dropdown-loading">Fehler beim Laden</div>';
-        });
-
-    if (presenceState.rendererTimer) clearInterval(presenceState.rendererTimer);
-    presenceState.rendererTimer = setInterval(() => {
-        if (presenceState.lastSnapshotDocs.length > 0) {
-            renderOnlineUsers(presenceState.lastSnapshotDocs);
-        }
-    }, PRESENCE_RENDER_REFRESH_MS);
-}
-
-function formatRelativeTime(date) {
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    if (diff < 60) return "Gerade eben";
-    if (diff < 3600) return `Vor ${Math.floor(diff / 60)} Min.`;
-    if (diff < 86400) return `Vor ${Math.floor(diff / 3600)} Std.`;
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
+// v6 Refactor: extrahiert nach src/scripts/features/presence/.
+// Aufrufer (initPresence, teardownPresence, writeUserPresence,
+// initOnlineUsersDropdown) gehen jetzt durch die Bridge:
+//   window.__features.presence.{onLogin, onLogout, initUI, markOffline}
+// Die Bridge wird von src/scripts/main.js registriert (im Layout
+// vor diesem Monolith via <script type="module"> geladen).
 
 
 // iOS Bounce/Overscroll Prevention
@@ -916,7 +688,7 @@ function initAuthListener() {
 
             // Benutzername in Hero und Einstellungen eintragen
             updateUserInfo(user);
-            initPresence(user);
+            window.__features?.presence?.onLogin(user);
 
             // Tab Bar sofort nach Login anzeigen
             const bottomNav = document.getElementById("bottom-nav");
@@ -983,8 +755,12 @@ function logout() {
     };
 
     if (user) {
-        teardownPresence();
-        writeUserPresence(user, false).finally(performSignOut);
+        const presenceP = window.__features?.presence?.markOffline?.();
+        if (presenceP && typeof presenceP.finally === 'function') {
+            presenceP.finally(performSignOut);
+        } else {
+            performSignOut();
+        }
     } else {
         performSignOut();
     }
@@ -3962,7 +3738,7 @@ function initAll() {
         console.error("Install Prompt init error:", e);
     }
 
-    try { initOnlineUsersDropdown(); } catch (e) {
+    try { window.__features?.presence?.initUI(); } catch (e) {
         console.error("Online Users Dropdown init error:", e);
     }
 }

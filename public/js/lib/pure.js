@@ -5,35 +5,12 @@
 // Die Funktionen sind 1:1 Kopien der Implementierungen aus public/js/app.js.
 // Damit koennen wir Pure-Logic isoliert testen, ohne den Monolithen zu brechen.
 // Bei Aenderungen IMMER beide Stellen synchron halten.
+//
+// Hinweis (v6 Refactor): Die presence-spezifischen Helper sind in
+// `src/scripts/features/presence/presence.pure.js` umgezogen. Weitere
+// Module folgen demselben Pattern und ziehen ihre Helper schrittweise
+// hierher um.
 // ============================================================================
-
-export const ONLINE_THRESHOLD_MS = 90_000;
-
-/**
- * Liefert true, wenn der User innerhalb der letzten ONLINE_THRESHOLD_MS
- * einen Heartbeat geschrieben hat UND isOnline=true gesetzt ist.
- */
-export function isUserCurrentlyOnline(data) {
-    if (!data) return false;
-    if (!data.isOnline) return false;
-    const lastSeen = data.lastSeen && typeof data.lastSeen.toDate === 'function'
-        ? data.lastSeen.toDate()
-        : null;
-    if (!lastSeen) return false;
-    return (Date.now() - lastSeen.getTime()) < ONLINE_THRESHOLD_MS;
-}
-
-/**
- * Wandelt ein Date in einen relativen deutschen Zeit-String um.
- */
-export function formatRelativeTime(date) {
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    if (diff < 60) return 'Gerade eben';
-    if (diff < 3600) return `Vor ${Math.floor(diff / 60)} Min.`;
-    if (diff < 86400) return `Vor ${Math.floor(diff / 3600)} Std.`;
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
 
 /**
  * Parst einen "DD.MM" String zu einem Date im angegebenen Jahr (default: aktuelles).
