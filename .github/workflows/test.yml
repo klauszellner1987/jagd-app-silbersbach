@@ -20,23 +20,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       # Hinweis: package-lock.json wurde auf Windows erzeugt und verpasst
       # einige Linux-spezifische optionalDependencies (rollup, esbuild,
-      # vitest pretty-format etc.). Workaround: npm install statt npm ci.
-      # Siehe https://github.com/npm/cli/issues/4828
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      # vitest pretty-format etc.). Workaround: package-lock.json + node_modules
+      # wegwerfen und sauber neu installieren.
+      - name: Clean install (Linux-konform)
+        run: |
+          rm -f package-lock.json
+          rm -rf node_modules
+          npm install --no-audit --no-fund
+
+      - name: Diagnose installed binaries
+        run: |
+          echo "=== node / npm ==="
+          node -v && npm -v
+          echo "=== node_modules/.bin entries (vitest/playwright/astro) ==="
+          ls -la node_modules/.bin/ | grep -E 'vitest|playwright|astro' || true
+          echo "=== installed test framework versions ==="
+          node -p "require('./node_modules/vitest/package.json').version" 2>&1 || echo "vitest not installed"
+          node -p "require('./node_modules/@playwright/test/package.json').version" 2>&1 || echo "playwright not installed"
 
       - name: Astro check (Lint + TypeScript)
         run: ./node_modules/.bin/astro check
         continue-on-error: true
 
-      # WICHTIG: ./node_modules/.bin/vitest statt npx, weil npx
-      # ansonsten manchmal die LATEST-Version aus dem npm-Cache nimmt
-      # statt der in package.json gepinnten 3.2.4 (siehe vitest 4.x
-      # ESM-Resolving-Bug auf Linux).
       - name: Run unit tests (Vitest)
         run: ./node_modules/.bin/vitest run
 
