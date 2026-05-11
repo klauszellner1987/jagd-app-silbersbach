@@ -17,6 +17,7 @@
   "dependencies": {
     "@astrojs/check": "^0.9.9",
     "@astrojs/tailwind": "^6.0.2",
+    "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/device": "^6.0.0",
     "@capacitor/geolocation": "^6.0.0",
