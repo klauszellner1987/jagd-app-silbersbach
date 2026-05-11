@@ -30,37 +30,21 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Astro check (Lint + TypeScript)
-        run: npx astro check
+        run: ./node_modules/.bin/astro check
         continue-on-error: true
 
+      # WICHTIG: ./node_modules/.bin/vitest statt npx, weil npx
+      # ansonsten manchmal die LATEST-Version aus dem npm-Cache nimmt
+      # statt der in package.json gepinnten 3.2.4 (siehe vitest 4.x
+      # ESM-Resolving-Bug auf Linux).
       - name: Run unit tests (Vitest)
-        id: vitest
-        run: |
-          set +e
-          npx vitest run --reporter=verbose 2>&1 | tee vitest.log
-          EXIT=${PIPESTATUS[0]}
-          echo "VITEST_EXIT=$EXIT" >> $GITHUB_OUTPUT
-          exit 0
-
-      - name: Show last lines of vitest log on failure
-        if: steps.vitest.outputs.VITEST_EXIT != '0'
-        run: |
-          echo "::group::Vitest output (last 200 lines)"
-          tail -n 200 vitest.log
-          echo "::endgroup::"
-          # Letzte 60 Zeilen als annotations -> via API abrufbar
-          tail -n 60 vitest.log | while IFS= read -r line; do
-            # Vermeide Probleme mit GitHub-Actions-Logging-Tokens
-            cleaned=$(echo "$line" | tr -d '\r' | sed 's/::/__/g')
-            echo "::error::$cleaned"
-          done
-          exit ${{ steps.vitest.outputs.VITEST_EXIT }}
+        run: ./node_modules/.bin/vitest run
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Run E2E tests (Playwright)
-        run: npx playwright test
+        run: ./node_modules/.bin/playwright test
         env:
           CI: 'true'
 
