@@ -33,8 +33,23 @@ jobs:
         run: npx astro check
         continue-on-error: true
 
+      - name: Diagnose environment
+        run: |
+          echo "=== Node / NPM / OS ==="
+          node -v
+          npm -v
+          uname -a
+          echo "=== Vitest binary present? ==="
+          ls -la node_modules/.bin/vitest || echo "VITEST BINARY MISSING"
+          echo "=== Vitest version ==="
+          npx vitest --version || echo "VITEST VERSION CALL FAILED"
+          echo "=== package.json scripts ==="
+          cat package.json | grep -A 20 '"scripts"'
+
       - name: Run unit tests (Vitest)
-        run: npx vitest run
+        run: npx vitest run --reporter=verbose 2>&1
+        env:
+          DEBUG: 'vite-node:*'
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
