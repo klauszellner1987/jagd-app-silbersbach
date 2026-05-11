@@ -8,12 +8,13 @@ const APP_VERSION = "v5.0.0";
  * Globally available for onclick handlers
  */
 window.toggleDashboardFeed = function(view) {
-    console.log("Toggling dashboard feed to:", view);
     const standardFeed = document.getElementById("dashboard-standard-feed");
     const streckeFeed = document.getElementById("dashboard-strecke-feed");
     const schonzeitFeed = document.getElementById("dashboard-schonzeit-feed");
     const bulletinFeed = document.getElementById("dashboard-bulletin-feed");
     const statistikFeed = document.getElementById("dashboard-statistik-feed");
+    const wetterFeed = document.getElementById("dashboard-wetter-feed");
+    const dokumenteFeed = document.getElementById("dashboard-dokumente-feed");
     const fabBtn = document.getElementById("fab-add-btn");
     const fabExportBtn = document.getElementById("fab-export-btn");
  
@@ -28,6 +29,8 @@ window.toggleDashboardFeed = function(view) {
     schonzeitFeed.classList.add("hidden");
     bulletinFeed.classList.add("hidden");
     if (statistikFeed) statistikFeed.classList.add("hidden");
+    if (wetterFeed) wetterFeed.classList.add("hidden");
+    if (dokumenteFeed) dokumenteFeed.classList.add("hidden");
  
     if (view === 'strecke') {
         streckeFeed.classList.remove("hidden");
@@ -41,8 +44,17 @@ window.toggleDashboardFeed = function(view) {
     } else if (view === 'statistik') {
         if (statistikFeed) {
             statistikFeed.classList.remove("hidden");
-            // Wir nutzen setTimeout um sicherzugehen dass die Funktion bereit ist
             if (typeof renderDetailStats === 'function') renderDetailStats();
+        }
+    } else if (view === 'wetter') {
+        if (wetterFeed) {
+            wetterFeed.classList.remove("hidden");
+            renderWetterDetailPage();
+        }
+    } else if (view === 'dokumente') {
+        if (dokumenteFeed) {
+            dokumenteFeed.classList.remove("hidden");
+            initDokumenteSafe();
         }
     } else {
         standardFeed.classList.remove("hidden");
@@ -71,9 +83,6 @@ function isNativeApp() {
     return window.Capacitor && window.Capacitor.getPlatform() !== 'web';
 }
 
-// ==============================
-// JAGDZEITEN BAYERN - Daten
-// ==============================
 // ==============================
 // JAGDZEITEN BAYERN - Daten
 // ==============================
@@ -205,6 +214,9 @@ function navigateToPage(targetId) {
         } else if (targetId === "bulletin-board") {
             navigateToDashboard('bulletin');
             return;
+        } else if (targetId === "wetter-page") {
+            navigateToDashboard('wetter');
+            return;
         } else {
             if (fabBtn) fabBtn.classList.remove("visible");
             if (fabExportBtn) fabExportBtn.classList.remove("visible");
@@ -220,10 +232,6 @@ function navigateToPage(targetId) {
         // Seite initial rendern falls nötig
         if (targetId === 'schonzeit-page') {
             renderSchonzeitListe();
-        } else if (targetId === 'wetter-page') {
-            if (typeof renderWetterDetailPage === 'function') {
-                renderWetterDetailPage();
-            }
         }
     }
 
@@ -291,7 +299,6 @@ function navigateToTab(pageId) {
         if (fabBtn) fabBtn.classList.add("visible");
         if (fabExportBtn) {
             fabExportBtn.classList.add("visible");
-            console.log("Showing Export Button:", fabExportBtn.classList.contains("visible"));
         }
     } else {
         if (fabBtn) fabBtn.classList.remove("visible");
@@ -626,7 +633,6 @@ function initNavigation() {
         }
     });
 
-    console.log("Navigation initialized:", navWidgets.length, "widgets,", backButtons.length, "back buttons");
 }
 
 
@@ -737,7 +743,6 @@ function initLogin() {
         });
     }
 
-    console.log("Login initialized");
 }
 
 function initAuthListener() {
@@ -824,7 +829,6 @@ function logout() {
     const user = firebase.auth().currentUser;
     const performSignOut = () => {
         firebase.auth().signOut().then(() => {
-            console.log("User logged out");
             showToast("Erfolgreich abgemeldet");
             isAppInitialized=false;
         }).catch((error) => {
@@ -858,7 +862,6 @@ function updateClock() {
 function initClock() {
     updateClock();
     setInterval(updateClock, 1000);
-    console.log("Clock initialized");
 }
 
 // ==============================
@@ -951,8 +954,8 @@ function getWildartIconHTML(type, size = 30) {
         'iltis': 'iltis.png',
         'hermelin': 'hermelin.png',
         'mauswiesel': 'mauswiesel.png',
-        'ente': 'ente.png',
-        'fasan': 'fasan.png',
+        'ente': 'Ente.png',
+        'fasan': 'Fasan.png',
         'deer': 'rotwild_weiblich.png',
         'crow': 'kraehe.png',
         'eichelhaeher': 'eichelhaeher.png',
@@ -1050,7 +1053,6 @@ function initSchonzeitWidget() {
         });
     }
 
-    console.log("Schonzeit Widget initialized");
 }
 
 function showSchonzeitDetails() {
@@ -1101,7 +1103,7 @@ function renderSchonzeitListe() {
             return `
                 <div class="wildart-card">
                     <div class="wildart-icon">
-                        ${getWildartIconHTML(wildart.iconClass, 54)}
+                        ${getWildartIconHTML(wildart.iconClass, 44)}
                     </div>
                     <div class="wildart-info">
                         <h3 class="wildart-name">${wildart.name}</h3>
@@ -1300,7 +1302,12 @@ async function initializeApp() {
             document.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
                 btn.onclick = async (e) => {
                     e.stopPropagation();
-                    if (!confirm("Aushang unwiderruflich löschen?")) return;
+                    const confirmed = await showConfirm(
+                        "Aushang unwiderruflich löschen?",
+                        "Aushang löschen",
+                        "Löschen"
+                    );
+                    if (!confirmed) return;
                     try {
                         await bulletinCollection.doc(btn.dataset.id).delete();
                         showToast("Aushang gelöscht", "delete");
@@ -1350,7 +1357,12 @@ async function initializeApp() {
 
                     el.querySelector('.bulletin-delete-btn-sm').onclick = async (e) => {
                         e.stopPropagation();
-                        if (!confirm("Aushang löschen?")) return;
+                        const confirmed = await showConfirm(
+                            "Aushang löschen?",
+                            "Aushang löschen",
+                            "Löschen"
+                        );
+                        if (!confirmed) return;
                         try {
                             await bulletinCollection.doc(item.id).delete();
                             showToast("Aushang gelöscht", "delete");
@@ -1712,7 +1724,6 @@ async function initializeApp() {
 
                     // Als JPEG mit Kompression
                     const base64 = canvas.toDataURL("image/jpeg", quality);
-                    console.log("[Foto] Komprimiert:", Math.round(base64.length / 1024), "KB");
                     resolve(base64);
                 };
                 img.onerror = reject;
@@ -1809,13 +1820,13 @@ async function initializeApp() {
         });
     }
 
-    // Bild-Vollansicht Modal
-    function openImageModal(src) {
+    // Bild-Vollansicht Modal (global verfuegbar)
+    window.openImageModal = function(src) {
         const overlay = document.createElement("div");
         overlay.className = "image-modal-overlay";
         overlay.innerHTML = `
         <div class="image-modal-content" >
-            <img src="${src}" alt="Streckenfoto">
+            <img src="${src}" alt="Foto">
                 <button class="image-modal-close" aria-label="Schließen">
                     ✕
                 </button>
@@ -1828,7 +1839,7 @@ async function initializeApp() {
                 overlay.remove();
             }
         });
-    }
+    };
 
     addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
     cancelBtn.addEventListener("click", () => {
@@ -1937,7 +1948,10 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 saveBtn.onclick = async () => {
                     const name = input.value.trim();
-                    if (!name) return alert("Bitte einen Namen eingeben");
+                    if (!name) {
+                        showToast("Bitte einen Namen eingeben", "error");
+                        return;
+                    }
                     try {
                         await hochsitzeCollection.add({
                             lat: e.latlng.lat,
@@ -2435,7 +2449,6 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 
                 if (navigator.permissions) {
                     navigator.permissions.query({ name: "geolocation" }).then(result => {
-                        console.log("GPS Berechtigung Status:", result.state);
                         if (result.state === "denied") {
                             showToast("GPS ist blockiert. Bitte in den Browser-Einstellungen unter 'Website-Berechtigungen' den Standort erlauben.", "error");
                             stopGpsSearching();
@@ -2579,17 +2592,14 @@ function initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrun
 let cachedWeatherData = null;
 
 async function fetchLiveWeather() {
-    console.log("[Wetter] Starte Wetter-Abruf...");
     const apiKey = "YLF2SPSJ98MKAFEXGKRQRSFBW";
     const LAT = 49.2, LON = 13.05;
     const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${LAT},${LON}?unitGroup=metric&key=${apiKey}&include=current,days`;
 
     try {
         const response = await fetch(url);
-        console.log("[Wetter] Response Status:", response.status);
         if (!response.ok) throw new Error("Netzwerkfehler");
         const data = await response.json();
-        console.log("[Wetter] Daten erhalten:", data);
 
         // Cache weather data for detail page
         cachedWeatherData = data;
@@ -2597,7 +2607,6 @@ async function fetchLiveWeather() {
         const current = data.currentConditions;
         const today = data.days && data.days[0];
         const tomorrow = data.days && data.days[1];
-        console.log("[Wetter] Current:", current, "Today:", today);
 
         // Temperatur Karte
         const tempCard=document.getElementById("wetter-temp");
@@ -2747,19 +2756,18 @@ function initWetterWidgetClick() {
     const wetterWidget = document.getElementById('wetter-widget');
     if (wetterWidget) {
         wetterWidget.style.cursor = 'pointer';
-        wetterWidget.addEventListener('click', showWetterDetails);
+        wetterWidget.addEventListener('click', () => toggleDashboardFeed('wetter'));
     }
 }
 
-// Wetter Detail-Seite anzeigen
+// Wetter Detail-Seite anzeigen (Feed-basiert)
 function showWetterDetails() {
-    navigateToPage('wetter-page');
-    renderWetterDetailPage();
+    toggleDashboardFeed('wetter');
 }
 
 // Wetter Detail-Seite rendern
 function renderWetterDetailPage() {
-    const container = document.getElementById('wetter-detail-grid');
+    const container = document.getElementById('wetter-detail-grid-dashboard') || document.getElementById('wetter-detail-grid');
     if (!container) return;
 
     if (!cachedWeatherData) {
@@ -2988,7 +2996,6 @@ function initInstallPrompt() {
     // Check if already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true) {
-        console.log('App already installed');
         return;
     }
 
@@ -2999,7 +3006,6 @@ function initInstallPrompt() {
         const now = Date.now();
         const cooldown = 24 * 60 * 60 * 1000; // 24 hours
         if (now - dismissedTime < cooldown) {
-            console.log('Install prompt in cooldown');
             return;
         }
     }
@@ -3011,7 +3017,9 @@ function initInstallPrompt() {
 
         // Show banner after short delay (after login)
         setTimeout(() => {
-            if (deferredPrompt && !document.getElementById('login-overlay').classList.contains('hidden') === false) {
+            const overlay = document.getElementById('login-overlay');
+            const isLoggedIn = overlay && overlay.style.display === 'none';
+            if (deferredPrompt && isLoggedIn) {
                 banner.classList.remove('hidden');
             }
         }, 2000);
@@ -3025,7 +3033,6 @@ function initInstallPrompt() {
         deferredPrompt.prompt();
 
         const { outcome } = await deferredPrompt.userChoice;
-        console.log('Install prompt outcome:', outcome);
 
         deferredPrompt = null;
     });
@@ -3041,7 +3048,6 @@ function initInstallPrompt() {
     window.addEventListener('appinstalled', () => {
         banner.classList.add('hidden');
         deferredPrompt = null;
-        console.log('App was installed');
     });
 }
 
@@ -3070,10 +3076,8 @@ if ("serviceWorker" in navigator) {
             // SOFORT nach Updates prüfen beim Laden
             reg.update().catch(err => console.log("[SW] Update-Check Fehler:", err));
 
-            // Prüfe alle 30 Sekunden auf Updates (aggressiver für Mobile)
             setInterval(() => {
                 reg.update();
-                console.log("[SW] Periodischer Update-Check...");
             }, 30000);
 
             // Wenn neuer SW gefunden wird
@@ -3188,7 +3192,6 @@ async function initNativePush(db) {
     // Listener für erfolgreiche Token-Registrierung
     PushNotifications.addListener('registration', async (token) => {
         const fcmToken = token.value;
-        console.log('Native Push Token:', fcmToken);
 
         let user = firebase.auth().currentUser;
         const tokenData = {
@@ -3197,7 +3200,7 @@ async function initNativePush(db) {
             userId: user ? user.uid : 'anon',
             userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
             device: 'Android Native App',
-            version: '4.0.0'
+            version: APP_VERSION
         };
 
         await db.collection('fcmTokens').doc(fcmToken).set(tokenData, { merge: true });
@@ -3227,29 +3230,38 @@ async function initNativePush(db) {
 
 async function fetchAndSaveToken(db, swReg) {
     if (!swReg) {
-        showToast("Fehler: System-Modul fehlt", "error");
+        console.warn("[FCM] Kein Service Worker vorhanden");
         return;
     }
 
-    // Sicherstellen, dass der Worker aktiv ist (v2.9.0)
     let worker = swReg.active;
     if (!worker || worker.state !== 'activated') {
-        showToast("Warte auf Aktivierung...", "info");
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 2500));
         worker = swReg.active;
+        if (!worker || worker.state !== 'activated') {
+            console.warn("[FCM] Service Worker nicht aktiviert, überspringe");
+            return;
+        }
     }
 
     if (Notification.permission !== 'granted') {
-        showToast("Berechtigung fehlt: " + Notification.permission, "error");
         return;
     }
 
+    let user = firebase.auth().currentUser;
+    if (!user) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        user = firebase.auth().currentUser;
+        if (!user) {
+            console.warn("[FCM] Kein User nach Warten, überspringe");
+            return;
+        }
+    }
+
     const messaging = firebase.messaging();
-    let attempts = 0;
     const maxAttempts = 3;
 
-    while (attempts < maxAttempts) {
-        attempts++;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
             const currentToken = await messaging.getToken({
                 vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
@@ -3257,41 +3269,32 @@ async function fetchAndSaveToken(db, swReg) {
             });
 
             if (currentToken) {
-                let user = firebase.auth().currentUser;
-                if (!user) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    user = firebase.auth().currentUser;
-                }
-
+                user = firebase.auth().currentUser;
                 const tokenData = {
                     token: currentToken,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     userId: user ? user.uid : 'anon',
                     userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
                     device: navigator.userAgent.substring(0, 100),
-                    version: '3.3.0'
+                    version: APP_VERSION
                 };
 
                 await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-                showToast("Push-Benachrichtigungen aktiv! 🔔", "success");
-                return;
-            } else {
-                showToast("System gibt keinen Schlüssel frei.", "error");
+                showToast("Push-Benachrichtigungen aktiv!", "success");
                 return;
             }
+            return;
         } catch (err) {
-            console.warn(`FCM Versuch ${attempts} fehlgeschlagen:`, err);
+            console.warn(`[FCM] Versuch ${attempt}/${maxAttempts}:`, err.code || err.name);
 
-            // Wenn Code 20 (Abort), versuchen wir es nochmal
-            if ((err.code === 20 || err.name === 'AbortError') && attempts < maxAttempts) {
-                showToast("System hakt (20), ich probiere es nochmal...", "info");
-                await new Promise(r => setTimeout(r, 2000));
+            if ((err.code === 20 || err.name === 'AbortError') && attempt < maxAttempts) {
+                await new Promise(r => setTimeout(r, 3000 * attempt));
                 continue;
             }
 
-            let msg = err.message || err.code || "Fehler";
-            if (msg.includes("subscribe")) msg = "System blockiert Push";
-            showToast("FCM: " + msg.substring(0, 50), "error");
+            if (attempt === maxAttempts) {
+                console.error("[FCM] Token-Registrierung fehlgeschlagen nach", maxAttempts, "Versuchen");
+            }
             break;
         }
     }
@@ -3305,44 +3308,27 @@ const LOCAL_VERSION_KEY = "app_version";
 
 async function checkForUpdates() {
     try {
-        // Cache-Busting: Timestamp anhängen
         const response = await fetch(`./version.json?t=${Date.now()}`, {
             cache: 'no-store',
             headers: { 'Cache-Control': 'no-cache' }
         });
 
-        if (!response.ok) {
-            console.log("[Version] version.json nicht gefunden");
-            return;
-        }
+        if (!response.ok) return;
 
         const data = await response.json();
         const serverVersion = data.version;
-
-        console.log("[Version] Server:", serverVersion, "| Lokal (Code):", APP_VERSION);
-
-        // Wir überschreiben die Anzeige hier NICHT mehr, 
-        // da updateVersionDisplays() das bereits beim Start macht.
-        
-        if (serverVersion !== APP_VERSION.replace('v', '')) {
-            console.log("[Version] Update verfügbar!");
-            showUpdateToast(true, serverVersion);
-        }
-
         const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
+
         if (!localVersion) {
-            // Erste Installation - Version speichern
-            localStorage.setItem(LOCAL_VERSION_KEY, data.version);
-            console.log("[Version] Erste Installation, Version gespeichert:", data.version);
+            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
             return;
         }
 
-        if (data.version !== localVersion) {
-            console.log("[Version] Update verfügbar!");
-            showUpdateToast(true, data.version);
+        if (serverVersion !== APP_VERSION.replace('v', '') || serverVersion !== localVersion) {
+            showUpdateToast(true, serverVersion);
         }
     } catch (err) {
-        console.log("[Version] Check fehlgeschlagen:", err);
+        // Version check silently fails - no user impact
     }
 }
 
@@ -3413,6 +3399,249 @@ function showUpdateToast(forceReload=false, newVersion = null) {
 }
 
 // ==============================
+// DOKUMENTENSAFE
+// ==============================
+const DOKUMENT_KATEGORIEN = [
+    { id: 'jagderlaubnisschein', name: 'Jagderlaubnisschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'jagdschein', name: 'Jagdschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>' },
+    { id: 'waffenbesitzkarte', name: 'Waffenbesitzkarte', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>' },
+    { id: 'begehungsschein', name: 'Begehungsschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="15" r="2"/></svg>' }
+];
+
+let dokumenteCache = {};
+
+function initDokumenteSafe() {
+    const wizardDone = localStorage.getItem('dokumente_wizard_done');
+    const wizard = document.getElementById('dokumente-wizard');
+    const grid = document.getElementById('dokumente-grid');
+    if (!wizard || !grid) return;
+
+    if (!wizardDone) {
+        wizard.classList.remove('hidden');
+        grid.classList.add('hidden');
+        initDokumenteWizard();
+    } else {
+        wizard.classList.add('hidden');
+        grid.classList.remove('hidden');
+        renderDokumenteSafe();
+    }
+}
+
+function initDokumenteWizard() {
+    const steps = document.querySelectorAll('.dok-wizard-step');
+    const dots = document.querySelectorAll('.dok-wizard-dot');
+    const prevBtn = document.getElementById('dok-wizard-prev');
+    const nextBtn = document.getElementById('dok-wizard-next');
+    if (!steps.length || !prevBtn || !nextBtn) return;
+
+    let currentStep = 0;
+    const totalSteps = steps.length;
+
+    function showStep(idx) {
+        steps.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => d.classList.remove('active'));
+        steps[idx].classList.add('active');
+        dots[idx].classList.add('active');
+
+        prevBtn.classList.toggle('hidden', idx === 0);
+
+        if (idx === totalSteps - 1) {
+            nextBtn.textContent = 'Fertig';
+        } else {
+            nextBtn.textContent = 'Weiter';
+        }
+    }
+
+    prevBtn.onclick = () => {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    };
+
+    nextBtn.onclick = () => {
+        if (currentStep < totalSteps - 1) {
+            currentStep++;
+            showStep(currentStep);
+        } else {
+            localStorage.setItem('dokumente_wizard_done', 'true');
+            const wizard = document.getElementById('dokumente-wizard');
+            const grid = document.getElementById('dokumente-grid');
+            if (wizard) wizard.classList.add('hidden');
+            if (grid) grid.classList.remove('hidden');
+            renderDokumenteSafe();
+        }
+    };
+
+    showStep(0);
+}
+
+async function renderDokumenteSafe() {
+    const grid = document.getElementById('dokumente-grid');
+    if (!grid) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        grid.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">Bitte zuerst anmelden.</p>';
+        return;
+    }
+
+    grid.innerHTML = DOKUMENT_KATEGORIEN.map(kat => `
+        <div class="wetter-detail-widget dok-widget" data-kategorie="${kat.id}">
+            <div class="wetter-detail-header">
+                ${kat.icon}
+                <span>${kat.name}</span>
+            </div>
+            <div class="wetter-detail-content">
+                <div class="dok-thumbnails" id="dok-thumbs-${kat.id}">
+                    <div class="dok-loading">Lade...</div>
+                </div>
+                <button class="dok-upload-btn" onclick="uploadDokument('${kat.id}')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Foto hinzufügen
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    await loadDokumente(user.uid);
+}
+
+async function loadDokumente(uid) {
+    const db = firebase.firestore();
+    try {
+        const snapshot = await db.collection('users').doc(uid).collection('documents').get();
+        dokumenteCache = {};
+        snapshot.forEach(doc => {
+            dokumenteCache[doc.id] = doc.data();
+        });
+        DOKUMENT_KATEGORIEN.forEach(kat => renderDokumentThumbnails(kat.id));
+    } catch (err) {
+        console.error("Dokumente laden Fehler:", err);
+        showToast("Fehler beim Laden der Dokumente", "error");
+    }
+}
+
+function renderDokumentThumbnails(kategorie) {
+    const container = document.getElementById(`dok-thumbs-${kategorie}`);
+    const wizardContainer = document.getElementById(`wizard-thumbs-${kategorie}`);
+    const data = dokumenteCache[kategorie];
+    const images = (data && data.images) || [];
+
+    const html = images.length === 0
+        ? '<span class="dok-empty">Keine Dokumente</span>'
+        : images.map((img, idx) => `
+            <div class="dok-thumb-wrap">
+                <img src="${img.url}" alt="${kategorie}" class="dok-thumb-img" onclick="openImageModal('${img.url}')">
+                <button class="dok-thumb-delete" onclick="deleteDokument('${kategorie}', ${idx})" aria-label="Löschen">
+                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        `).join('');
+
+    if (container) container.innerHTML = html;
+    if (wizardContainer) wizardContainer.innerHTML = html;
+}
+
+async function uploadDokument(kategorie) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        showToast("Bitte zuerst anmelden", "error");
+        return;
+    }
+
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.click();
+
+    fileInput.onchange = async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        try {
+            showToast("Dokument wird hochgeladen...", "info");
+
+            const blob = await compressImage(file, 1200, 1200);
+
+            const storageRef = firebase.storage().ref();
+            const filename = `${Date.now()}.jpg`;
+            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${filename}`);
+
+            await fileRef.put(blob, { contentType: 'image/jpeg' });
+            const url = await fileRef.getDownloadURL();
+
+            const db = firebase.firestore();
+            const docRef = db.collection('users').doc(user.uid).collection('documents').doc(kategorie);
+            const docSnap = await docRef.get();
+            const existing = docSnap.exists ? (docSnap.data().images || []) : [];
+
+            existing.push({
+                url: url,
+                name: filename,
+                uploadedAt: Date.now()
+            });
+
+            await docRef.set({
+                images: existing,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            if (!dokumenteCache[kategorie]) dokumenteCache[kategorie] = { images: [] };
+            dokumenteCache[kategorie].images = existing;
+            renderDokumentThumbnails(kategorie);
+
+            showToast("Dokument gespeichert", "success");
+        } catch (err) {
+            console.error("Dokument Upload Fehler:", err);
+            showToast("Fehler beim Hochladen: " + err.message, "error");
+        }
+    };
+}
+
+async function deleteDokument(kategorie, imageIndex) {
+    const confirmed = await showConfirm(
+        "Möchtest du dieses Dokument wirklich löschen?",
+        "Dokument löschen",
+        "Löschen"
+    );
+    if (!confirmed) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    try {
+        const data = dokumenteCache[kategorie];
+        if (!data || !data.images || !data.images[imageIndex]) return;
+
+        const image = data.images[imageIndex];
+
+        // Storage-Datei loeschen
+        try {
+            const storageRef = firebase.storage().ref();
+            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${image.name}`);
+            await fileRef.delete();
+        } catch (storageErr) {
+            console.warn("Storage Datei konnte nicht gelöscht werden:", storageErr);
+        }
+
+        // Firestore aktualisieren
+        data.images.splice(imageIndex, 1);
+        const db = firebase.firestore();
+        await db.collection('users').doc(user.uid).collection('documents').doc(kategorie).set({
+            images: data.images,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        renderDokumentThumbnails(kategorie);
+        showToast("Dokument gelöscht", "delete");
+    } catch (err) {
+        console.error("Dokument löschen Fehler:", err);
+        showToast("Fehler beim Löschen", "error");
+    }
+}
+
+// ==============================
 // MAIN INITIALIZATION
 // ==============================
 function initAll() {
@@ -3473,7 +3702,6 @@ function initAll() {
     if (profileForm && profileModal) {
         profileForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            console.log("Profile form submitted");
             const nameInput = document.getElementById("profile-name-input");
             const newName = nameInput ? nameInput.value.trim() : "";
             const user = firebase.auth().currentUser;
@@ -3485,7 +3713,6 @@ function initAll() {
 
                     if (file) {
                         try {
-                            console.log("Processing image...");
                             const uploadItem = await compressImage(file);
                             
                             const dataUrl = await new Promise((resolve, reject) => {
@@ -3495,7 +3722,6 @@ function initAll() {
                                 reader.readAsDataURL(uploadItem);
                             });
 
-                            console.log("Uploading image to Firebase...");
                             showToast("Bild wird hochgeladen...", "info");
 
                             if (typeof firebase.storage !== "function") {
@@ -3505,50 +3731,35 @@ function initAll() {
                             const storageRef = firebase.storage().ref();
                             const fileRef = storageRef.child(`profile_pictures/${user.uid}.jpg`);
                             
-                            // Timeout-Versprechen (30 Sekunden)
                             const timeout = new Promise((_, reject) => 
                                 setTimeout(() => reject(new Error("Timeout (30s) - Verbindung zum Speicher fehlgeschlagen.")), 30000)
                             );
 
-                            // Upload-Versprechen
                             const upload = (async () => {
-                                console.log("Starting putString upload to:", `profile_pictures/${user.uid}.jpg`);
                                 await fileRef.putString(dataUrl, 'data_url', { contentType: 'image/jpeg' });
-                                console.log("Upload complete, fetching URL...");
                                 return await fileRef.getDownloadURL();
                             })();
 
                             photoURL = await Promise.race([upload, timeout]);
-                            console.log("File uploaded, new photoURL:", photoURL);
                         } catch (uploadError) {
                             console.error("Upload fehlgeschlagen:", uploadError);
                             showToast("Foto-Upload fehlgeschlagen: " + uploadError.message, "error");
-                            // Wir fahren mit der Namensänderung fort, auch wenn das Foto fehlschlägt
                         }
                     }
 
-                    console.log("Updating user profile...", { newName, photoURL });
                     await user.updateProfile({ 
                         displayName: newName,
                         photoURL: photoURL
                     });
 
-                    // Update successful
-                    console.log("Profile update successful");
                     showToast("Profil aktualisiert!", "success");
-                    
-                    // Sofortige UI-Aktualisierung mit den neuen Werten
                     updateUserInfo(user, newName, photoURL);
-                    
-                    // Optional: User im Hintergrund neu laden
-                    user.reload().catch(err => console.warn("User reload failed", err));
+                    user.reload().catch(() => {});
 
                 } catch (error) {
                     console.error("Fehler beim Profil-Update:", error);
                     showToast("Es gab ein Problem beim Speichern: " + error.message, "error");
                 } finally {
-                    // Modal in jedem Fall schließen
-                    console.log("Closing profile modal (finally)");
                     const profileModal = document.getElementById("profile-modal");
                     if (profileModal) profileModal.classList.add("hidden");
                 }
@@ -3559,64 +3770,38 @@ function initAll() {
         });
     }
 
-    try {
-        initLogin();
-        console.log("Login OK");
-    } catch (e) {
+    try { initLogin(); } catch (e) {
         console.error("Login init error:", e);
         showToast("Login Init Fehler", "error");
     }
 
-    try {
-        initNavigation();
-        console.log("Navigation OK");
-    } catch (e) {
+    try { initNavigation(); } catch (e) {
         console.error("Navigation init error:", e);
     }
 
-    try {
-        initClock();
-        console.log("Clock OK");
-    } catch (e) {
+    try { initClock(); } catch (e) {
         console.error("Clock init error:", e);
     }
 
-    try {
-        initSchonzeitWidget();
-        console.log("Schonzeit Widget OK");
-    } catch (e) {
+    try { initSchonzeitWidget(); } catch (e) {
         console.error("Schonzeit Widget init error:", e);
     }
 
-    try {
-        initWetterWidgetClick();
-        console.log("Wetter Widget Click OK");
-    } catch (e) {
+    try { initWetterWidgetClick(); } catch (e) {
         console.error("Wetter Widget Click init error:", e);
     }
 
-    try {
-        initAuthListener();
-        console.log("Auth Listener OK");
-    } catch (e) {
+    try { initAuthListener(); } catch (e) {
         console.error("Auth Listener init error:", e);
     }
 
-    try {
-        initInstallPrompt();
-        console.log("Install Prompt OK");
-    } catch (e) {
+    try { initInstallPrompt(); } catch (e) {
         console.error("Install Prompt init error:", e);
     }
 
-    try {
-        initOnlineUsersDropdown();
-        console.log("Online Users Dropdown OK");
-    } catch (e) {
+    try { initOnlineUsersDropdown(); } catch (e) {
         console.error("Online Users Dropdown init error:", e);
     }
-
-    console.log("All initializations complete");
 }
 
 /**

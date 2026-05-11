@@ -413,18 +413,16 @@ main {
 /* QUICK LINKS SCROLL (Horizontal) */
 .quick-links-container {
     width: 100%;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     flex-shrink: 0;
 }
 
 .quick-links-scroll {
     display: flex;
-    gap: 1.2rem;
-    padding: 0 1.25rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    justify-content: space-evenly;
+    padding: 0 0.5rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 .quick-links-scroll::-webkit-scrollbar {
     display: none; /* Chrome/Safari/Opera */
@@ -434,34 +432,41 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    scroll-snap-align: start;
+    gap: 0.45rem;
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
+    flex: 1;
+    min-width: 0;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    min-height: unset !important;
 }
 .quick-link:active {
     transform: scale(0.92);
 }
 
 .quick-link-icon {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg, rgba(45, 90, 65, 0.6), rgba(35, 70, 55, 0.2));
+    border: 1px solid rgba(255, 255, 255, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary-light);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .quick-link-icon i {
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .quick-link span {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.85);
     letter-spacing: 0.3px;
@@ -485,25 +490,27 @@ main {
 }
 
 .feed-section-title {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.5);
-    margin: 0 0 1.2rem 0.5rem;
+    margin: 0 0 0.75rem 0.25rem;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .feed-card {
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .feed-header-inline {
@@ -514,12 +521,12 @@ main {
 }
 
 .feed-back-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 6px 14px;
+    background: rgba(45, 90, 65, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 5px 12px;
     color: white;
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -534,13 +541,13 @@ main {
 }
 
 .feed-back-btn i {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
 }
 
 .schonzeit-tabs-inline {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
     overflow-x: auto;
     padding-bottom: 4px;
     scrollbar-width: none;
@@ -553,11 +560,11 @@ main {
 .schonzeit-tabs-inline .schonzeit-filter-btn {
     flex: 1;
     white-space: nowrap;
-    padding: 8px 12px;
-    font-size: 0.8rem;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    border-radius: 8px;
+    background: rgba(45, 90, 65, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -570,12 +577,14 @@ main {
 
 .bulletin-input-dashboard {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.75rem;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.5) 0%,
+            rgba(40, 80, 60, 0.2) 100%);
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .bulletin-input-dashboard input {
@@ -583,7 +592,7 @@ main {
     background: transparent;
     border: none;
     color: white;
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     outline: none;
 }
 
@@ -591,9 +600,9 @@ main {
     background: var(--primary-light);
     color: white;
     border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -606,7 +615,6 @@ main {
 }
 
 .feed-card:active {
-    background: rgba(255, 255, 255, 0.1);
     transform: scale(0.98);
 }
 .feed-card.static-card {
@@ -614,28 +622,27 @@ main {
 }
 .feed-card.static-card:active {
     transform: none;
-    background: rgba(255, 255, 255, 0.06);
 }
 
 .feed-card-header {
     display: flex;
     align-items: center;
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.5rem;
 }
 
 .feed-card-icon-container {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary-light);
-    margin-right: 0.85rem;
+    margin-right: 0.6rem;
 }
 .feed-card-icon-container i {
-    font-size: 22px;
+    font-size: 18px;
 }
 
 .feed-card-header-text {
@@ -645,29 +652,29 @@ main {
 }
 
 .feed-card-title {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 600;
     color: white;
 }
 
 .feed-card-time {
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     color: rgba(255, 255, 255, 0.45);
     margin-top: 0.1rem;
 }
 
 .feed-card-content p {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.85);
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 #bulletin-preview {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-top: 0.75rem;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
     overflow: hidden;
     width: 100%;
     box-sizing: border-box;
@@ -677,10 +684,10 @@ main {
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    background: rgba(0,0,0,0.2);
-    border-radius: 14px;
-    padding: 1rem;
+    gap: 0.6rem;
+    background: rgba(0,0,0,0.15);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
 }
 
 .stat-item {
@@ -689,15 +696,15 @@ main {
 }
 
 .stat-label {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
     color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.15rem;
 }
 
 .stat-value {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: white;
     font-feature-settings: "tnum";
@@ -3083,18 +3090,22 @@ button:hover {
    WIDGET BASE STYLE (Glassmorphism)
 ============================================ */
 .widget {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 1.25rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
     color: var(--text);
     transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .widget:hover {
-    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
@@ -3109,22 +3120,24 @@ button:hover {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    min-height: 100px;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    min-height: 80px;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .schonzeit-icon-container {
     flex-shrink: 0;
-    width: 64px;
-    height: 64px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3137,28 +3150,27 @@ button:hover {
 }
 
 .schonzeit-icon-container i {
-    font-size: 3rem;
+    font-size: 2rem;
     opacity: 0.9;
 }
 
 .schonzeit-content {
     flex: 1;
     text-align: left;
-    min-height: 60px;
-    /* Stabiler Inhalt */
+    min-height: 40px;
 }
 
 .schonzeit-wildart {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     margin: 0;
     line-height: 1.2;
 }
 
 .schonzeit-datum {
-    font-size: 0.95rem;
+    font-size: 0.75rem;
     opacity: 0.8;
-    margin: 0.25rem 0 0 0;
+    margin: 0.2rem 0 0 0;
 }
 
 .schonzeit-status {
@@ -3169,8 +3181,8 @@ button:hover {
 }
 
 .schonzeit-indicator {
-    width: 16px;
-    height: 16px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     box-shadow: 0 0 8px currentColor;
 }
@@ -3186,7 +3198,7 @@ button:hover {
 }
 
 .schonzeit-status-text {
-    font-size: 0.75rem;
+    font-size: 0.62rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3194,12 +3206,12 @@ button:hover {
 }
 
 .schonzeit-details-btn {
-    padding: 0.6rem 1.25rem;
+    padding: 0.4rem 0.8rem;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.72rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -3207,7 +3219,7 @@ button:hover {
 
 .schonzeit-details-btn:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 /* ============================================
@@ -3474,14 +3486,15 @@ button:hover {
 .schonzeit-liste {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding-bottom: 1rem;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .schonzeit-empty {
     text-align: center;
-    padding: 2rem;
+    padding: 1.5rem;
     color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
 }
 
 /* Wildart Card */
@@ -3489,39 +3502,41 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    padding: 0.8rem 1rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .wildart-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .wildart-icon {
     flex-shrink: 0;
-    width: 54px;
-    height: 54px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
+    background: transparent;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .silhouette-icon {
     object-fit: contain;
-    filter: invert(1) brightness(1.2);
-    mix-blend-mode: lighten;
+    filter: grayscale(1) contrast(10) invert(1);
+    mix-blend-mode: screen;
     display: block;
     margin: 0 auto;
     pointer-events: none;
@@ -3536,7 +3551,7 @@ button:hover {
 }
 
 .wildart-icon i {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     opacity: 0.9;
 }
 
@@ -3546,7 +3561,7 @@ button:hover {
 }
 
 .wildart-name {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     margin: 0;
     line-height: 1.2;
@@ -3554,9 +3569,9 @@ button:hover {
 }
 
 .wildart-zeit {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     opacity: 0.7;
-    margin: 0.25rem 0 0 0;
+    margin: 0.2rem 0 0 0;
 }
 
 .wildart-status {
@@ -3568,8 +3583,8 @@ button:hover {
 }
 
 .wildart-status .wildart-indicator {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
 }
 
@@ -3584,7 +3599,7 @@ button:hover {
 }
 
 .wildart-status span {
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3728,20 +3743,17 @@ button:hover {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
     position: relative;
     background: linear-gradient(180deg,
             rgba(45, 90, 65, 0.8) 0%,
             rgba(40, 80, 60, 0.35) 40%,
             rgba(35, 70, 55, 0.05) 100%);
-    /* backdrop-filter: blur(24px); */
-    /* -webkit-backdrop-filter: blur(24px); */
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -10px 20px rgba(255, 255, 255, 0.03);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     min-height: auto;
     overflow: hidden;
 }
@@ -3768,8 +3780,8 @@ button:hover {
 }
 
 .widget-icon-svg {
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
     opacity: 0.85;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
@@ -3778,23 +3790,23 @@ button:hover {
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.1rem;
 }
 
 .widget-icon {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .widget-value {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     font-weight: 700;
     margin: 0;
     line-height: 1.2;
 }
 
 .widget-label {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     opacity: 0.7;
     margin: 0;
 }
@@ -3872,56 +3884,56 @@ button:hover {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
-/* Entry Items - Glassmorphism Widget Style */
 /* Entry Items - Detaillierte Karten */
 .entry-item {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
+    gap: 0.4rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     color: var(--text);
 }
 
 .entry-item:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .entry-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .entry-header-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex: 1;
     min-width: 0;
 }
 
 .entry-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.85rem;
 }
 
 .entry-date {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     opacity: 0.75;
     white-space: nowrap;
 }
@@ -3929,31 +3941,31 @@ button:hover {
 .entry-wildart {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.05rem;
+    gap: 0.4rem;
+    font-size: 0.85rem;
     padding-left: 0.25rem;
 }
 
 .entry-wildart-icon {
-    font-size: 1.25rem;
+    font-size: 1rem;
 }
 
 .entry-notes {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     opacity: 0.7;
     font-style: italic;
     padding-left: 0.25rem;
-    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    border-left: 2px solid rgba(255, 255, 255, 0.15);
     margin-left: 0.25rem;
     padding-left: 0.75rem;
 }
 
 .entry-delete-btn {
-    background: rgba(231, 76, 60, 0.6);
-    border: 1px solid rgba(231, 76, 60, 0.4);
-    border-radius: 6px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
+    background: rgba(231, 76, 60, 0.5);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: white;
     cursor: pointer;
@@ -3969,22 +3981,22 @@ button:hover {
     transform: scale(0.95);
 }
 
-/* Entry Foto Section - Thumbnail und Button nebeneinander */
+/* Entry Foto Section */
 .entry-foto-section {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Thumbnail Container - feste Höhe mit Delete-Button */
 .entry-foto-thumbnail {
     position: relative;
-    width: 80px;
-    height: 60px;
+    width: 64px;
+    height: 48px;
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
@@ -4010,14 +4022,14 @@ button:hover {
 .entry-foto-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     background: linear-gradient(135deg,
             rgba(60, 120, 80, 0.8) 0%,
             rgba(50, 100, 70, 0.6) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.72rem;
     font-weight: 500;
     color: white;
     cursor: pointer;
@@ -4026,8 +4038,8 @@ button:hover {
 }
 
 .entry-foto-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
 }
 
@@ -4058,10 +4070,10 @@ button:hover {
     align-items: center;
     justify-content: center;
     background: #e74c3c;
-    border: 2px solid white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 50%;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     padding: 0;
     color: white;
     cursor: pointer;
@@ -4071,8 +4083,8 @@ button:hover {
 }
 
 .entry-foto-delete-btn svg {
-    width: 11px;
-    height: 11px;
+    width: 9px;
+    height: 9px;
     flex-shrink: 0;
 }
 
@@ -4410,6 +4422,329 @@ button:hover {
     padding: 0.5rem;
 }
 
+/* Wetter im Dashboard-Feed: kompakter als auf eigener Seite */
+#dashboard-wetter-feed .wetter-detail-grid {
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-widget {
+    padding: 0.7rem 0.8rem;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+#dashboard-wetter-feed .wetter-detail-header {
+    font-size: 0.75rem;
+    margin-bottom: 0.4rem;
+    gap: 0.35rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-header svg {
+    width: 16px;
+    height: 16px;
+}
+
+#dashboard-wetter-feed .wetter-detail-content {
+    gap: 0.3rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-main {
+    font-size: 1.25rem;
+    margin-bottom: 0.1rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-main.moon-icon {
+    font-size: 1.5rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-row {
+    font-size: 0.72rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-row.highlight {
+    padding: 0.25rem 0.4rem;
+    margin: 0.05rem -0.4rem;
+}
+
+#dashboard-wetter-feed .wetter-detail-conditions {
+    font-size: 0.85rem;
+    padding: 0.25rem;
+}
+
+/* ==============================
+   DOKUMENTENSAFE - Feed Widgets
+   ============================== */
+#dashboard-dokumente-feed .wetter-detail-grid {
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    grid-template-columns: 1fr;
+}
+
+#dashboard-dokumente-feed .wetter-detail-widget {
+    padding: 0.7rem 0.8rem;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+#dashboard-dokumente-feed .wetter-detail-header {
+    font-size: 0.75rem;
+    margin-bottom: 0.4rem;
+    gap: 0.35rem;
+}
+
+#dashboard-dokumente-feed .wetter-detail-header svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+#dashboard-dokumente-feed .wetter-detail-content {
+    gap: 0.4rem;
+}
+
+/* Thumbnails */
+.dok-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 24px;
+    align-items: center;
+}
+
+.dok-empty {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-style: italic;
+}
+
+.dok-loading {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.dok-thumb-wrap {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.2s;
+}
+
+.dok-thumb-wrap:active {
+    transform: scale(0.95);
+}
+
+.dok-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+    display: block;
+}
+
+.dok-thumb-delete {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(220, 50, 50, 0.85);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 0;
+}
+
+.dok-thumb-wrap:hover .dok-thumb-delete {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .dok-thumb-delete {
+        opacity: 1;
+    }
+}
+
+/* Upload Button */
+.dok-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+}
+
+.dok-upload-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(0.97);
+}
+
+/* ==============================
+   DOKUMENTENSAFE - Wizard
+   ============================== */
+#dokumente-wizard {
+    padding: 0.5rem 0;
+}
+
+.dok-wizard-steps {
+    position: relative;
+    min-height: 200px;
+}
+
+.dok-wizard-step {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    animation: dokFadeIn 0.3s ease;
+}
+
+.dok-wizard-step.active {
+    display: flex;
+}
+
+@keyframes dokFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dok-wizard-icon {
+    color: var(--primary-light, #7cff9b);
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+}
+
+.dok-wizard-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 0.4rem 0;
+}
+
+.dok-wizard-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 1rem 0;
+    max-width: 280px;
+    line-height: 1.4;
+}
+
+/* Wizard Upload Area */
+.dok-wizard-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+}
+
+.dok-wizard-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    min-height: 20px;
+}
+
+.dok-wizard-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: white;
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.5), rgba(61, 190, 106, 0.3));
+    border: 1px solid rgba(124, 255, 155, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dok-wizard-upload-btn:active {
+    transform: scale(0.97);
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.7), rgba(61, 190, 106, 0.5));
+}
+
+/* Step Indicator Dots */
+.dok-wizard-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.75rem 0;
+}
+
+.dok-wizard-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.3s;
+}
+
+.dok-wizard-dot.active {
+    background: var(--primary-light, #7cff9b);
+    box-shadow: 0 0 6px rgba(124, 255, 155, 0.4);
+    transform: scale(1.2);
+}
+
+/* Wizard Action Buttons */
+.dok-wizard-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0 0.5rem;
+}
+
+.dok-wizard-btn {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dok-wizard-prev {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dok-wizard-prev:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.dok-wizard-next {
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.5), rgba(61, 190, 106, 0.3));
+    color: white;
+    border-color: rgba(124, 255, 155, 0.25);
+}
+
+.dok-wizard-next:active {
+    background: linear-gradient(135deg, rgba(95, 161, 117, 0.7), rgba(61, 190, 106, 0.5));
+}
+
 /* Mobile Anpassungen */
 @media (max-width: 480px) {
     #wetter-page {
@@ -4704,43 +5039,44 @@ button:hover {
 .bulletin-list {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
 }
 
 .bulletin-item {
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 1.5rem 1.75rem;
+    background: linear-gradient(180deg,
+            rgba(45, 90, 65, 0.8) 0%,
+            rgba(40, 80, 60, 0.35) 40%,
+            rgba(35, 70, 55, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
     position: relative;
     animation: bulletinSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    margin-bottom: 0;
 }
 
 .bulletin-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.4rem;
     font-weight: 500;
 }
 
 .bulletin-item-sender {
-    color: rgba(124, 255, 155, 0.8);
+    color: rgba(124, 255, 155, 0.9);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .bulletin-item-content {
-    font-size: 1.1rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.4;
     color: white;
     white-space: pre-wrap;
     word-break: break-word;
@@ -4749,15 +5085,15 @@ button:hover {
 .bulletin-done-btn {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 6px 12px;
+    gap: 0.3rem;
+    padding: 4px 10px;
     background: rgba(95, 161, 117, 0.2);
     border: 1px solid rgba(95, 161, 117, 0.3);
     color: var(--primary-light);
     cursor: pointer;
     transition: all 0.2s;
-    border-radius: 10px;
-    font-size: 0.85rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
     font-weight: 600;
 }
 
@@ -4768,13 +5104,13 @@ button:hover {
 }
 
 .bulletin-delete-btn {
-    padding: 8px;
+    padding: 6px;
     background: transparent;
     border: none;
     color: rgba(239, 68, 68, 0.5);
     cursor: pointer;
     transition: all 0.2s;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .bulletin-delete-btn:hover {
@@ -4786,9 +5122,10 @@ button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    padding: 3rem;
+    gap: 0.75rem;
+    padding: 2rem;
     color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
 }
 
 @keyframes bulletinSlideIn {
@@ -4805,15 +5142,15 @@ button:hover {
 
 @media (max-width: 480px) {
     .bulletin-widget {
-        padding: 0.9rem;
+        padding: 0.75rem;
     }
 
     .bulletin-board-title {
-        font-size: 1.3rem;
+        font-size: 1rem;
     }
 
     .bulletin-item-content {
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
 }
 
