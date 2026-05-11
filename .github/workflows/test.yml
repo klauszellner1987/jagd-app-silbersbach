@@ -66,6 +66,15 @@ jobs:
           path: vitest.log
           retention-days: 7
 
+      - name: Emit Vitest log as annotations on failure
+        if: steps.vitest.outputs.VITEST_EXIT != '0'
+        run: |
+          echo "::group::Vitest output"
+          cat vitest.log
+          echo "::endgroup::"
+          # Letzte 4000 Zeichen als ::error:: Annotation (per API abfragbar)
+          tail -c 4000 vitest.log | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g' | xargs -0 -I {} echo "::error::{}"
+
       - name: Fail if Vitest exit != 0
         if: steps.vitest.outputs.VITEST_EXIT != '0'
         run: |
