@@ -50,6 +50,8 @@ src/scripts/
       index.js
     auth/                # Login-Overlay, onAuthStateChanged, logout (Phase 8a)
       index.js
+    navigation/          # Seitenwechsel, Dashboard, Karten-Panels (Phase 8c)
+      index.js
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
 
@@ -140,7 +142,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 5         | `wetter/`            | migriert   | `wetter.pure.js` (Formatierung/HTML), `refresh` + `renderDetailGrid` |
 | 6         | `dokumente/`         | migriert   | `dokumente.pure.js`, `dokumenteRepo`, Wizard/Upload, `window.compressImage`-Brücke |
 | 7         | `map/`               | migriert   | Leaflet, GPS, Hochsitz-Panels, Eigengrundstücke, `mapRepo`, `AbortController` |
-| 8         | `auth/` + `core/`    | teilweise  | **8a:** `features/auth`; **8b:** `core/ui` — `showToast` / `showConfirm`, `initBridge()` am Ende von `main.js`; **offen:** Navigation, Profil, PWA/SW, Version, `firebaseConfig` |
+| 8         | `auth/` + `core/`    | teilweise  | **8a:** `features/auth`; **8b:** `core/ui`; **8c:** `features/navigation`; **offen:** Profil, PWA/SW, Version, `firebaseConfig`, schlanker Bootstrap |
 
 ## Phase 8 — Inventur: Was noch in `public/js/app.js` liegt
 
@@ -151,7 +153,8 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | `isNativeApp` | Capacitor-Check |
 | `jagdzeitenBayern` + Bridge | `window.jagdzeitenBayern` für Schonzeit/Streckenliste |
 | `showToast` / `showConfirm` | → **`core/ui`** (`window.*` via `main.js`) |
-| Navigation | `navigateToPage`, `navigateToDashboard`, `closeMapPanels`, `setActiveTab`, `navigateToTab`, `initNavigation` |
+| Navigation | → **`features/navigation`** (`window.navigateToPage` / `navigateToDashboard`) |
+| `toggleDashboardFeed` | noch Monolith (von `navigateToDashboard` aufgerufen) |
 | `compressImage` + `window.compressImage` | Profil + Dokumente |
 | `updateUserInfo`, `openProfileModal`, Profil-`submit` in `initAll` | Firebase Auth Profil + Storage |
 | `preventIOSBounce`, `initClock` | Shell |
@@ -161,7 +164,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | `checkForUpdates`, `showUpdateToast` | Version-Fallback |
 | `initAll`, `updateVersionDisplays`, Error-Handler | Bootstrap |
 
-Nächste sinnvolle Schritte: **8c** Navigation, **8d** Profil, **8e** PWA + SW + Version, **8f** schlanker `app.js`-Bootstrap + optional `firebaseConfig` auslagern. (**8b** Toasts/Confirm → `core/ui` — erledigt.)
+Nächste sinnvolle Schritte: **8d** Profil, **8e** PWA + SW + Version, **8f** schlanker `app.js`-Bootstrap + optional `firebaseConfig` / `toggleDashboardFeed` auslagern. (**8c** Navigation — erledigt.)
 
 ## Bekannte Einschränkungen / TODOs
 

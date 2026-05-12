@@ -1,7 +1,7 @@
 // ============================================================================
 // features/schonzeit/index.js — Widget, Liste, Filter-Tabs (kein Firestore)
 // Monolith-Bruecken: window.jagdzeitenBayern, window.getWildartIconHTML
-// navigateToPage schaltet Filter "alle" (siehe public/js/app.js).
+// navigateToPage schaltet Filter "alle" (siehe features/navigation).
 // Astro-onclick: window.filterSchonzeitListe
 // ============================================================================
 

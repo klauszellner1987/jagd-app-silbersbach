@@ -21,6 +21,7 @@ import { dokumenteFeature } from './features/dokumente/index.js';
 import { mapFeature } from './features/map/index.js';
 import { authFeature } from './features/auth/index.js';
 import { uiCore } from './core/ui/index.js';
+import { navigationFeature } from './features/navigation/index.js';
 
 const features = (window.__features = window.__features || {});
 features.presence = presenceFeature;
@@ -33,8 +34,10 @@ features.dokumente = dokumenteFeature;
 features.map = mapFeature;
 features.auth = authFeature;
 features.ui = uiCore;
+features.navigation = navigationFeature;
 
 uiCore.initBridge();
+navigationFeature.initBridge();
 
 // Hilfreich fuer Debug + E2E-Tests: signalisiert, dass die Bridge bereit ist.
 window.__featuresReady = true;

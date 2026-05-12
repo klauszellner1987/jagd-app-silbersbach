@@ -131,141 +131,11 @@ window.jagdzeitenBayern = jagdzeitenBayern;
 // Toasts / Confirm: src/scripts/core/ui/index.js (window.showToast / window.showConfirm via main.js initBridge)
 
 // ==============================
-// PAGE NAVIGATION (Dashboard -> Pages -> Back)
+// PAGE NAVIGATION
 // ==============================
-
-// Navigate to a page
-function navigateToPage(targetId) {
-    const allPages = document.querySelectorAll(".page");
-    const fabBtn = document.getElementById("fab-add-btn");
-    const fabExportBtn = document.getElementById("fab-export-btn");
-    const bottomNav = document.getElementById("bottom-nav");
-
-    allPages.forEach(p => p.classList.remove("active"));
-    const targetPage = document.getElementById(targetId);
-    if (targetPage) {
-        targetPage.classList.add("active");
-
-        // Map resize fix
-        if (targetId === "revier" && window.mapInstance) {
-            setTimeout(() => window.mapInstance.invalidateSize(), 200);
-        }
-
-        // FAB-Buttons nur in Streckenliste sichtbar
-        if (targetId === "streckenliste") {
-            navigateToDashboard('strecke');
-            return;
-        } else if (targetId === "schonzeit-page") {
-            window.__features?.schonzeit?.setFilterAndRender?.('alle');
-            navigateToDashboard('schonzeit');
-            return;
-        } else if (targetId === "wetter-page") {
-            navigateToDashboard('wetter');
-            return;
-        } else {
-            if (fabBtn) fabBtn.classList.remove("visible");
-            if (fabExportBtn) fabExportBtn.classList.remove("visible");
-        }
-
-        // Bottom Navigation immer anzeigen
-        if (bottomNav) {
-            bottomNav.classList.remove("hidden");
-        }
-        // Tab aktiv markieren
-        setActiveTab(targetId);
-
-        // Seite initial rendern falls nötig
-        if (targetId === 'schonzeit-page') {
-            window.__features?.schonzeit?.renderListe?.();
-        }
-    }
-
-    // Panels schließen, wenn wir nicht auf der Karte sind
-    if (targetPage && targetId !== "revier") {
-        closeMapPanels();
-    }
-}
-
-window.navigateToPage = navigateToPage;
-
-// Side-Panels der Karte (Hochsitze/Flurstücke) schließen
-function closeMapPanels() {
-    const panels = ["hochsitz-panel", "eigengrundstuecke-panel"];
-    panels.forEach(id => {
-        const p = document.getElementById(id);
-        if (p && !p.classList.contains("hidden")) {
-            p.classList.remove("open");
-            setTimeout(() => p.classList.add("hidden"), 300);
-        }
-    });
-}
-
-// Navigate back to dashboard
-function navigateToDashboard(view = 'standard') {
-    const allPages = document.querySelectorAll(".page");
-    const fabBtn = document.getElementById("fab-add-btn");
-    const fabExportBtn = document.getElementById("fab-export-btn");
-    const bottomNav = document.getElementById("bottom-nav");
-
-    allPages.forEach(p => p.classList.remove("active"));
-    const dashboard=document.getElementById("dashboard");
-    if (dashboard) dashboard.classList.add("active");
-
-    // Hide FABs
-    if (fabBtn) fabBtn.classList.remove("visible");
-    if (fabExportBtn) fabExportBtn.classList.remove("visible");
-
-    // Tab Bar ANZEIGEN (nicht mehr ausblenden)
-    if (bottomNav) bottomNav.classList.remove("hidden");
-
-    // Reset Dashboard Feed to desired view
-    toggleDashboardFeed(view);
-
-    // Tab aktiv markieren
-    setActiveTab("dashboard");
-
-    // Alle Karten-Panels (Hochsitze/Flurstücke) schließen
-    closeMapPanels();
-}
-
-function navigateToTab(pageId) {
-    const allPages = document.querySelectorAll(".page");
-    const fabBtn = document.getElementById("fab-add-btn");
-    const fabExportBtn = document.getElementById("fab-export-btn");
-    const bottomNav = document.getElementById("bottom-nav");
-
-    allPages.forEach(p => p.classList.remove("active"));
-    const page = document.getElementById(pageId);
-    if (page) page.classList.add("active");
-
-    // Tab Bar anzeigen
-    if (bottomNav) bottomNav.classList.remove("hidden");
-
-    // FABs nur für Streckenliste
-    if (pageId === "streckenliste") {
-        if (fabBtn) fabBtn.classList.add("visible");
-        if (fabExportBtn) {
-            fabExportBtn.classList.add("visible");
-        }
-    } else {
-        if (fabBtn) fabBtn.classList.remove("visible");
-        if (fabExportBtn) fabExportBtn.classList.remove("visible");
-    }
-
-    // Tab aktiv markieren
-    setActiveTab(pageId);
-
-    // Panels schließen, wenn wir nicht auf der Karte sind
-    if (pageId !== "revier") {
-        closeMapPanels();
-    }
-}
-
-function setActiveTab(pageId) {
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === pageId);
-    });
-}
+// v6 Refactor: navigateToPage, navigateToDashboard, closeMapPanels, setActiveTab,
+// initNavigation -> src/scripts/features/navigation/ (Bridge: window.__features.navigation,
+// window.navigateToPage / window.navigateToDashboard via initBridge in main.js)
 
 async function compressImage(file, maxWidth = 400, maxHeight = 400) {
     return new Promise((resolve, reject) => {
@@ -431,40 +301,6 @@ function preventIOSBounce() {
         }
     }, { passive: false });
 }
-
-// Initialize Navigation when DOM is ready
-function initNavigation() {
-    const navWidgets = document.querySelectorAll(".nav-widget");
-    const backButtons = document.querySelectorAll(".back-to-home");
-
-    // Event Listeners for Navigation Widgets
-    navWidgets.forEach(widget => {
-        widget.addEventListener("click", () => {
-            const target = widget.dataset.target;
-            if (target) navigateToPage(target);
-        });
-    });
-
-    // Event Listeners for Back Buttons
-    backButtons.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            navigateToDashboard();
-        });
-    });
-
-    // Also use event delegation for dynamically added buttons
-    document.addEventListener("click", (e) => {
-        if (e.target.closest(".back-to-home")) {
-            e.preventDefault();
-            e.stopPropagation();
-            navigateToDashboard();
-        }
-    });
-
-}
-
 
 // ==============================
 // FIREBASE AUTHENTICATION
@@ -989,7 +825,7 @@ function initAll() {
         window.showToast("Login Init Fehler", "error");
     }
 
-    try { initNavigation(); } catch (e) {
+    try { window.__features?.navigation?.initNavigation(); } catch (e) {
         console.error("Navigation init error:", e);
     }
 
@@ -1012,7 +848,7 @@ function initAll() {
             initializeApp,
             updateUserInfo,
             showInstallBannerAfterLogin,
-            setActiveTab,
+            setActiveTab: (...args) => window.__features?.navigation?.setActiveTab?.(...args),
         });
     } catch (e) {
         console.error("Auth Listener init error:", e);
@@ -1036,6 +872,10 @@ function initAll() {
 
     try { window.__features?.dokumente?.initUI(); } catch (e) {
         console.error("Dokumente init error:", e);
+    }
+
+    try { window.__features?.navigation?.initUI(); } catch (e) {
+        console.error("Navigation initUI error:", e);
     }
 
     try { window.__features?.auth?.initUI(); } catch (e) {
