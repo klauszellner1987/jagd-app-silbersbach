@@ -33,7 +33,7 @@ test.describe('Smoke (minimal E2E)', () => {
         await expect(page.locator('#dashboard')).toBeVisible();
     });
 
-    test('v6 Bridges: presence, bulletin, streckenliste, notifications', async ({ page }) => {
+    test('v6 Bridges: presence, bulletin, streckenliste, schonzeit, notifications', async ({ page }) => {
         await setupMockedApp(page, TEST_USER);
         await page.goto('/jagd-app-silbersbach/');
         await expect(page.locator('body')).toHaveClass(/authenticated/, { timeout: 10_000 });
@@ -50,6 +50,10 @@ test.describe('Smoke (minimal E2E)', () => {
                 window.__features?.streckenliste
                 && typeof window.__features.streckenliste.onLogin === 'function'
                 && typeof window.__features.streckenliste.initUI === 'function'),
+            schonzeit: !!(
+                window.__features?.schonzeit
+                && typeof window.__features.schonzeit.initUI === 'function'
+                && typeof window.__features.schonzeit.renderListe === 'function'),
             notifications: !!(
                 window.__features?.notifications
                 && typeof window.__features.notifications.init === 'function'),
@@ -59,6 +63,7 @@ test.describe('Smoke (minimal E2E)', () => {
             presence: true,
             bulletin: true,
             streckenliste: true,
+            schonzeit: true,
             notifications: true,
         });
     });

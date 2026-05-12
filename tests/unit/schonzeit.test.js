@@ -4,6 +4,10 @@ import {
     getJagdzeitDatum,
     parseJagdzeit,
 } from '../../public/js/lib/pure.js';
+import {
+    wildartenNachTabFilter,
+    wildartenFuerSchonzeitAnsicht,
+} from '../../src/scripts/features/schonzeit/schonzeit.pure.js';
 
 const stockente = { id: 'stockente', name: 'Stockente', jagdzeitStart: '01.09', jagdzeitEnde: '15.01', iconClass: 'ente' };
 const fasan = { id: 'fasan', name: 'Fasan', jagdzeitStart: '01.10', jagdzeitEnde: '31.12', iconClass: 'fasan' };
@@ -92,5 +96,28 @@ describe('parseJagdzeit', () => {
     it('verwendet aktuelles Jahr ohne Parameter', () => {
         const d = parseJagdzeit('01.01');
         expect(d.getFullYear()).toBe(new Date().getFullYear());
+    });
+});
+
+describe('wildartenNachTabFilter', () => {
+    const juni = new Date(2026, 5, 1);
+    const katalogMitUnbekannt = [
+        stockente,
+        { id: 'x', name: 'Nicht gelistet', iconClass: 'sonstwas', jagdzeitStart: '01.01', jagdzeitEnde: '31.12' },
+    ];
+
+    it('allowlist: sonstiges iconClass faellt raus', () => {
+        const only = wildartenFuerSchonzeitAnsicht(katalogMitUnbekannt);
+        expect(only.map((w) => w.id)).toEqual(['stockente']);
+    });
+
+    it('"schonzeit" filtert auf istSchonzeit', () => {
+        const lst = wildartenNachTabFilter('schonzeit', [stockente], juni);
+        expect(lst).toHaveLength(1);
+        expect(lst[0].id).toBe('stockente');
+    });
+
+    it('"jagdzeit" zeigt Stockente im Juni nicht', () => {
+        expect(wildartenNachTabFilter('jagdzeit', [stockente], juni)).toHaveLength(0);
     });
 });

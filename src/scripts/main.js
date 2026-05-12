@@ -15,12 +15,14 @@ import { presenceFeature } from './features/presence/index.js';
 import { bulletinFeature } from './features/bulletin/index.js';
 import { notificationsFeature } from './core/notifications/index.js';
 import { streckenlisteFeature } from './features/streckenliste/index.js';
+import { schonzeitFeature } from './features/schonzeit/index.js';
 
 const features = (window.__features = window.__features || {});
 features.presence = presenceFeature;
 features.bulletin = bulletinFeature;
 features.notifications = notificationsFeature;
 features.streckenliste = streckenlisteFeature;
+features.schonzeit = schonzeitFeature;
 
 // Hilfreich fuer Debug + E2E-Tests: signalisiert, dass die Bridge bereit ist.
 window.__featuresReady = true;

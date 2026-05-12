@@ -38,7 +38,7 @@ window.toggleDashboardFeed = function(view) {
         if (fabExportBtn) fabExportBtn.classList.add("visible");
     } else if (view === 'schonzeit') {
         schonzeitFeed.classList.remove("hidden");
-        renderSchonzeitListe();
+        window.__features?.schonzeit?.renderListe?.();
     } else if (view === 'bulletin') {
         bulletinFeed.classList.remove("hidden");
     } else if (view === 'statistik') {
@@ -212,6 +212,7 @@ function navigateToPage(targetId) {
             navigateToDashboard('strecke');
             return;
         } else if (targetId === "schonzeit-page") {
+            window.__features?.schonzeit?.setFilterAndRender?.('alle');
             navigateToDashboard('schonzeit');
             return;
         } else if (targetId === "wetter-page") {
@@ -231,7 +232,7 @@ function navigateToPage(targetId) {
 
         // Seite initial rendern falls nötig
         if (targetId === 'schonzeit-page') {
-            renderSchonzeitListe();
+            window.__features?.schonzeit?.renderListe?.();
         }
     }
 
@@ -240,6 +241,8 @@ function navigateToPage(targetId) {
         closeMapPanels();
     }
 }
+
+window.navigateToPage = navigateToPage;
 
 // Side-Panels der Karte (Hochsitze/Flurstücke) schließen
 function closeMapPanels() {
@@ -790,83 +793,6 @@ function initClock() {
     setInterval(updateClock, 1000);
 }
 
-// ==============================
-// SCHONZEIT WIDGET
-// ==============================
-let schonzeitIndex = 0;
-let schonzeitInterval = null;
-
-function parseJagdzeit(dateStr) {
-    // Parst "DD.MM" zu einem Date-Objekt im aktuellen Jahr
-    const [day, month] = dateStr.split('.').map(Number);
-    const year = new Date().getFullYear();
-    return new Date(year, month - 1, day);
-}
-
-function istSchonzeit(wildart) {
-    // Keine Jagdzeit = ganzjährige Schonzeit
-    if (wildart.keineJagdzeit) {
-        return true;
-    }
-
-    // Ganzjährig bejagbar = nie Schonzeit
-    if (wildart.ganzjaehrig) {
-        return false;
-    }
-
-    const heute = new Date();
-    const start = parseJagdzeit(wildart.jagdzeitStart);
-    const ende = parseJagdzeit(wildart.jagdzeitEnde);
-
-    // Falls die Jagdzeit über den Jahreswechsel geht (z.B. 01.08 - 31.01)
-    if (start > ende) {
-        // Jagdzeit: start bis 31.12 ODER 01.01 bis ende
-        // Schonzeit: ende+1 bis start-1
-        return heute > ende && heute < start;
-    } else {
-        // Normale Jagdzeit innerhalb eines Jahres
-        // Schonzeit: vor start ODER nach ende
-        return heute < start || heute > ende;
-    }
-}
-
-function getSchonzeitDatum(wildart) {
-    if (wildart.keineJagdzeit) {
-        return "Ganzjährige Schonzeit";
-    }
-
-    if (wildart.ganzjaehrig) {
-        return "Ganzjährig bejagbar";
-    }
-
-    const istAktuelleSchonzeit = istSchonzeit(wildart);
-
-    if (istAktuelleSchonzeit) {
-        // Schonzeit - zeige wann Jagdzeit beginnt
-        return `Schonzeit bis ${wildart.jagdzeitStart}`;
-    } else {
-        // Jagdzeit - zeige Jagdzeitraum
-        return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
-    }
-}
-
-function getWildartenMitSchonzeit() {
-    // Filtere Wildarten die aktuell Schonzeit haben
-    return jagdzeitenBayern.filter(w => istSchonzeit(w));
-}
-
-function getWildartenMitJagdzeit() {
-    // Filtere Wildarten die aktuell Jagdzeit haben (nicht in Schonzeit)
-    return jagdzeitenBayern.filter(w => !istSchonzeit(w) && !w.keineJagdzeit);
-}
-
-function getJagdzeitDatum(wildart) {
-    if (wildart.keineJagdzeit) {
-        return "Keine Jagdzeit";
-    }
-    return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
-}
-
 // Hilfsfunktion für hochwertige Jagd-Silhouetten (Hirsch: Hirschkopf.svg, Rest: SVGs)
 function getWildartIconHTML(type, size = 30) {
     const pngIcons = {
@@ -935,124 +861,6 @@ function getWildartIconHTML(type, size = 30) {
     return "";
 }
 window.getWildartIconHTML = getWildartIconHTML;
-
-function updateSchonzeitWidget() {
-    const iconContainer = document.getElementById('schonzeit-icon');
-    const wildartEl = document.getElementById('schonzeit-wildart');
-    const datumEl = document.getElementById('schonzeit-datum');
-    const indicatorEl = document.getElementById('schonzeit-indicator');
-    const statusTextEl = document.getElementById('schonzeit-status-text');
-
-    if (!iconContainer || !wildartEl || !datumEl) return;
-
-    const jagdzeitWildarten = getWildartenMitJagdzeit();
-
-    if (jagdzeitWildarten.length === 0) {
-        iconContainer.style.display = 'none';
-        wildartEl.textContent = "Keine aktiven Jagdzeiten";
-        datumEl.textContent = "Alle Wildarten haben aktuell Schonzeit";
-        indicatorEl.className = "schonzeit-indicator closed";
-        statusTextEl.textContent = "Schonzeit";
-        return;
-    }
-
-    const wildart = jagdzeitWildarten[schonzeitIndex % jagdzeitWildarten.length];
-    iconContainer.style.display = 'none';
-    wildartEl.textContent = wildart.name;
-    datumEl.textContent = getJagdzeitDatum(wildart);
-    indicatorEl.className = "schonzeit-indicator open";
-    statusTextEl.textContent = "Jagdzeit";
-
-    schonzeitIndex++;
-}
-
-function initSchonzeitWidget() {
-    // Initial update
-    updateSchonzeitWidget();
-
-    // Rotation alle 5 Sekunden
-    schonzeitInterval = setInterval(updateSchonzeitWidget, 5000);
-
-    // Details-Button Event Listener (Widget auf Dashboard)
-    const detailsBtn = document.getElementById('schonzeit-widget');
-    if (detailsBtn) {
-        detailsBtn.addEventListener('click', () => {
-            showSchonzeitDetails();
-        });
-    }
-
-}
-
-function showSchonzeitDetails() {
-    // Navigiere zur Detail-Seite
-    navigateToPage('schonzeit-page');
-    // Sicherstellen dass 'Alle' ausgewählt ist
-    filterSchonzeitListe('alle');
-}
-
-let aktuellerFilter = 'alle';
-
-function filterSchonzeitListe(filter) {
-    aktuellerFilter = filter;
-
-    // Update active tab
-    document.querySelectorAll('.schonzeit-filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
-
-    renderSchonzeitListe();
-}
-
-function renderSchonzeitListe() {
-    const container = document.getElementById('schonzeit-liste');
-    const dashboardContainer = document.getElementById('schonzeit-liste-dashboard');
-    if (!container && !dashboardContainer) return;
-
-    let wildarten = jagdzeitenBayern.filter(w => 
-        ['rehbock', 'reh', 'wildschwein', 'gams', 'muffelwild', 'dachs', 'marder', 'iltis', 'hermelin', 'mauswiesel', 'ente', 'fasan', 'deer', 'crow', 'eichelhaeher', 'fox', 'rabbit'].includes(w.iconClass)
-    );
-
-    // Filter anwenden
-    if (aktuellerFilter === 'schonzeit') {
-        wildarten = wildarten.filter(w => istSchonzeit(w));
-    } else if (aktuellerFilter === 'jagdzeit') {
-        wildarten = wildarten.filter(w => !istSchonzeit(w));
-    }
-
-    const html = wildarten.length === 0 
-        ? `<div class="schonzeit-empty"><p>Keine Wildarten gefunden.</p></div>`
-        : wildarten.map(wildart => {
-            const hatSchonzeit = istSchonzeit(wildart);
-            const statusClass = hatSchonzeit ? 'closed' : 'open';
-            const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
-            let zeitInfo = wildart.keineJagdzeit ? 'Ganzjährige Schonzeit' : (wildart.ganzjaehrig ? 'Ganzjährig bejagbar' : `Jagdzeit: ${wildart.jagdzeitStart || '-'} - ${wildart.jagdzeitEnde || '-'}`);
-
-            return `
-                <div class="wildart-card">
-                    <div class="wildart-icon">
-                        ${getWildartIconHTML(wildart.iconClass, 44)}
-                    </div>
-                    <div class="wildart-info">
-                        <h3 class="wildart-name">${wildart.name}</h3>
-                        <p class="wildart-zeit">${zeitInfo}</p>
-                    </div>
-                    <div class="wildart-status ${statusClass}">
-                        <div class="wildart-indicator"></div>
-                        <span>${statusText}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-    if (container) container.innerHTML = html;
-    if (dashboardContainer) dashboardContainer.innerHTML = html;
-}
-
-function closeSchonzeitPage() {
-    // Navigiere zurück zum Dashboard mit dem bestehenden Navigationssystem
-    navigateToDashboard();
-}
 
 // ==============================
 // INITIALIZE APP
@@ -2894,7 +2702,7 @@ function initAll() {
         console.error("Clock init error:", e);
     }
 
-    try { initSchonzeitWidget(); } catch (e) {
+    try { window.__features?.schonzeit?.initUI(); } catch (e) {
         console.error("Schonzeit Widget init error:", e);
     }
 

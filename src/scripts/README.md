@@ -33,6 +33,9 @@ src/scripts/
     streckenliste/       # Abschüsse / entries
       index.js
       streckenliste.pure.js
+    schonzeit/           # Jagd-/Schonzeiten (Widget + Listen, kein Firestore)
+      index.js
+      schonzeit.pure.js
   ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
@@ -120,7 +123,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 2         | `bulletin/`          | migriert   | Schwarzes Brett (Liste, Preview, Badge, Stats-Detail)                     |
 | 2         | `core/notifications/`| migriert   | FCM-Token (Web + Native), orthogonal zum Bulletin-Modul                   |
 | 3         | `streckenliste/`     | migriert   | entries-Repo, Liste/Modal/Fotos/Excel, Bridge + `renderDetailStats`       |
-| 4         | `schonzeit/`         | offen      | Reine Logik + Pure-Helper, kein Firestore — sehr schnell                  |
+| 4         | `schonzeit/`         | migriert   | Pure `schonzeit.pure.js`, Widget/Liste/API `initUI`; `pure.js`-Re-Export |
 | 5         | `wetter/`            | offen      | API-Layer + UI                                                            |
 | 6         | `dokumente/`         | offen      | Storage-Integration, Wizard-Flow                                          |
 | 7         | `map/`               | offen      | Leaflet + GPS, grösster Umfang                                            |
@@ -128,9 +131,8 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 
 ## Bekannte Einschränkungen / TODOs
 
-- `public/js/lib/pure.js` enthält noch die nicht-presence-Pure-Helper
-  (`parseJagdzeit`, `istSchonzeit`, `getJagdzeitDatum`, `compressImage`).
-  Diese ziehen mit den jeweiligen Modulen um.
+- `public/js/lib/pure.js` re-exportiert Schonzeit-Pure aus `features/schonzeit/`;
+  `compressImage` bleibt hier bis Profil bzw. Asset-Modul.
 - `window.firebase` (Compat-SDK) wird vom Monolithen erwartet — der wechsel
   auf modulares Firebase v9+ ist erst sinnvoll, wenn der Monolith vollständig
   weg ist.
