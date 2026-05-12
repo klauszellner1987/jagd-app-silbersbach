@@ -125,6 +125,9 @@ const jagdzeitenBayern = [
     { id: "eichelhaeler", name: "Eichelhäher", jagdzeitStart: "16.07", jagdzeitEnde: "14.03", iconClass: "eichelhaeher" }
 ];
 
+// Bridge fuer v6-Module (z.B. streckenliste): Katalog + Icon-Helfer
+window.jagdzeitenBayern = jagdzeitenBayern;
+
 function showToast(message, type="info", icon = null) {
     const container = document.getElementById("toast-container");
     if (!container) return;
@@ -687,6 +690,7 @@ function initAuthListener() {
             updateUserInfo(user);
             window.__features?.presence?.onLogin(user);
             window.__features?.bulletin?.onLogin(user);
+            window.__features?.streckenliste?.onLogin(user);
 
             // Tab Bar sofort nach Login anzeigen
             const bottomNav = document.getElementById("bottom-nav");
@@ -731,6 +735,7 @@ function initAuthListener() {
             // User is signed out
             document.body.classList.remove("authenticated");
             window.__features?.bulletin?.onLogout();
+            window.__features?.streckenliste?.onLogout();
 
             if (loginOverlay) {
                 loginOverlay.style.display = "flex";
@@ -929,6 +934,8 @@ function getWildartIconHTML(type, size = 30) {
 
     return "";
 }
+window.getWildartIconHTML = getWildartIconHTML;
+
 function updateSchonzeitWidget() {
     const iconContainer = document.getElementById('schonzeit-icon');
     const wildartEl = document.getElementById('schonzeit-wildart');
@@ -1055,74 +1062,15 @@ async function initializeApp() {
     const db = firebase.firestore();
     const hochsitzeCollection = db.collection("hochsitze");
 
-    // SCHWARZES BRETT siehe src/scripts/features/bulletin/index.js (Bridge: window.__features.bulletin)
-    let entries = [];
-
-    // Die Funktion definieren wir GANZ HIER OBEN im Scope von initializeApp
+    // Streckenliste / Schwarzes Brett: src/scripts/features (Bridge: window.__features.*)
     function renderDetailStats() {
         try {
-            const streckeContainer = document.getElementById("stats-detail-strecke");
-            const rehwildContainer = document.getElementById("stats-detail-rehwild");
-
-            if (!streckeContainer || !rehwildContainer) return;
-
-            // 1. Abschuss nach Wildarten
-            const statsMap = {};
-            entries.forEach(e => {
-                if (e.wildart) {
-                    statsMap[e.wildart] = (statsMap[e.wildart] || 0) + 1;
-                }
-            });
-
-            let streckeHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
-            const sortedStats = Object.entries(statsMap).sort((a,b) => b[1] - a[1]);
-            if (sortedStats.length === 0) {
-                streckeHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
-            } else {
-                sortedStats.forEach(([art, count]) => {
-                    streckeHTML += `
-                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
-                            <span>${art}</span>
-                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
-                        </div>
-                    `;
-                });
-            }
-            streckeHTML += '</div>';
-            streckeContainer.innerHTML = streckeHTML;
-
-            // 2. Rehwild Details
-            const rehEntries = entries.filter(e => e.wildart === "Rehwild");
-            const rehMap = {};
-            rehEntries.forEach(e => {
-                const kat = e.unterart || "Unbekannt";
-                rehMap[kat] = (rehMap[kat] || 0) + 1;
-            });
-
-            let rehHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
-            const sortedReh = Object.entries(rehMap).sort((a,b) => b[1] - a[1]);
-            if (sortedReh.length === 0) {
-                rehHTML += "<p style='opacity:0.5'>Keine Daten vorhanden.</p>";
-            } else {
-                sortedReh.forEach(([kat, count]) => {
-                    rehHTML += `
-                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
-                            <span>${kat}</span>
-                            <span style="font-weight: bold; color: var(--primary-light);">${count}</span>
-                        </div>
-                    `;
-                });
-            }
-            rehHTML += '</div>';
-            rehwildContainer.innerHTML = rehHTML;
-
-            // 3. Schwarzes Brett (Offene Beiträge) - rendert das bulletin-Modul
+            window.__features?.streckenliste?.renderStatsDetail();
             window.__features?.bulletin?.renderStatsDetail();
         } catch (err) {
             console.error("renderDetailStats error:", err);
         }
     }
-    // Global für onclick Handler verfügbar machen
     window.renderDetailStats = renderDetailStats;
 
     const hochsitzPanel = document.getElementById("hochsitz-panel");
@@ -1194,373 +1142,6 @@ async function initializeApp() {
             });
         });
     }
-    const entriesCollection = db.collection("entries");
-
-    const entryList = document.getElementById("entry-list");
-    const addBtn = document.getElementById("add-entry-btn");
-    const modal = document.getElementById("entry-modal");
-    const form = document.getElementById("entry-form");
-    const cancelBtn = document.getElementById("cancel-entry");
-    const wildSelect = document.getElementById("wildart");
-    const subcategoryContainer = document.getElementById("subcategory-container");
-    const fabAddBtn = document.getElementById("fab-add-btn");
-
-    if (fabAddBtn) {
-        fabAddBtn.addEventListener("click", () => {
-            modal.classList.remove("hidden");
-        });
-    }
-
-    const fabExportBtn = document.getElementById("fab-export-btn");
-    if (fabExportBtn) {
-        fabExportBtn.addEventListener("click", () => {
-            if (entries.length === 0) {
-                showToast("Keine Einträge zum Exportieren vorhanden", "info");
-                return;
-            }
-
-            try {
-                // Daten für Excel vorbereiten
-                const exportData = entries.map(e => ({
-                    'Datum': e.datum || '',
-                    'Wildart': e.wildart || '',
-                    'Unterart': e.unterart || '',
-                    'Erleger': e.erleger || '',
-                    'Bemerkung': e.bemerkung || '',
-                    'Foto': (e.imageBase64 || e.imageUrl) ? 'Ja' : 'Nein'
-                }));
-
-                // Neues Workbook erstellen
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.json_to_sheet(exportData);
-
-                // Spaltenbreiten optimieren
-                const wscols = [
-                    {wch: 12}, // Datum
-                    {wch: 20}, // Wildart
-                    {wch: 20}, // Unterart
-                    {wch: 20}, // Erleger
-                    {wch: 40}, // Bemerkung
-                    {wch: 10}  // Foto
-                ];
-                ws['!cols'] = wscols;
-
-                XLSX.utils.book_append_sheet(wb, ws, "Streckenliste");
-
-                // Download auslösen
-                const filename = `Streckenliste_Silbersbach_${new Date().toISOString().split('T')[0]}.xlsx`;
-                XLSX.writeFile(wb, filename);
-
-                showToast("Excel-Export erfolgreich", "success");
-            } catch (err) {
-                console.error("Export Fehler:", err);
-                showToast("Fehler beim Exportieren", "error");
-            }
-        });
-    }
-
-
-    entriesCollection.orderBy("datum", "desc")
-        .onSnapshot(snapshot => {
-            entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // Counter im Dashboard-Widget aktualisieren
-            const streckeCountEl = document.getElementById("strecke-count");
-            if (streckeCountEl) streckeCountEl.textContent = entries.length;
-
-            const rehwildCountEl = document.getElementById("rehwild-count");
-            if (rehwildCountEl) {
-                const rehCount = entries.filter(e => e.wildart === "Rehwild").length;
-                rehwildCountEl.textContent = rehCount;
-            }
-
-            renderEntries();
-            renderDetailStats();
-        });
-
-
-    function renderEntries() {
-        const dashboardList = document.getElementById("entry-list-dashboard");
-        if (entryList) entryList.innerHTML = "";
-        if (dashboardList) dashboardList.innerHTML = "";
-
-        entries.forEach((entry, idx) => {
-            const li = document.createElement("li");
-            li.className = "entry-item";
-
-            // Das richtige Icon suchen
-            const wildartData = jagdzeitenBayern.find(w => w.name === entry.wildart || w.id === entry.wildart);
-            const iconHTML = wildartData ? getWildartIconHTML(wildartData.iconClass, 28) : '<span style="font-size: 20px;">🦌</span>';
-
-            // Header im Feed-Card Style
-            const header = document.createElement("div");
-            header.className = "feed-card-header";
-            header.style.marginBottom = "0.2rem"; // Etwas kompakter
-            header.innerHTML = `
-                <div class="feed-card-icon-container">
-                    ${iconHTML}
-                </div>
-                <div class="feed-card-header-text">
-                    <span class="feed-card-title">${entry.wildart} ${entry.unterart || ""}</span>
-                    <span class="feed-card-time">${entry.datum || ""} • ${entry.erleger}</span>
-                </div>
-            `;
-
-            const btn = document.createElement("button");
-            btn.className = "entry-delete-btn";
-            btn.dataset.idx = idx;
-            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>`;
-            btn.style.background = "rgba(255,255,255,0.1)";
-            btn.style.border = "none";
-            btn.style.color = "var(--primary-light)";
-            btn.style.padding = "0.5rem";
-            btn.style.borderRadius = "8px";
-            btn.style.cursor = "pointer";
-            btn.style.marginLeft = "auto";
-            
-            header.appendChild(btn);
-            li.appendChild(header);
-
-            // Notes (optional)
-            if (entry.bemerkung) {
-                const notes = document.createElement("div");
-                notes.className = "entry-notes";
-                notes.textContent = entry.bemerkung;
-                li.appendChild(notes);
-            }
-
-            // Foto-Bereich
-            const fotoSection = document.createElement("div");
-            fotoSection.className = "entry-foto-section";
-
-            const imageSrc = entry.imageBase64 || entry.imageUrl;
-            if (imageSrc) {
-                fotoSection.innerHTML = `
-                    <div class="entry-foto-thumbnail">
-                        <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${entry.id}">
-                        <button class="entry-foto-delete-btn" data-id="${entry.id}" aria-label="Foto löschen">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5">
-                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" />
-                            </svg>
-                        </button>
-                    </div>
-                `;
-            }
-
-            const fotoBtn = document.createElement("button");
-            fotoBtn.className = "entry-foto-btn";
-            fotoBtn.dataset.id = entry.id;
-            fotoBtn.innerHTML = `
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <path d="M21 15l-5-5L5 21"/>
-                </svg>
-                ${imageSrc ? "Ändern" : "Foto hinzufügen"}
-            `;
-            fotoSection.appendChild(fotoBtn);
-            li.appendChild(fotoSection);
-
-            // In beide Listen einfügen
-            if (entryList) entryList.appendChild(li.cloneNode(true));
-            if (dashboardList) dashboardList.appendChild(li.cloneNode(true));
-        });
-        attachDeleteEvents();
-        attachFotoEvents();
-    }
-
-    function attachDeleteEvents() {
-        document.querySelectorAll("#entry-list .entry-delete-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const entry = entries[btn.dataset.idx];
-                if (!entry.id) return;
-                try {
-                    await entriesCollection.doc(entry.id).delete();
-                    showToast("Eintrag gelöscht", "delete");
-                } catch (err) {
-                    console.error(err);
-                    showToast("Fehler beim Löschen", "error");
-                }
-            });
-        });
-    }
-
-    // Bild komprimieren (max 600px Breite, 60% Qualität)
-    function compressImage(file, maxWidth = 600, quality = 0.6) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload=(e) => {
-                const img = new Image();
-                img.onload=() => {
-                    const canvas = document.createElement("canvas");
-                    let width=img.width;
-                    let height=img.height;
-
-                    // Skalieren wenn zu groß
-                    if (width > maxWidth) {
-                        height=(height * maxWidth) / width;
-                        width=maxWidth;
-                    }
-
-                    canvas.width=width;
-                    canvas.height=height;
-
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Als JPEG mit Kompression
-                    const base64 = canvas.toDataURL("image/jpeg", quality);
-                    resolve(base64);
-                };
-                img.onerror = reject;
-                img.src=e.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function attachFotoEvents() {
-        const buttons = document.querySelectorAll(".entry-foto-btn");
-        buttons.forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const entryId=btn.dataset.id;
-                if (!entryId) return;
-
-                const fileInput = document.createElement("input");
-                fileInput.type="file";
-                fileInput.accept = "image/*";
-                fileInput.click();
-
-                fileInput.onchange=async () => {
-                    const file = fileInput.files[0];
-                    if (!file) return;
-
-                    const originalContent = btn.innerHTML;
-
-                    try {
-                        // Loading-State anzeigen
-                        btn.disabled=true;
-                        btn.innerHTML = `
-        <svg class="spin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" >
-            <circle cx="12" cy="12" r="10" stroke-dasharray="30" stroke-dashoffset="10" />
-                            </svg>
-        Lädt...
-    `;
-
-                        // Bild komprimieren
-                        const base64 = await compressImage(file);
-
-                        // Prüfen ob unter 750KB (Firestore-Limit)
-                        if (base64.length > 750000) {
-                            throw new Error("Bild zu groß, bitte kleineres Bild wählen");
-                        }
-
-                        // In Firestore speichern
-                        await entriesCollection.doc(entryId).update({ imageBase64: base64 });
-
-                        showToast("Foto gespeichert", "success");
-                        // renderEntries() wird automatisch durch onSnapshot aufgerufen
-                    } catch (err) {
-                        console.error("Foto-Fehler:", err);
-                        showToast(err.message || "Fehler beim Speichern", "error");
-                        btn.disabled=false;
-                        btn.innerHTML = originalContent;
-                    }
-                };
-            });
-        });
-
-        // Klick auf Bild öffnet Vollansicht
-        document.querySelectorAll(".entry-foto-img").forEach(img => {
-            img.addEventListener("click", () => {
-                openImageModal(img.src);
-            });
-        });
-
-        // Foto löschen Handler
-        document.querySelectorAll(".entry-foto-delete-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const entryId=btn.dataset.id;
-                if (!entryId) return;
-
-                const confirmed=await showConfirm(
-                    "Möchten Sie das Foto wirklich löschen?",
-                    "Foto löschen",
-                    "Löschen"
-                );
-
-                if (confirmed) {
-                    try {
-                        await entriesCollection.doc(entryId).update({
-                            imageBase64: firebase.firestore.FieldValue.delete(),
-                            imageUrl: firebase.firestore.FieldValue.delete()
-                        });
-                        showToast("Foto gelöscht", "delete");
-                    } catch (err) {
-                        console.error("Foto löschen Fehler:", err);
-                        showToast("Fehler beim Löschen", "error");
-                    }
-                }
-            });
-        });
-    }
-
-    // Bild-Vollansicht Modal (global verfuegbar)
-    window.openImageModal = function(src) {
-        const overlay = document.createElement("div");
-        overlay.className = "image-modal-overlay";
-        overlay.innerHTML = `
-        <div class="image-modal-content" >
-            <img src="${src}" alt="Foto">
-                <button class="image-modal-close" aria-label="Schließen">
-                    ✕
-                </button>
-            </div>
-    `;
-        document.body.appendChild(overlay);
-
-        overlay.addEventListener("click", (e) => {
-            if (e.target === overlay || e.target.closest(".image-modal-close")) {
-                overlay.remove();
-            }
-        });
-    };
-
-    addBtn.addEventListener("click", () => modal.classList.remove("hidden"));
-    cancelBtn.addEventListener("click", () => {
-        modal.classList.add("hidden");
-        form.reset();
-        subcategoryContainer.innerHTML = "";
-    });
-
-    wildSelect.addEventListener("change", () => {
-        const value=wildSelect.value;
-        let html = "";
-        if (value === "Rehwild") html = `<label > Unterart <select name="unterart" ><option>Geiß</option><option>Bock</option><option>Kitz</option><option>Schmal</option></select></label> `;
-        if (value === "Rotwild" || value === "Dammwild") html = `<label > Unterart <select name="unterart" ><option>Hirsch</option><option>Alttier</option><option>Schmaltier</option><option>Spießer</option></select></label> `;
-        if (value === "Schwarzwild") html = `<label > Unterart <select name="unterart" ><option>Keiler</option><option>Bache</option><option>Frischling</option><option>Überläufer</option></select></label> `;
-        if (value === "Raubwild" || value === "Federwild") html = `<label > Bemerkung <input type="text" name="unterart" ></label> `;
-        subcategoryContainer.innerHTML = html;
-    });
-
-    form.addEventListener("submit", async e => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const entry = {};
-        formData.forEach((v, k) => entry[k] = v);
-        try {
-            await entriesCollection.add(entry);
-            showToast("Eintrag gespeichert", "success");
-            form.reset();
-            subcategoryContainer.innerHTML = "";
-            modal.classList.add("hidden");
-        } catch (err) {
-            console.error(err);
-            showToast("Fehler beim Speichern", "error");
-        }
-    });
-
     // Pass the function down to initializeMap
     initializeMap(db, hochsitzeCollection, openHochsitzPanel, openEigengrundstueckePanel);
 
@@ -3335,6 +2916,10 @@ function initAll() {
 
     try { window.__features?.bulletin?.initUI(); } catch (e) {
         console.error("Bulletin init error:", e);
+    }
+
+    try { window.__features?.streckenliste?.initUI(); } catch (e) {
+        console.error("Streckenliste init error:", e);
     }
 }
 

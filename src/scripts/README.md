@@ -1,7 +1,7 @@
 # src/scripts — Modulares v6-Bundle
 
 Hier wohnt der schrittweise extrahierte Code aus dem ehemals 3434-Zeilen-
-Monolith `public/js/app.js` (aktuell ~2950 Zeilen, schrumpft mit jedem
+Monolith `public/js/app.js` (Zeilenzahl schrumpft mit jedem
 Feature-Refactor weiter). Das Ziel von v6 ist, Feature für Feature in
 saubere Module zu zerlegen, ohne dass die App zwischendurch unbenutzbar
 wird.
@@ -21,6 +21,7 @@ src/scripts/
   data/                  # Repository-Layer (kapselt Firestore-Pfade)
     userRepo.js
     bulletinRepo.js
+    entriesRepo.js
     fcmTokenRepo.js
   features/              # Domain-Module
     presence/            # PILOT - Online-Anzeige + Heartbeat
@@ -29,6 +30,9 @@ src/scripts/
     bulletin/            # Schwarzes Brett
       index.js
       bulletin.pure.js
+    streckenliste/       # Abschüsse / entries
+      index.js
+      streckenliste.pure.js
   ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
@@ -115,7 +119,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 1 (Pilot) | `presence/`          | migriert   | Online-Anzeige + Heartbeat, voll getestet                                 |
 | 2         | `bulletin/`          | migriert   | Schwarzes Brett (Liste, Preview, Badge, Stats-Detail)                     |
 | 2         | `core/notifications/`| migriert   | FCM-Token (Web + Native), orthogonal zum Bulletin-Modul                   |
-| 3         | `streckenliste/`     | offen      | Grösster Hebel (Excel-Export, Foto-Upload) — Repo wird ausgereift          |
+| 3         | `streckenliste/`     | migriert   | entries-Repo, Liste/Modal/Fotos/Excel, Bridge + `renderDetailStats`       |
 | 4         | `schonzeit/`         | offen      | Reine Logik + Pure-Helper, kein Firestore — sehr schnell                  |
 | 5         | `wetter/`            | offen      | API-Layer + UI                                                            |
 | 6         | `dokumente/`         | offen      | Storage-Integration, Wizard-Flow                                          |
