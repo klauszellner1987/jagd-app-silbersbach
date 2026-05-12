@@ -211,9 +211,6 @@ function navigateToPage(targetId) {
         } else if (targetId === "schonzeit-page") {
             navigateToDashboard('schonzeit');
             return;
-        } else if (targetId === "bulletin-board") {
-            navigateToDashboard('bulletin');
-            return;
         } else if (targetId === "wetter-page") {
             navigateToDashboard('wetter');
             return;
