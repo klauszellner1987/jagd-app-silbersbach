@@ -136,6 +136,14 @@ function initAuthListener(deps) {
 
     window.firebase.auth().onAuthStateChanged((user) => {
         if (user) {
+            // SICHERHEITS-CHECK: Ist das ein valider Account mit E-Mail?
+            // Falls anonymous oder ohne E-Mail -> Sofort ausloggen
+            if (user.isAnonymous || !user.email) {
+                console.warn("[Auth] Ghost-Session erkannt. Erzwinge Logout.");
+                logout();
+                return;
+            }
+
             if (isNativeApp()) {
                 document.body.classList.add('native-app');
             }
@@ -143,7 +151,7 @@ function initAuthListener(deps) {
             setLoginLoading(false);
 
             if (state.loginOverlay) {
-                state.loginOverlay.style.display = 'none';
+                state.loginOverlay.style.setProperty('display', 'none', 'important');
             }
 
             deps.updateUserInfo(user);
