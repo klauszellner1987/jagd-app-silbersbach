@@ -1,8 +1,10 @@
 # src/scripts — Modulares v6-Bundle
 
-Hier wohnt der schrittweise extrahierte Code aus dem 3434-Zeilen-Monolith
-`public/js/app.js`. Das Ziel von v6 ist, Feature für Feature in saubere
-Module zu zerlegen, ohne dass die App zwischendurch unbenutzbar wird.
+Hier wohnt der schrittweise extrahierte Code aus dem ehemals 3434-Zeilen-
+Monolith `public/js/app.js` (aktuell ~2950 Zeilen, schrumpft mit jedem
+Feature-Refactor weiter). Das Ziel von v6 ist, Feature für Feature in
+saubere Module zu zerlegen, ohne dass die App zwischendurch unbenutzbar
+wird.
 
 Jedes Feature folgt demselben Muster, dem **Bridge-Pattern**, das wir mit
 dem Pilot-Modul `presence/` etabliert haben.
@@ -11,15 +13,24 @@ dem Pilot-Modul `presence/` etabliert haben.
 
 ```
 src/scripts/
-  core/        # Firebase-Init, App-Bootstrap-Helper (später)
-  data/        # Repository-Layer (kapselt Firestore-Pfade)
+  core/                  # querschnittliche Module (kein Domain-Feature)
+    notifications/       # FCM (Web + Native), Token-Verwaltung
+      index.js
+      webToken.js
+      nativeToken.js
+  data/                  # Repository-Layer (kapselt Firestore-Pfade)
     userRepo.js
-  features/    # Domain-Module
-    presence/  # PILOT - Online-Anzeige + Heartbeat
+    bulletinRepo.js
+    fcmTokenRepo.js
+  features/              # Domain-Module
+    presence/            # PILOT - Online-Anzeige + Heartbeat
       index.js
       presence.pure.js
-  ui/          # Toasts, Modals, Image-Viewer (später)
-  main.js      # Bootstrap-Bundle, registriert window.__features.*
+    bulletin/            # Schwarzes Brett
+      index.js
+      bulletin.pure.js
+  ui/                    # Toasts, Modals, Image-Viewer (später)
+  main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
 
 ## Bridge-Pattern
@@ -97,18 +108,19 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
     - `test(<name>):` Unit + E2E
     - `build(<name>):` docs/ Output
 
-## Reihenfolge der nächsten Module (Empfehlung)
+## Modul-Status
 
-| Reihenfolge | Modul              | Begründung                                                                |
-| ----------- | ------------------ | ------------------------------------------------------------------------- |
-| 1 (Pilot)   | `presence/`        | Klein, abgegrenzt, schon Tests vorhanden — ideal als Vorlage              |
-| 2           | `bulletin/`        | Klar abgegrenzt, eigene Collection, FCM-Integration als 2. Lerntest       |
-| 3           | `streckenliste/`   | Grösster Hebel (Excel-Export, Foto-Upload) — Repository wird ausgereift   |
-| 4           | `schonzeit/`       | Reine Logik + Pure-Helper, kein Firestore — sehr schnell                  |
-| 5           | `wetter/`          | API-Layer + UI                                                            |
-| 6           | `dokumente/`       | Storage-Integration, Wizard-Flow                                          |
-| 7           | `map/`             | Leaflet + GPS, grösster Umfang                                            |
-| 8           | `auth/` + `core/`  | Ganz zum Schluss, weil zentral — `app.js` wird dann auf Bootstrap reduziert |
+| Phase     | Modul                | Status     | Bemerkung                                                                 |
+| --------- | -------------------- | ---------- | ------------------------------------------------------------------------- |
+| 1 (Pilot) | `presence/`          | migriert   | Online-Anzeige + Heartbeat, voll getestet                                 |
+| 2         | `bulletin/`          | migriert   | Schwarzes Brett (Liste, Preview, Badge, Stats-Detail)                     |
+| 2         | `core/notifications/`| migriert   | FCM-Token (Web + Native), orthogonal zum Bulletin-Modul                   |
+| 3         | `streckenliste/`     | offen      | Grösster Hebel (Excel-Export, Foto-Upload) — Repo wird ausgereift          |
+| 4         | `schonzeit/`         | offen      | Reine Logik + Pure-Helper, kein Firestore — sehr schnell                  |
+| 5         | `wetter/`            | offen      | API-Layer + UI                                                            |
+| 6         | `dokumente/`         | offen      | Storage-Integration, Wizard-Flow                                          |
+| 7         | `map/`               | offen      | Leaflet + GPS, grösster Umfang                                            |
+| 8         | `auth/` + `core/`    | offen      | Ganz zum Schluss — `app.js` wird auf Bootstrap reduziert                  |
 
 ## Bekannte Einschränkungen / TODOs
 
