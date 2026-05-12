@@ -42,6 +42,7 @@ jobs:
         run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Run E2E tests (Playwright)
+        # Minimal-Smoke: tests/e2e/smoke.spec.js, unter CI nur chromium-desktop + Retries (siehe playwright.config.ts)
         run: ./node_modules/.bin/playwright test
         env:
           CI: 'true'

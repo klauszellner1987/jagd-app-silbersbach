@@ -89,14 +89,14 @@ npx playwright install --with-deps chromium
 | `npm test`              | Vitest Unit-Tests einmalig ausführen (Pure-Functions in `lib/pure.js`) |
 | `npm run test:watch`    | Vitest Watch-Mode für Entwicklung                                   |
 | `npm run test:coverage` | Vitest mit V8-Coverage-Report (HTML in `coverage/`)                  |
-| `npm run test:e2e`      | Playwright E2E-Tests gegen `npm run dev` (Desktop + Mobile Pixel 7) |
+| `npm run test:e2e`      | Playwright Smoke-E2E (`tests/e2e/smoke.spec.js`): Gast-Login-Shell, Auth-Dashboard, v6-Bridges, Bulletin-Seed. Lokal: Desktop Chromium + Pixel 7; unter `CI=true` nur Desktop |
 | `npm run test:e2e:ui`   | Playwright UI-Mode (interaktiv)                                     |
 | `npm run test:all`      | Beides nacheinander (Unit + E2E)                                    |
 
 ### Was wird getestet?
 
 - **Unit (`tests/unit/`)**: Reine Logik - Online-Status (`isUserCurrentlyOnline`), Schonzeiten-Berechnung (`istSchonzeit`, inkl. Wraparound), Bild-Komprimierung (`compressImage`).
-- **E2E (`tests/e2e/`)**: Login-Overlay, Dashboard-Quick-Links, Feed-Navigation (Wetter / Dokus / Schonzeit), Mobile-Viewport-Check (keine horizontale Scrollbar).
+- **E2E (`tests/e2e/smoke.spec.js`)**: bewusst minimales Set in der Refactor-Phase — App-Shell ohne Auth, eingeloggtes Dashboard, Registrierung der v6-Bridges (`presence`, `bulletin`, `notifications`), ein Firestore-Stubs-Pfad für das Schwarze Brett (Offen vs. erledigt, Badge-Zähler). Tiefe Flows liegen in Vitest.
 
 Firebase wird in E2E-Tests durch einen In-Memory-Stub (`tests/fixtures/mockFirebase.js`) ersetzt, der vor jedem Page-Load injiziert wird. Echte CDN-Skripte werden via `page.route()` blockiert. **Es wird kein echter Firebase-Account benötigt.**
 
@@ -106,7 +106,7 @@ GitHub Actions läuft automatisch bei Push auf `main`/`release/**` und bei Pull 
 
 - `astro check` (Linting + TypeScript)
 - `npm test` (Vitest)
-- `npm run test:e2e` (Playwright Chromium + Pixel 7)
+- `npm run test:e2e` (Playwright: lokal Chromium + Pixel 7, unter CI nur Chromium — siehe `playwright.config.ts`)
 - Bei Failure wird der HTML-Report als Artifact hochgeladen.
 
 Workflow-Datei: `.github/workflows/test.yml`.

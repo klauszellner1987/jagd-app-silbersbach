@@ -96,7 +96,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 - [ ] Unit-Tests `tests/unit/<name>.test.js` (Pure-Helper)
 - [ ] Unit-Tests `tests/unit/<name>Repo.test.js` (Repo mit window.firebase Stub)
 - [ ] Unit-Tests `tests/unit/<name>Feature.test.js` (Lifecycle + Rendering, happy-dom)
-- [ ] E2E `tests/e2e/<name>.spec.js` (mindestens 1 Happy-Path-Test, idealerweise 2-3)
+- [ ] Bei Bedarf Smoke-E2E in `tests/e2e/smoke.spec.js` erweitern (Refactor-Phase: Fokus auf Unit-Tests; globales Minimal-Smoke deckt Bridges + einen Datenpfad ab)
 - [ ] `npm run test` grün
 - [ ] `npm run test:e2e` grün (lokal vor Push)
 - [ ] `npm run build` lokal ohne Fehler/Warnings
