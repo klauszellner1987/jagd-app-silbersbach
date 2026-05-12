@@ -24,6 +24,7 @@ src/scripts/
     entriesRepo.js
     fcmTokenRepo.js
     dokumenteRepo.js
+    mapRepo.js
   features/              # Domain-Module
     presence/            # PILOT - Online-Anzeige + Heartbeat
       index.js
@@ -43,6 +44,8 @@ src/scripts/
     dokumente/           # Dokumentensafe Wizard, Fotos Firebase Storage + FS
       index.js
       dokumente.pure.js
+    map/                 # Leaflet-Karte, GPS, Hochsitz-Panels, Eigengrundstücke
+      index.js
   ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
@@ -133,7 +136,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 4         | `schonzeit/`         | migriert   | Pure `schonzeit.pure.js`, Widget/Liste/API `initUI`; `pure.js`-Re-Export |
 | 5         | `wetter/`            | migriert   | `wetter.pure.js` (Formatierung/HTML), `refresh` + `renderDetailGrid` |
 | 6         | `dokumente/`         | migriert   | `dokumente.pure.js`, `dokumenteRepo`, Wizard/Upload, `window.compressImage`-Brücke |
-| 7         | `map/`               | offen      | Leaflet + GPS, grösster Umfang                                            |
+| 7         | `map/`               | migriert   | Leaflet, GPS, Hochsitz-Panels, Eigengrundstücke, `mapRepo`, `AbortController` |
 | 8         | `auth/` + `core/`    | offen      | Ganz zum Schluss — `app.js` wird auf Bootstrap reduziert                  |
 
 ## Bekannte Einschränkungen / TODOs
