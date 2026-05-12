@@ -198,4 +198,16 @@
         firestoreData.set(`${col}/${docId}`, data);
         notifyCollection(col);
     };
+
+    // Bulk-Seed: schreibt mehrere Docs in EINE Collection und feuert nur EINEN
+    // Snapshot-Notify am Ende. Verhindert Render-Races, in denen ein Listener
+    // zwischen den Einzel-Seeds einen Teil-State sieht.
+    //
+    // window.__seedFirestoreBulk('users', { alice: {...}, bob: {...} });
+    window.__seedFirestoreBulk = (col, docsById) => {
+        for (const [docId, data] of Object.entries(docsById || {})) {
+            firestoreData.set(`${col}/${docId}`, data);
+        }
+        notifyCollection(col);
+    };
 })();

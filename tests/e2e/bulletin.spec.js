@@ -105,16 +105,17 @@ test.describe('Bulletin (Schwarzes Brett) - v6 modular', () => {
             .locator('.bulletin-done-btn')
             .evaluate((el) => el.click());
 
-        // Aus offener Liste verschwunden, Badge versteckt
+        // Update-Propagation deterministisch abwarten: Badge wird hidden,
+        // sobald die Snapshot-Round im Mock zurueck ist.
+        await expect(page.locator('#bulletin-badge')).toHaveClass(/hidden/, { timeout: 10_000 });
         await expect(
             page.locator('#bulletin-list .bulletin-item-content', { hasText: 'Bitte erledigen' }),
-        ).toHaveCount(0, { timeout: 5_000 });
-        await expect(page.locator('#bulletin-badge')).toHaveClass(/hidden/);
+        ).toHaveCount(0);
 
-        // Im Done-Container vorhanden, mit Erledigt-Meta
+        // Item liegt jetzt im Done-Container mit Erledigt-Meta
         await expect(
             page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Bitte erledigen' }),
-        ).toBeAttached();
+        ).toBeAttached({ timeout: 10_000 });
         await expect(
             page.locator('#bulletin-list-done .bulletin-done-meta'),
         ).toContainText('Erledigt am');
@@ -171,13 +172,13 @@ test.describe('Bulletin (Schwarzes Brett) - v6 modular', () => {
             .locator('.bulletin-reopen-btn')
             .evaluate((el) => el.click());
 
-        // Verschwindet aus Done-Liste, taucht in Offen-Liste auf, Badge zaehlt 1
+        // Badge geht auf 1 -> Update propagiert. Erst dann Lists checken.
+        await expect(page.locator('#bulletin-badge')).toHaveText('1', { timeout: 10_000 });
         await expect(
             page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Reopen mich' }),
-        ).toHaveCount(0, { timeout: 5_000 });
+        ).toHaveCount(0);
         await expect(
             page.locator('#bulletin-list .bulletin-item-content', { hasText: 'Reopen mich' }),
         ).toBeAttached();
-        await expect(page.locator('#bulletin-badge')).toHaveText('1');
     });
 });
