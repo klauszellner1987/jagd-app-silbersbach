@@ -7,7 +7,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
     formatBulletinDate,
+    formatDoneDate,
     filterOpenItems,
+    filterDoneItems,
+    splitOpenAndDone,
     sortByTimestampDesc,
     escapeHtml,
     DASHBOARD_PREVIEW_LIMIT,
@@ -101,5 +104,80 @@ describe('escapeHtml', () => {
 describe('DASHBOARD_PREVIEW_LIMIT', () => {
     it('ist 3 (max. Eintraege im Dashboard-Widget)', () => {
         expect(DASHBOARD_PREVIEW_LIMIT).toBe(3);
+    });
+});
+
+describe('filterDoneItems', () => {
+    it('liefert nur items mit isDone=true', () => {
+        const out = filterDoneItems([
+            { id: 'a', isDone: true },
+            { id: 'b', isDone: false },
+            { id: 'c' },
+            { id: 'd', isDone: true },
+        ]);
+        expect(out.map((i) => i.id)).toEqual(['a', 'd']);
+    });
+
+    it('liefert [] fuer non-array', () => {
+        expect(filterDoneItems(null)).toEqual([]);
+        expect(filterDoneItems('x')).toEqual([]);
+    });
+});
+
+describe('splitOpenAndDone', () => {
+    it('splittet in offen + erledigt; offen sortiert nach timestamp desc', () => {
+        const items = [
+            { id: 'o1', timestamp: 100, isDone: false },
+            { id: 'd1', timestamp: 300, isDone: true, doneAt: 999 },
+            { id: 'o2', timestamp: 200 },
+            { id: 'd2', timestamp: 400, isDone: true, doneAt: 1500 },
+        ];
+        const { open, done } = splitOpenAndDone(items);
+        expect(open.map((i) => i.id)).toEqual(['o2', 'o1']);
+        // done sortiert nach doneAt desc (1500 > 999)
+        expect(done.map((i) => i.id)).toEqual(['d2', 'd1']);
+    });
+
+    it('Legacy-Items ohne doneAt landen am Ende der done-Liste', () => {
+        const items = [
+            { id: 'a', timestamp: 100, isDone: true }, // legacy
+            { id: 'b', timestamp: 200, isDone: true, doneAt: 500 },
+            { id: 'c', timestamp: 300, isDone: true }, // legacy, neuer timestamp
+        ];
+        const { done } = splitOpenAndDone(items);
+        // 'b' hat doneAt -> zuerst; 'a' und 'c' legacy -> Reihenfolge nach timestamp desc von sortByTimestampDesc
+        expect(done[0].id).toBe('b');
+        expect(done.slice(1).map((i) => i.id).sort()).toEqual(['a', 'c']);
+    });
+
+    it('liefert leere Listen fuer non-array', () => {
+        expect(splitOpenAndDone(null)).toEqual({ open: [], done: [] });
+    });
+});
+
+describe('formatDoneDate', () => {
+    it('liefert "unbekannt" fuer null/undefined', () => {
+        expect(formatDoneDate(null)).toBe('unbekannt');
+        expect(formatDoneDate(undefined)).toBe('unbekannt');
+    });
+
+    it('formatiert eine Number wie ein Date-Stempel', () => {
+        const ts = new Date('2026-05-11T08:30:00Z').getTime();
+        const out = formatDoneDate(ts);
+        expect(out).toMatch(/\d{2}\.\d{2}\.,\s*\d{2}:\d{2}/);
+    });
+
+    it('akzeptiert Firestore-Timestamp mit toMillis()', () => {
+        const fakeTs = { toMillis: () => new Date('2026-05-11T08:30:00Z').getTime() };
+        expect(formatDoneDate(fakeTs)).toMatch(/\d{2}\.\d{2}\.,\s*\d{2}:\d{2}/);
+    });
+
+    it('akzeptiert Firestore-Timestamp mit toDate()', () => {
+        const fakeTs = { toDate: () => new Date('2026-05-11T08:30:00Z') };
+        expect(formatDoneDate(fakeTs)).toMatch(/\d{2}\.\d{2}\.,\s*\d{2}:\d{2}/);
+    });
+
+    it('liefert "unbekannt" wenn weder Number noch toMillis/toDate vorhanden', () => {
+        expect(formatDoneDate({ foo: 'bar' })).toBe('unbekannt');
     });
 });

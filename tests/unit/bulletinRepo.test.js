@@ -46,11 +46,19 @@ function makeFirebaseStub() {
         }),
     }));
 
+    let currentUser = null;
+
     window.firebase = {
         firestore: Object.assign(
             () => ({ collection: collectionFn }),
-            { FieldValue: { serverTimestamp: () => '__ts__' } },
+            {
+                FieldValue: {
+                    serverTimestamp: () => '__ts__',
+                    delete: () => '__delete__',
+                },
+            },
         ),
+        auth: () => ({ get currentUser() { return currentUser; } }),
     };
 
     return {
@@ -59,6 +67,7 @@ function makeFirebaseStub() {
         deleteCalls,
         collectionFn,
         docFn,
+        setCurrentUser: (u) => { currentUser = u; },
         getOrderByArgs: () => orderByArgs,
         triggerSnap: (items) => snapCb({
             docs: items.map((i) => {
@@ -97,7 +106,7 @@ describe('bulletinRepo.add', () => {
     });
 });
 
-describe('bulletinRepo.markDone / delete', () => {
+describe('bulletinRepo.markDone / reopen / delete', () => {
     let stub;
     let bulletinRepo;
 
@@ -107,10 +116,39 @@ describe('bulletinRepo.markDone / delete', () => {
         ({ bulletinRepo } = await import('../../src/scripts/data/bulletinRepo.js'));
     });
 
-    it('markDone setzt isDone=true auf richtigem Doc', async () => {
-        await bulletinRepo.markDone('abc');
+    it('markDone setzt isDone=true + doneAt + doneBy aus uebergebenem User', async () => {
+        await bulletinRepo.markDone('abc', { displayName: 'Klaus', email: 'klaus@example.com' });
         expect(stub.docFn).toHaveBeenCalledWith('abc');
-        expect(stub.updateCalls).toEqual([{ docId: 'abc', data: { isDone: true } }]);
+        expect(stub.updateCalls).toEqual([{
+            docId: 'abc',
+            data: { isDone: true, doneAt: '__ts__', doneBy: 'Klaus' },
+        }]);
+    });
+
+    it('markDone faellt auf email-prefix zurueck wenn displayName fehlt', async () => {
+        await bulletinRepo.markDone('abc', { email: 'jane.doe@example.com' });
+        expect(stub.updateCalls[0].data.doneBy).toBe('jane.doe');
+    });
+
+    it('markDone faellt auf "Unbekannt" zurueck wenn user fehlt und auth().currentUser leer', async () => {
+        stub.setCurrentUser(null);
+        await bulletinRepo.markDone('abc');
+        expect(stub.updateCalls[0].data.doneBy).toBe('Unbekannt');
+    });
+
+    it('markDone benutzt auth().currentUser als Fallback', async () => {
+        stub.setCurrentUser({ displayName: 'Heidi' });
+        await bulletinRepo.markDone('abc');
+        expect(stub.updateCalls[0].data.doneBy).toBe('Heidi');
+    });
+
+    it('reopen setzt isDone=false und entfernt doneAt/doneBy via FieldValue.delete', async () => {
+        await bulletinRepo.reopen('abc');
+        expect(stub.docFn).toHaveBeenCalledWith('abc');
+        expect(stub.updateCalls).toEqual([{
+            docId: 'abc',
+            data: { isDone: false, doneAt: '__delete__', doneBy: '__delete__' },
+        }]);
     });
 
     it('delete loescht das Doc', async () => {
@@ -119,9 +157,11 @@ describe('bulletinRepo.markDone / delete', () => {
         expect(stub.deleteCalls).toEqual([{ docId: 'xyz' }]);
     });
 
-    it('markDone/delete ignorieren leere id (kein Throw, kein Call)', async () => {
+    it('markDone/reopen/delete ignorieren leere id (kein Throw, kein Call)', async () => {
         await bulletinRepo.markDone('');
         await bulletinRepo.markDone(null);
+        await bulletinRepo.reopen('');
+        await bulletinRepo.reopen(undefined);
         await bulletinRepo.delete('');
         await bulletinRepo.delete(undefined);
         expect(stub.updateCalls).toHaveLength(0);

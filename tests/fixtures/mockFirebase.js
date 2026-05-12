@@ -102,7 +102,8 @@
                         notifyCollection(colName);
                     },
                     async update(data) {
-                        firestoreData.set(`${colName}/${docId}`, { ...(firestoreData.get(`${colName}/${docId}`) || {}), ...data });
+                        const prev = firestoreData.get(`${colName}/${docId}`);
+                        firestoreData.set(`${colName}/${docId}`, applyUpdate(prev, data));
                         notifyCollection(colName);
                     },
                     async delete() {
@@ -136,14 +137,31 @@
         collection: makeCollection,
         enablePersistence: async () => {},
     });
+    // Sentinel-Marker fuer FieldValue.delete(); wird in update() erkannt
+    // und entfernt das jeweilige Feld komplett aus dem Dokument.
+    const DELETE_SENTINEL = Symbol('FieldValue.delete');
     // serverTimestamp liefert ein Firestore-Timestamp-shaped Objekt
-    // (mit .toDate()), damit Code wie `data.lastSeen.toDate()` funktioniert.
+    // (mit .toDate()/toMillis()), damit Code wie `data.lastSeen.toDate()`
+    // und `formatDoneDate` (toMillis) gleichermassen funktionieren.
     fakeFirestore.FieldValue = {
         serverTimestamp: () => {
             const d = new Date();
-            return { toDate: () => d };
+            return { toDate: () => d, toMillis: () => d.getTime() };
         },
+        delete: () => DELETE_SENTINEL,
     };
+    // Helper fuer update(): mergen, dabei DELETE_SENTINEL-Felder entfernen
+    function applyUpdate(prev, patch) {
+        const merged = { ...(prev || {}) };
+        for (const [k, v] of Object.entries(patch)) {
+            if (v === DELETE_SENTINEL) {
+                delete merged[k];
+            } else {
+                merged[k] = v;
+            }
+        }
+        return merged;
+    }
 
     const fakeStorage = () => ({
         ref: () => ({

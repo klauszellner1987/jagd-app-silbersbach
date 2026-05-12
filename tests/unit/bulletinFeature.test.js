@@ -36,7 +36,12 @@ function makeFirebaseStub() {
     window.firebase = {
         firestore: Object.assign(
             () => ({ collection: collectionFn }),
-            { FieldValue: { serverTimestamp: () => '__ts__' } },
+            {
+                FieldValue: {
+                    serverTimestamp: () => '__ts__',
+                    delete: () => '__delete__',
+                },
+            },
         ),
         auth: () => ({
             currentUser: { uid: 'u1', displayName: 'Klaus', email: 'klaus@test.de' },
@@ -58,8 +63,20 @@ function makeFirebaseStub() {
 }
 
 function installDom() {
+    try { window.localStorage?.clear(); } catch (_) { /* ignore */ }
     document.body.innerHTML = `
+        <div class="bulletin-tabs">
+            <button id="bulletin-tab-open" class="bulletin-tab active" data-tab="open">
+                <span class="bulletin-tab-label">Offen</span>
+                <span id="bulletin-tab-count-open" class="bulletin-tab-count hidden">0</span>
+            </button>
+            <button id="bulletin-tab-done" class="bulletin-tab" data-tab="done">
+                <span class="bulletin-tab-label">Erledigt</span>
+                <span id="bulletin-tab-count-done" class="bulletin-tab-count hidden">0</span>
+            </button>
+        </div>
         <div id="bulletin-list"></div>
+        <div id="bulletin-list-done" class="hidden"></div>
         <div id="bulletin-list-dashboard"></div>
         <div id="bulletin-preview"></div>
         <span id="bulletin-badge" class="hidden">0</span>
@@ -221,9 +238,9 @@ describe('bulletinFeature submit / done / delete', () => {
         el.dispatchEvent(new Event('click', { bubbles: true, cancelable: true }));
     }
 
-    it('Done-Klick auf einem gerenderten Item ruft markDone', async () => {
+    it('Done-Klick auf einem gerenderten Item ruft markDone mit doneAt/doneBy', async () => {
         const { bulletinFeature } = await loadFresh();
-        bulletinFeature.onLogin({ uid: 'u1' });
+        bulletinFeature.onLogin({ uid: 'u1', displayName: 'Klaus' });
         bulletinFeature.initUI();
         stub.triggerSnap([{ id: 'i1', message: 'M', timestamp: 1, sender: 'S', isDone: false }]);
 
@@ -231,7 +248,10 @@ describe('bulletinFeature submit / done / delete', () => {
         expect(btn).toBeTruthy();
         bubbleClick(btn);
         await new Promise((r) => setTimeout(r, 0));
-        expect(stub.updateCalls).toEqual([{ docId: 'i1', data: { isDone: true } }]);
+        expect(stub.updateCalls).toEqual([{
+            docId: 'i1',
+            data: { isDone: true, doneAt: '__ts__', doneBy: 'Klaus' },
+        }]);
     });
 
     it('Delete-Klick fragt confirm und ruft delete bei Bestaetigung', async () => {
@@ -266,5 +286,155 @@ describe('bulletinFeature submit / done / delete', () => {
         document.getElementById('bulletin-submit-btn').click();
         await new Promise((r) => setTimeout(r, 0));
         expect(stub.addCalls).toHaveLength(1);
+    });
+});
+
+describe('bulletinFeature tabs (offen/erledigt)', () => {
+    let stub;
+
+    beforeEach(() => {
+        stub = makeFirebaseStub();
+        installDom();
+    });
+
+    function bubbleClick(el) {
+        el.dispatchEvent(new Event('click', { bubbles: true, cancelable: true }));
+    }
+
+    it('rendert offene und erledigte Items in getrennte Container', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'o1', message: 'Offen 1', timestamp: 100, sender: 'A', isDone: false },
+            { id: 'd1', message: 'Done 1', timestamp: 200, sender: 'B', isDone: true, doneAt: 999, doneBy: 'Klaus' },
+        ]);
+        const openItems = document.querySelectorAll('#bulletin-list .bulletin-item');
+        const doneItems = document.querySelectorAll('#bulletin-list-done .bulletin-item--done');
+        expect(openItems).toHaveLength(1);
+        expect(doneItems).toHaveLength(1);
+        expect(openItems[0].querySelector('.bulletin-item-content').innerHTML).toBe('Offen 1');
+        expect(doneItems[0].querySelector('.bulletin-item-content--done').innerHTML).toBe('Done 1');
+    });
+
+    it('Tab-Counter zeigen die richtigen Zahlen und sind versteckt bei 0', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'o1', timestamp: 100, isDone: false },
+            { id: 'o2', timestamp: 110, isDone: false },
+            { id: 'd1', timestamp: 200, isDone: true, doneAt: 999 },
+        ]);
+        const cOpen = document.getElementById('bulletin-tab-count-open');
+        const cDone = document.getElementById('bulletin-tab-count-done');
+        expect(cOpen.textContent).toBe('2');
+        expect(cOpen.classList.contains('hidden')).toBe(false);
+        expect(cDone.textContent).toBe('1');
+        expect(cDone.classList.contains('hidden')).toBe(false);
+    });
+
+    it('Counter "0" ist hidden, wenn die Liste leer ist', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'o1', timestamp: 100, isDone: false },
+        ]);
+        expect(document.getElementById('bulletin-tab-count-done').classList.contains('hidden')).toBe(true);
+    });
+
+    it('Tab-Klick toggled hidden-Klassen + active-Klassen', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.initUI();
+        const tabOpen = document.getElementById('bulletin-tab-open');
+        const tabDone = document.getElementById('bulletin-tab-done');
+        const listOpen = document.getElementById('bulletin-list');
+        const listDone = document.getElementById('bulletin-list-done');
+
+        // Initialer Zustand: Offen aktiv
+        expect(tabOpen.classList.contains('active')).toBe(true);
+        expect(listDone.classList.contains('hidden')).toBe(true);
+
+        bubbleClick(tabDone);
+        expect(tabDone.classList.contains('active')).toBe(true);
+        expect(tabOpen.classList.contains('active')).toBe(false);
+        expect(listDone.classList.contains('hidden')).toBe(false);
+        expect(listOpen.classList.contains('hidden')).toBe(true);
+
+        bubbleClick(tabOpen);
+        expect(tabOpen.classList.contains('active')).toBe(true);
+        expect(listOpen.classList.contains('hidden')).toBe(false);
+    });
+
+    it('Active-Tab wird in localStorage persistiert', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.initUI();
+        bubbleClick(document.getElementById('bulletin-tab-done'));
+        expect(window.localStorage.getItem('bulletin.activeTab')).toBe('done');
+        bubbleClick(document.getElementById('bulletin-tab-open'));
+        expect(window.localStorage.getItem('bulletin.activeTab')).toBe('open');
+    });
+
+    it('Reopen-Klick auf erledigtes Item ruft bulletinRepo.reopen', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        bulletinFeature.initUI();
+        stub.triggerSnap([
+            { id: 'd1', message: 'X', timestamp: 200, isDone: true, doneAt: 999, doneBy: 'A' },
+        ]);
+        const btn = document.querySelector('#bulletin-list-done .bulletin-reopen-btn');
+        expect(btn).toBeTruthy();
+        bubbleClick(btn);
+        await new Promise((r) => setTimeout(r, 0));
+        expect(stub.updateCalls).toEqual([{
+            docId: 'd1',
+            data: { isDone: false, doneAt: '__delete__', doneBy: '__delete__' },
+        }]);
+    });
+
+    it('Delete-Klick im Done-Container loescht ebenfalls', async () => {
+        window.showConfirm = async () => true;
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        bulletinFeature.initUI();
+        stub.triggerSnap([
+            { id: 'd9', message: 'X', timestamp: 200, isDone: true, doneAt: 999, doneBy: 'A' },
+        ]);
+        bubbleClick(document.querySelector('#bulletin-list-done .bulletin-delete-btn'));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(stub.deleteCalls).toEqual([{ docId: 'd9' }]);
+    });
+
+    it('Erledigte Items zeigen "Erledigt am ... von ..." und Reopen-Button', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'd1', message: 'M', timestamp: 200, sender: 'S', isDone: true, doneAt: 1715432400000, doneBy: 'Klaus' },
+        ]);
+        const meta = document.querySelector('#bulletin-list-done .bulletin-done-meta');
+        expect(meta).toBeTruthy();
+        expect(meta.textContent).toMatch(/Erledigt am/);
+        expect(meta.textContent).toContain('Klaus');
+        expect(document.querySelector('#bulletin-list-done .bulletin-reopen-btn')).toBeTruthy();
+    });
+
+    it('Legacy-Items ohne doneAt zeigen "unbekannt" als Erledigt-Datum', async () => {
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'old', message: 'M', timestamp: 200, sender: 'S', isDone: true },
+        ]);
+        const meta = document.querySelector('#bulletin-list-done .bulletin-done-meta');
+        expect(meta.textContent).toMatch(/unbekannt/);
+    });
+
+    it('Persistierter Tab "done" wird beim onLogin angewendet', async () => {
+        window.localStorage.setItem('bulletin.activeTab', 'done');
+        const { bulletinFeature } = await loadFresh();
+        bulletinFeature.onLogin({ uid: 'u1' });
+        stub.triggerSnap([
+            { id: 'd1', timestamp: 200, isDone: true, doneAt: 999 },
+        ]);
+        expect(document.getElementById('bulletin-tab-done').classList.contains('active')).toBe(true);
+        expect(document.getElementById('bulletin-list-done').classList.contains('hidden')).toBe(false);
+        expect(document.getElementById('bulletin-list').classList.contains('hidden')).toBe(true);
     });
 });

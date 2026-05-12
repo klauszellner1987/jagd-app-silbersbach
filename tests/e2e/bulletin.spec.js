@@ -86,7 +86,7 @@ test.describe('Bulletin (Schwarzes Brett) - v6 modular', () => {
         ).toBeAttached();
     });
 
-    test('Done-Klick markiert Item als erledigt -> verschwindet aus Liste', async ({ page }) => {
+    test('Done-Klick markiert Item als erledigt -> wandert in Done-Container', async ({ page }) => {
         await page.evaluate(() => {
             window.__seedFirestore('bulletinBoard', 'todo1', {
                 message: 'Bitte erledigen',
@@ -101,15 +101,83 @@ test.describe('Bulletin (Schwarzes Brett) - v6 modular', () => {
         ).toBeAttached({ timeout: 5_000 });
         await expect(page.locator('#bulletin-badge')).toHaveText('1');
 
-        // Done-Button des passenden Items klicken (auch wenn versteckt)
         await page.locator('#bulletin-list .bulletin-item', { hasText: 'Bitte erledigen' })
             .locator('.bulletin-done-btn')
             .evaluate((el) => el.click());
 
-        // Liste leert sich, Badge versteckt sich
+        // Aus offener Liste verschwunden, Badge versteckt
         await expect(
             page.locator('#bulletin-list .bulletin-item-content', { hasText: 'Bitte erledigen' }),
         ).toHaveCount(0, { timeout: 5_000 });
         await expect(page.locator('#bulletin-badge')).toHaveClass(/hidden/);
+
+        // Im Done-Container vorhanden, mit Erledigt-Meta
+        await expect(
+            page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Bitte erledigen' }),
+        ).toBeAttached();
+        await expect(
+            page.locator('#bulletin-list-done .bulletin-done-meta'),
+        ).toContainText('Erledigt am');
+    });
+
+    test('Tabs umschalten zwischen Offen und Erledigt', async ({ page }) => {
+        await page.evaluate(() => {
+            const now = Date.now();
+            window.__seedFirestore('bulletinBoard', 'open-1', {
+                message: 'Offen-Item', sender: 'A', timestamp: now, isDone: false,
+            });
+            window.__seedFirestore('bulletinBoard', 'done-1', {
+                message: 'Erledigt-Item', sender: 'B', timestamp: now - 1000,
+                isDone: true, doneAt: now - 500, doneBy: 'Klaus',
+            });
+        });
+
+        // Tab-Counter
+        await expect(page.locator('#bulletin-tab-count-open')).toHaveText('1');
+        await expect(page.locator('#bulletin-tab-count-done')).toHaveText('1');
+
+        // Initial: Offen sichtbar, Done versteckt
+        await expect(page.locator('#bulletin-tab-open')).toHaveClass(/active/);
+        await expect(page.locator('#bulletin-list-done')).toHaveClass(/hidden/);
+
+        // Auf Erledigt-Tab wechseln
+        await page.locator('#bulletin-tab-done').evaluate((el) => el.click());
+        await expect(page.locator('#bulletin-tab-done')).toHaveClass(/active/);
+        await expect(page.locator('#bulletin-list')).toHaveClass(/hidden/);
+        await expect(
+            page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Erledigt-Item' }),
+        ).toBeAttached();
+
+        // Zurueck auf Offen
+        await page.locator('#bulletin-tab-open').evaluate((el) => el.click());
+        await expect(page.locator('#bulletin-tab-open')).toHaveClass(/active/);
+        await expect(page.locator('#bulletin-list-done')).toHaveClass(/hidden/);
+    });
+
+    test('Reopen-Klick setzt erledigtes Item zurueck auf offen', async ({ page }) => {
+        await page.evaluate(() => {
+            const now = Date.now();
+            window.__seedFirestore('bulletinBoard', 'r1', {
+                message: 'Reopen mich', sender: 'Klaus', timestamp: now - 1000,
+                isDone: true, doneAt: now - 500, doneBy: 'Heidi',
+            });
+        });
+
+        await expect(
+            page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Reopen mich' }),
+        ).toBeAttached({ timeout: 5_000 });
+
+        await page.locator('#bulletin-list-done .bulletin-item', { hasText: 'Reopen mich' })
+            .locator('.bulletin-reopen-btn')
+            .evaluate((el) => el.click());
+
+        // Verschwindet aus Done-Liste, taucht in Offen-Liste auf, Badge zaehlt 1
+        await expect(
+            page.locator('#bulletin-list-done .bulletin-item-content--done', { hasText: 'Reopen mich' }),
+        ).toHaveCount(0, { timeout: 5_000 });
+        await expect(
+            page.locator('#bulletin-list .bulletin-item-content', { hasText: 'Reopen mich' }),
+        ).toBeAttached();
+        await expect(page.locator('#bulletin-badge')).toHaveText('1');
     });
 });
