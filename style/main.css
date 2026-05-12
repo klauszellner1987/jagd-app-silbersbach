@@ -188,6 +188,7 @@ main {
     overflow: hidden;
     touch-action: none;
     height: calc(100svh - 85px - env(safe-area-inset-bottom, 0px));
+    min-height: 0;
     display: flex;
     flex-direction: column;
 }
@@ -199,6 +200,7 @@ main {
         /* Dunklerer Hintergrund für Desktop-Seiten */
     }
 
+    /* Spalten-Optik für alle „Seiten“-Karten */
     #dashboard.page.active,
     .page.active:not(.fullscreen-map),
     #login-overlay {
@@ -208,6 +210,13 @@ main {
         box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
         border-left: 1px solid rgba(255, 255, 255, 0.05);
         border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Volle Viewport-Höhe nur wo der Seiten-Body selbst scrollt — nicht Dashboard:
+       min-height: 100vh hier ließ die Dashboard-Spalte über die Tab-Bar wachsen und
+       den gesamten body mit overflow-y: auto mitscrollen. */
+    .page.active:not(.fullscreen-map):not(#dashboard),
+    #login-overlay {
         min-height: 100vh;
     }
 
@@ -334,6 +343,7 @@ main {
     display: flex;
     flex-direction: column;
     height: calc(100svh - 64px - env(safe-area-inset-bottom, 0px));
+    min-height: 0;
     overflow: hidden;
     padding-top: max(env(safe-area-inset-top), 1rem);
 }
@@ -475,6 +485,9 @@ main {
 /* SMART FEED CONTAINER (Scrollbar & Rahmen) */
 .smart-feed-container {
     flex: 1;
+    /* Flex-Default min-height:auto wuerde den Container so hoch wie den Inhalt zwingen
+       und die ganze Seite (body) scrollen lassen — nur dieser Bereich soll scrollen. */
+    min-height: 0;
     background: rgba(0, 0, 0, 0.15);
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
@@ -3053,6 +3066,7 @@ button:hover {
     display: flex;
     flex-direction: column;
     height: calc(100dvh - 64px);
+    min-height: 0;
     overflow: hidden;
     padding-bottom: 0;
 }
