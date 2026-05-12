@@ -5139,6 +5139,115 @@ button:hover {
     }
 }
 
+/* ----- Tabs (Offen / Erledigt) ----- */
+.bulletin-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.3rem;
+}
+
+.bulletin-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bulletin-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.bulletin-tab.active {
+    background: rgba(95, 161, 117, 0.22);
+    color: var(--primary-light, #8fdca7);
+    box-shadow: inset 0 0 0 1px rgba(95, 161, 117, 0.35);
+}
+
+.bulletin-tab-count {
+    min-width: 1.4rem;
+    padding: 0 0.35rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.bulletin-tab.active .bulletin-tab-count {
+    background: rgba(95, 161, 117, 0.55);
+    color: #fff;
+}
+
+/* ----- Erledigte Items: gedimmt, message durchgestrichen ----- */
+.bulletin-item--done {
+    background: linear-gradient(180deg,
+            rgba(60, 60, 60, 0.45) 0%,
+            rgba(45, 45, 45, 0.25) 100%);
+    border-color: rgba(255, 255, 255, 0.06);
+    opacity: 0.85;
+}
+
+.bulletin-item-content--done {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.bulletin-done-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
+    color: rgba(124, 255, 155, 0.75);
+    font-weight: 500;
+}
+
+.bulletin-done-meta i {
+    color: rgba(124, 255, 155, 0.9);
+}
+
+/* ----- Reopen-Button ----- */
+.bulletin-reopen-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.bulletin-reopen-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #fff;
+}
+
 @media (max-width: 480px) {
     .bulletin-widget {
         padding: 0.75rem;
@@ -5150,6 +5259,10 @@ button:hover {
 
     .bulletin-item-content {
         font-size: 0.8rem;
+    }
+
+    .bulletin-tab-label {
+        font-size: 0.75rem;
     }
 }
 

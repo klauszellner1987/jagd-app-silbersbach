@@ -22,12 +22,53 @@
             </button>
         </div>
 
-        <div id="bulletin-list" class="bulletin-list">
-            <!-- Nachrichten werden per JS geladen -->
+        <div class="bulletin-tabs" role="tablist" aria-label="Aushänge filtern">
+            <button
+                id="bulletin-tab-open"
+                class="bulletin-tab active"
+                role="tab"
+                aria-selected="true"
+                aria-controls="bulletin-list"
+                data-tab="open"
+                type="button"
+            >
+                <span class="bulletin-tab-label">Offene Aufgaben</span>
+                <span id="bulletin-tab-count-open" class="bulletin-tab-count hidden">0</span>
+            </button>
+            <button
+                id="bulletin-tab-done"
+                class="bulletin-tab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="bulletin-list-done"
+                data-tab="done"
+                type="button"
+            >
+                <span class="bulletin-tab-label">Erledigte Aufgaben</span>
+                <span id="bulletin-tab-count-done" class="bulletin-tab-count hidden">0</span>
+            </button>
+        </div>
+
+        <div
+            id="bulletin-list"
+            class="bulletin-list"
+            role="tabpanel"
+            aria-labelledby="bulletin-tab-open"
+        >
+            <!-- Offene Aushänge werden per JS geladen -->
             <div class="bulletin-loading">
                 <div class="spinner"></div>
                 <span>Lade Aushänge...</span>
             </div>
+        </div>
+
+        <div
+            id="bulletin-list-done"
+            class="bulletin-list hidden"
+            role="tabpanel"
+            aria-labelledby="bulletin-tab-done"
+        >
+            <!-- Erledigte Aushänge werden per JS geladen -->
         </div>
     </div>
 </div>

@@ -30,6 +30,17 @@ function bulletinCollection() {
     return db.collection('bulletinBoard');
 }
 
+function fieldValue() {
+    return window.firebase.firestore.FieldValue;
+}
+
+function deriveDoneByName(user) {
+    if (!user) return 'Unbekannt';
+    return user.displayName
+        || (user.email ? String(user.email).split('@')[0] : null)
+        || 'Unbekannt';
+}
+
 export const bulletinRepo = {
     TENANT_ID,
 
@@ -53,15 +64,43 @@ export const bulletinRepo = {
     },
 
     /**
-     * Markiert einen Aushang als erledigt (isDone=true). Der Eintrag bleibt
-     * in der Collection erhalten, wird aber von filterOpenItems() entfernt.
+     * Markiert einen Aushang als erledigt (isDone=true) und vermerkt
+     * Zeitpunkt + ausfuehrenden User. Der Eintrag bleibt in der Collection,
+     * wird aber von filterOpenItems() entfernt.
+     *
+     * Legacy-Tolerant: Bestehende Items ohne doneAt/doneBy bleiben unveraendert
+     * und bekommen die Felder beim naechsten markDone-Aufruf nachtraeglich.
+     *
+     * @param {string} id
+     * @param {Object} [user] - Firebase-Auth-User; faellt auf currentUser zurueck
+     * @returns {Promise<void>}
+     */
+    async markDone(id, user) {
+        if (!id) return;
+        const u = user || (window.firebase?.auth?.()?.currentUser ?? null);
+        await bulletinCollection().doc(id).update({
+            isDone: true,
+            doneAt: fieldValue().serverTimestamp(),
+            doneBy: deriveDoneByName(u),
+        });
+    },
+
+    /**
+     * Setzt einen erledigten Aushang zurueck auf offen (isDone=false).
+     * Entfernt die doneAt/doneBy Felder via FieldValue.delete(), damit das
+     * Dokument nicht mit veralteten Werten zurueckbleibt.
      *
      * @param {string} id
      * @returns {Promise<void>}
      */
-    async markDone(id) {
+    async reopen(id) {
         if (!id) return;
-        await bulletinCollection().doc(id).update({ isDone: true });
+        const fv = fieldValue();
+        await bulletinCollection().doc(id).update({
+            isDone: false,
+            doneAt: fv.delete(),
+            doneBy: fv.delete(),
+        });
     },
 
     /**

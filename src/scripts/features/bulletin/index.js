@@ -22,17 +22,34 @@ import { bulletinRepo } from '../../data/bulletinRepo.js';
 import {
     DASHBOARD_PREVIEW_LIMIT,
     formatBulletinDate,
-    filterOpenItems,
+    formatDoneDate,
+    splitOpenAndDone,
     sortByTimestampDesc,
     escapeHtml,
 } from './bulletin.pure.js';
+
+const ACTIVE_TAB_STORAGE_KEY = 'bulletin.activeTab';
 
 const state = {
     user: null,
     snapshotUnsub: null,
     listenersAttached: false,
     currentOpenItems: [],
+    currentDoneItems: [],
+    activeTab: 'open', // 'open' | 'done'
 };
+
+function loadPersistedTab() {
+    try {
+        const v = window.localStorage?.getItem(ACTIVE_TAB_STORAGE_KEY);
+        if (v === 'done' || v === 'open') return v;
+    } catch (_) { /* ignore */ }
+    return 'open';
+}
+
+function persistTab(tab) {
+    try { window.localStorage?.setItem(ACTIVE_TAB_STORAGE_KEY, tab); } catch (_) { /* ignore */ }
+}
 
 function safeToast(msg, level) {
     if (typeof window.showToast === 'function') {
@@ -79,6 +96,35 @@ function renderItemCard(item) {
     `;
 }
 
+function renderDoneItemCard(item) {
+    const date = formatBulletinDate(item.timestamp);
+    const sender = escapeHtml(item.sender || 'Unbekannt');
+    const message = escapeHtml(item.message || '');
+    const id = escapeHtml(item.id);
+    const doneAtRaw = (item && Object.prototype.hasOwnProperty.call(item, 'doneAt')) ? item.doneAt : null;
+    const doneAt = formatDoneDate(doneAtRaw);
+    const doneBy = escapeHtml(item.doneBy || 'unbekannt');
+    return `
+        <div class="bulletin-item-header">
+            <span class="bulletin-item-sender">${sender}</span>
+            <span class="bulletin-item-date">${date}</span>
+        </div>
+        <div class="bulletin-item-content bulletin-item-content--done">${message}</div>
+        <div class="bulletin-done-meta">
+            <i class="ti ti-check"></i>
+            <span>Erledigt am <strong>${doneAt}</strong> von <strong>${doneBy}</strong></span>
+        </div>
+        <div style="text-align: right; margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button class="bulletin-reopen-btn" data-id="${id}" title="Wieder oeffnen">
+                <i class="ti ti-arrow-back-up"></i> Wieder öffnen
+            </button>
+            <button class="bulletin-delete-btn" data-id="${id}" aria-label="Löschen">
+                <i class="ti ti-trash"></i>
+            </button>
+        </div>
+    `;
+}
+
 function renderPreviewCard(item) {
     const id = escapeHtml(item.id);
     const message = escapeHtml(item.message || '');
@@ -95,18 +141,21 @@ function renderPreviewCard(item) {
     `;
 }
 
-function renderLists(items) {
+function renderLists(openItems, doneItems) {
     const bulletinList = document.getElementById('bulletin-list');
+    const bulletinListDone = document.getElementById('bulletin-list-done');
     const dashboardList = document.getElementById('bulletin-list-dashboard');
     const bulletinBadge = document.getElementById('bulletin-badge');
     const bulletinPreview = document.getElementById('bulletin-preview');
+    const tabCountOpen = document.getElementById('bulletin-tab-count-open');
+    const tabCountDone = document.getElementById('bulletin-tab-count-done');
 
     if (bulletinList) {
         bulletinList.innerHTML = '';
-        if (items.length === 0) {
-            bulletinList.innerHTML = '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
+        if (openItems.length === 0) {
+            bulletinList.innerHTML = '<p class="bulletin-empty">Keine offenen Aufgaben.</p>';
         } else {
-            items.forEach((item) => {
+            openItems.forEach((item) => {
                 const el = document.createElement('div');
                 el.className = 'bulletin-item';
                 el.innerHTML = renderItemCard(item);
@@ -115,12 +164,35 @@ function renderLists(items) {
         }
     }
 
+    if (bulletinListDone) {
+        bulletinListDone.innerHTML = '';
+        if (doneItems.length === 0) {
+            bulletinListDone.innerHTML = '<p class="bulletin-empty">Noch keine erledigten Aufgaben.</p>';
+        } else {
+            doneItems.forEach((item) => {
+                const el = document.createElement('div');
+                el.className = 'bulletin-item bulletin-item--done';
+                el.innerHTML = renderDoneItemCard(item);
+                bulletinListDone.appendChild(el);
+            });
+        }
+    }
+
+    if (tabCountOpen) {
+        tabCountOpen.textContent = String(openItems.length);
+        tabCountOpen.classList.toggle('hidden', openItems.length === 0);
+    }
+    if (tabCountDone) {
+        tabCountDone.textContent = String(doneItems.length);
+        tabCountDone.classList.toggle('hidden', doneItems.length === 0);
+    }
+
     if (dashboardList) {
         dashboardList.innerHTML = '';
-        if (items.length === 0) {
+        if (openItems.length === 0) {
             dashboardList.innerHTML = '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
         } else {
-            items.slice(0, DASHBOARD_PREVIEW_LIMIT).forEach((item) => {
+            openItems.slice(0, DASHBOARD_PREVIEW_LIMIT).forEach((item) => {
                 const el = document.createElement('div');
                 el.className = 'bulletin-item';
                 el.innerHTML = renderItemCard(item);
@@ -130,16 +202,16 @@ function renderLists(items) {
     }
 
     if (bulletinBadge) {
-        bulletinBadge.textContent = String(items.length);
-        bulletinBadge.classList.toggle('hidden', items.length === 0);
+        bulletinBadge.textContent = String(openItems.length);
+        bulletinBadge.classList.toggle('hidden', openItems.length === 0);
     }
 
     if (bulletinPreview) {
         bulletinPreview.innerHTML = '';
-        if (items.length === 0) {
+        if (openItems.length === 0) {
             bulletinPreview.innerHTML = '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
         } else {
-            items.slice(0, DASHBOARD_PREVIEW_LIMIT).forEach((item) => {
+            openItems.slice(0, DASHBOARD_PREVIEW_LIMIT).forEach((item) => {
                 const el = document.createElement('div');
                 el.className = 'bulletin-preview-item';
                 el.innerHTML = renderPreviewCard(item);
@@ -147,6 +219,29 @@ function renderLists(items) {
             });
         }
     }
+}
+
+function applyActiveTabUi() {
+    const tabOpen = document.getElementById('bulletin-tab-open');
+    const tabDone = document.getElementById('bulletin-tab-done');
+    const listOpen = document.getElementById('bulletin-list');
+    const listDone = document.getElementById('bulletin-list-done');
+    const isDone = state.activeTab === 'done';
+
+    if (tabOpen) tabOpen.classList.toggle('active', !isDone);
+    if (tabOpen) tabOpen.setAttribute('aria-selected', isDone ? 'false' : 'true');
+    if (tabDone) tabDone.classList.toggle('active', isDone);
+    if (tabDone) tabDone.setAttribute('aria-selected', isDone ? 'true' : 'false');
+    if (listOpen) listOpen.classList.toggle('hidden', isDone);
+    if (listDone) listDone.classList.toggle('hidden', !isDone);
+}
+
+function setActiveTab(tab) {
+    if (tab !== 'open' && tab !== 'done') return;
+    if (state.activeTab === tab) return;
+    state.activeTab = tab;
+    persistTab(tab);
+    applyActiveTabUi();
 }
 
 function renderStatsDetailInternal() {
@@ -176,10 +271,21 @@ function renderStatsDetailInternal() {
 async function handleDoneClick(id) {
     if (!id) return;
     try {
-        await bulletinRepo.markDone(id);
+        await bulletinRepo.markDone(id, state.user || window.firebase?.auth?.()?.currentUser);
         safeToast('Aushang als erledigt markiert', 'success');
     } catch (err) {
         console.error('[bulletin] markDone error:', err);
+        safeToast('Fehler beim Aktualisieren', 'error');
+    }
+}
+
+async function handleReopenClick(id) {
+    if (!id) return;
+    try {
+        await bulletinRepo.reopen(id);
+        safeToast('Aushang wieder geöffnet', 'success');
+    } catch (err) {
+        console.error('[bulletin] reopen error:', err);
         safeToast('Fehler beim Aktualisieren', 'error');
     }
 }
@@ -222,12 +328,33 @@ function attachContainerDelegation(container) {
             return;
         }
 
+        const reopenBtn = target.closest('.bulletin-reopen-btn');
+        if (reopenBtn && container.contains(reopenBtn)) {
+            e.stopPropagation();
+            await handleReopenClick(reopenBtn.dataset.id);
+            return;
+        }
+
         const deleteBtn = target.closest('.bulletin-delete-btn') || target.closest('.bulletin-delete-btn-sm');
         if (deleteBtn && container.contains(deleteBtn)) {
             e.stopPropagation();
             await handleDeleteClick(deleteBtn.dataset.id);
         }
     });
+}
+
+function attachTabHandlers() {
+    const tabOpen = document.getElementById('bulletin-tab-open');
+    const tabDone = document.getElementById('bulletin-tab-done');
+    if (tabOpen && tabOpen.dataset.bulletinTabBound !== '1') {
+        tabOpen.dataset.bulletinTabBound = '1';
+        tabOpen.addEventListener('click', () => setActiveTab('open'));
+    }
+    if (tabDone && tabDone.dataset.bulletinTabBound !== '1') {
+        tabDone.dataset.bulletinTabBound = '1';
+        tabDone.addEventListener('click', () => setActiveTab('done'));
+    }
+    applyActiveTabUi();
 }
 
 async function handleSubmit({ inputEl, buttonEl, busyLabel = 'Wird gesendet...' }) {
@@ -269,9 +396,11 @@ export const bulletinFeature = {
     onLogin(user) {
         this.onLogout();
         state.user = user;
+        state.activeTab = loadPersistedTab();
 
         const hasAnyContainer = !!(
             document.getElementById('bulletin-list')
+            || document.getElementById('bulletin-list-done')
             || document.getElementById('bulletin-preview')
             || document.getElementById('bulletin-list-dashboard')
         );
@@ -279,9 +408,11 @@ export const bulletinFeature = {
 
         state.snapshotUnsub = bulletinRepo.streamAll(
             (allItems) => {
-                const items = sortByTimestampDesc(filterOpenItems(allItems));
-                state.currentOpenItems = items;
-                renderLists(items);
+                const { open, done } = splitOpenAndDone(allItems);
+                state.currentOpenItems = open;
+                state.currentDoneItems = done;
+                renderLists(open, done);
+                applyActiveTabUi();
                 renderStatsDetailInternal();
             },
             (err) => {
@@ -299,6 +430,7 @@ export const bulletinFeature = {
         }
         state.snapshotUnsub = null;
         state.currentOpenItems = [];
+        state.currentDoneItems = [];
         state.user = null;
     },
 
@@ -327,8 +459,12 @@ export const bulletinFeature = {
         }
 
         attachContainerDelegation(document.getElementById('bulletin-list'));
+        attachContainerDelegation(document.getElementById('bulletin-list-done'));
         attachContainerDelegation(document.getElementById('bulletin-list-dashboard'));
         attachContainerDelegation(document.getElementById('bulletin-preview'));
+
+        state.activeTab = loadPersistedTab();
+        attachTabHandlers();
     },
 
     /**
@@ -347,6 +483,10 @@ export const bulletinFeature = {
         renderStatsDetailInternal,
         handleSubmit,
         handleDoneClick,
+        handleReopenClick,
         handleDeleteClick,
+        setActiveTab,
+        applyActiveTabUi,
+        loadPersistedTab,
     },
 };
