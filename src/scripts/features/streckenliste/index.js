@@ -143,11 +143,12 @@ function renderEntriesInternal() {
 
         const header = document.createElement('div');
         header.className = 'feed-card-header';
-        header.style.marginBottom = '0.2rem';
+        
         const wt = escapeHtml(entry.wildart || '');
         const ua = escapeHtml(entry.unterart || '');
         const datum = escapeHtml(entry.datum || '');
         const erl = escapeHtml(entry.erleger || '');
+        
         header.innerHTML = `
             <div class="feed-card-icon-container">${iconHTML}</div>
             <div class="feed-card-header-text">
@@ -159,44 +160,48 @@ function renderEntriesInternal() {
         delBtn.className = 'entry-delete-btn';
         delBtn.dataset.idx = String(idx);
         delBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>';
-        Object.assign(delBtn.style, {
-            background: 'rgba(255,255,255,0.1)', border: 'none', color: 'var(--primary-light)',
-            padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', marginLeft: 'auto',
-        });
         header.appendChild(delBtn);
         li.appendChild(header);
+
+        // Content Wrapper
+        const content = document.createElement('div');
+        content.className = 'feed-card-content';
 
         if (entry.bemerkung) {
             const notes = document.createElement('div');
             notes.className = 'entry-notes';
+            notes.style.marginBottom = '0.75rem';
             notes.textContent = entry.bemerkung;
-            li.appendChild(notes);
+            content.appendChild(notes);
         }
 
-        const fotoSection = document.createElement('div');
-        fotoSection.className = 'entry-foto-section';
         const imageSrc = entry.imageBase64 || entry.imageUrl;
         const eid = escapeHtml(entry.id);
 
-        if (imageSrc) {
-            fotoSection.innerHTML = `
-                <div class="entry-foto-thumbnail">
-                    <img src="" alt="Streckenfoto" class="entry-foto-img" data-id="${eid}">
-                    <button type="button" class="entry-foto-delete-btn" data-id="${eid}" aria-label="Foto löschen">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>
-                    </button>
-                </div>`;
-            const im = fotoSection.querySelector('.entry-foto-img');
-            if (im) im.src = imageSrc;
+        if (imageSrc || true) { // Always show the upload button area
+            const fotoSection = document.createElement('div');
+            fotoSection.className = 'entry-foto-section';
+            
+            if (imageSrc) {
+                fotoSection.innerHTML = `
+                    <div class="entry-foto-thumbnail">
+                        <img src="${imageSrc}" alt="Streckenfoto" class="entry-foto-img" data-id="${eid}">
+                        <button type="button" class="entry-foto-delete-btn" data-id="${eid}" aria-label="Foto löschen">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>
+                        </button>
+                    </div>`;
+            }
+
+            const fotoBtn = document.createElement('button');
+            fotoBtn.type = 'button';
+            fotoBtn.className = 'entry-foto-btn';
+            fotoBtn.dataset.id = entry.id;
+            fotoBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>${imageSrc ? 'Ändern' : 'Foto hinzufügen'}`;
+            fotoSection.appendChild(fotoBtn);
+            content.appendChild(fotoSection);
         }
 
-        const fotoBtn = document.createElement('button');
-        fotoBtn.type = 'button';
-        fotoBtn.className = 'entry-foto-btn';
-        fotoBtn.dataset.id = entry.id;
-        fotoBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>${imageSrc ? 'Ändern' : 'Foto hinzufügen'}`;
-        fotoSection.appendChild(fotoBtn);
-        li.appendChild(fotoSection);
+        li.appendChild(content);
 
         if (entryList) entryList.appendChild(li.cloneNode(true));
         if (dashboardList) dashboardList.appendChild(li.cloneNode(true));

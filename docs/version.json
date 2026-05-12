@@ -1,5 +1,5 @@
 {
-  "version": "5.0.0",
-  "build": "20260509-v5-release",
-  "description": "JagdApp v5.0.0 - Astro migration & Excel Export"
+  "version": "6.0.0",
+  "build": "20260512-v6-release",
+  "description": "JagdApp v6.0.0 - Modular Architecture & Document Safe"
 }

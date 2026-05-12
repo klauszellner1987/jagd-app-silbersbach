@@ -491,11 +491,11 @@ main {
     background: rgba(0, 0, 0, 0.15);
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
-    padding: 1.25rem 1rem 8rem 1rem;
+    padding: 1.75rem 1.2rem 8rem 1.2rem;
 
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-bottom: none;
-    box-shadow: inset 0 2px 20px rgba(0,0,0,0.1), 0 -4px 30px rgba(100, 200, 100, 0.05);
+    box-shadow: inset 0 4px 30px rgba(0,0,0,0.2), 0 -4px 30px rgba(100, 200, 100, 0.05);
 
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -511,18 +511,28 @@ main {
 }
 
 .feed-card {
-    background: linear-gradient(180deg,
-            rgba(45, 90, 65, 0.8) 0%,
-            rgba(40, 80, 60, 0.35) 40%,
-            rgba(35, 70, 55, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 1rem 1.1rem;
-    margin-bottom: 1.1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    padding: 0;
+    margin-bottom: 2.25rem;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+}
+
+.feed-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-light);
+    opacity: 0.6;
 }
 
 .feed-header-inline {
@@ -639,7 +649,9 @@ main {
 .feed-card-header {
     display: flex;
     align-items: center;
-    margin-bottom: 0.6rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .feed-card-icon-container {
@@ -675,11 +687,15 @@ main {
     margin-top: 0.1rem;
 }
 
+.feed-card-content {
+    padding: 1.25rem;
+}
+
 .feed-card-content p {
     margin: 0;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.85);
-    line-height: 1.45;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
 }
 
 #bulletin-preview {
@@ -1329,10 +1345,11 @@ button:hover {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 3000;
+    z-index: 9999; /* Maximale Priorität */
     color: white;
     overflow: hidden;
-    background: #1e3022; /* Fallback */
+    background: #1e3022;
+    pointer-events: all; /* Blockiert alles darunter */
 }
 
 #login-overlay::before {
@@ -3907,23 +3924,30 @@ button:hover {
     gap: 0.5rem;
 }
 
-/* Entry Items - Detaillierte Karten */
+/* Entry Items - Detaillierte Karten (Angleichung an feed-card) */
 .entry-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    background: linear-gradient(180deg,
-            rgba(45, 90, 65, 0.8) 0%,
-            rgba(40, 80, 60, 0.35) 40%,
-            rgba(35, 70, 55, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 0.8rem 1rem;
-    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    padding: 0;
+    margin-bottom: 1.5rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
     color: var(--text);
+}
+
+.entry-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-light);
+    opacity: 0.6;
 }
 
 .entry-item:hover {
@@ -4359,8 +4383,41 @@ button:hover {
 .wetter-detail-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    padding-bottom: 1rem;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    width: 100%;
+}
+
+.wetter-detail-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+}
+
+.wetter-detail-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.wetter-detail-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .wetter-detail-widget {
@@ -4401,14 +4458,14 @@ button:hover {
 }
 
 .wetter-detail-main {
-    font-size: 2rem;
+    font-size: 1.6rem; /* Reduziert von 2rem */
     font-weight: 700;
     color: white;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
 }
 
 .wetter-detail-main.moon-icon {
-    font-size: 2.5rem;
+    font-size: 1.8rem; /* Reduziert von 2.5rem */
     text-align: center;
 }
 
@@ -4416,8 +4473,9 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.78rem; /* Reduziert von 0.85rem */
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.2;
 }
 
 .wetter-detail-row span:last-child {
@@ -5480,3 +5538,96 @@ button:hover {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.85rem;
 }
+/* ============================================
+   UNIFIED WIDGET DESIGN (v6)
+   ============================================ */
+
+.stats-detail-card, 
+.dok-widget {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-detail-card::before, 
+.dok-widget::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-light);
+    opacity: 0.6;
+}
+
+.stats-detail-card h4 {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1rem 1.25rem;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stats-detail-card > div {
+    padding: 1.25rem;
+    flex: 1;
+}
+
+/* Wetter Widgets REVERT to Original Clean Look */
+.wetter-detail-widget {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 0.85rem; /* Reduziert von 1rem */
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    min-width: 0; /* Verhindert Overflow in Grids */
+}
+
+.wetter-detail-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 0.2rem;
+}
+
+.wetter-detail-header i, .wetter-detail-header svg {
+    color: var(--primary-light);
+    font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
+}
+
+.wetter-detail-header span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wetter-detail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+

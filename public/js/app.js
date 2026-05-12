@@ -1,7 +1,7 @@
 // ==============================
 // APP VERSION
 // ==============================
-const APP_VERSION = "v5.0.0";
+const APP_VERSION = "v6.0.0";
 
 /**
  * Toggles between dashboard feed views (standard vs strecke)

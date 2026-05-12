@@ -193,13 +193,14 @@ function initAuthListener(deps) {
             }
         } else {
             document.body.classList.remove('authenticated');
+            window.__features?.presence?.onLogout(); // Sofortige Bereinigung
             window.__features?.bulletin?.onLogout();
             window.__features?.streckenliste?.onLogout();
             window.__features?.dokumente?.onLogout();
             window.__features?.map?.onLogout();
 
             if (state.loginOverlay) {
-                state.loginOverlay.style.display = 'flex';
+                state.loginOverlay.style.setProperty('display', 'flex', 'important');
             }
 
             setLoginLoading(false);

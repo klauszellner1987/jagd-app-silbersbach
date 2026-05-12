@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 // https://astro.build/config
 export default defineConfig({
   outDir: './docs',
-  base: '/jagd-app-silbersbach/',
+  base: '/',
   integrations: [tailwind()],
   vite: {
     build: {
