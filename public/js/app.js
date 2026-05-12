@@ -689,6 +689,7 @@ function initAuthListener() {
             // Benutzername in Hero und Einstellungen eintragen
             updateUserInfo(user);
             window.__features?.presence?.onLogin(user);
+            window.__features?.bulletin?.onLogin(user);
 
             // Tab Bar sofort nach Login anzeigen
             const bottomNav = document.getElementById("bottom-nav");
@@ -704,7 +705,7 @@ function initAuthListener() {
                     try {
                         if (isNativeApp()) {
                             // Native App Push Initialisierung
-                            initPushNotifications(firebase.firestore(), null);
+                            await window.__features?.notifications?.init({ swReg: null, appVersion: APP_VERSION });
                         } else if ('serviceWorker' in navigator) {
                             // PWA Service Worker Push Initialisierung
                             let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
@@ -715,7 +716,7 @@ function initAuthListener() {
                             }
 
                             if (reg) {
-                                initPushNotifications(firebase.firestore(), reg);
+                                await window.__features?.notifications?.init({ swReg: reg, appVersion: APP_VERSION });
                             }
                         }
                     } catch (e) {
@@ -732,6 +733,7 @@ function initAuthListener() {
         } else {
             // User is signed out
             document.body.classList.remove("authenticated");
+            window.__features?.bulletin?.onLogout();
 
             if (loginOverlay) {
                 loginOverlay.style.display = "flex";
@@ -1056,26 +1058,15 @@ async function initializeApp() {
     const db = firebase.firestore();
     const hochsitzeCollection = db.collection("hochsitze");
 
-    // ============================================
-    // SCHWARZES BRETT LOGIK
-    // ============================================
-    const bulletinCollection = db.collection("bulletinBoard");
-    const bulletinList = document.getElementById("bulletin-list");
-    const bulletinPreview = document.getElementById("bulletin-preview");
-    const bulletinBadge = document.getElementById("bulletin-badge");
-    const bulletinSubmitBtn = document.getElementById("bulletin-submit-btn");
-    const bulletinInput = document.getElementById("bulletin-input");
-    
+    // SCHWARZES BRETT siehe src/scripts/features/bulletin/index.js (Bridge: window.__features.bulletin)
     let entries = [];
-    let bulletinItemsForStats = []; 
 
     // Die Funktion definieren wir GANZ HIER OBEN im Scope von initializeApp
     function renderDetailStats() {
         try {
             const streckeContainer = document.getElementById("stats-detail-strecke");
             const rehwildContainer = document.getElementById("stats-detail-rehwild");
-            const bulletinContainer = document.getElementById("stats-detail-bulletin");
-            
+
             if (!streckeContainer || !rehwildContainer) return;
 
             // 1. Abschuss nach Wildarten
@@ -1128,238 +1119,14 @@ async function initializeApp() {
             rehHTML += '</div>';
             rehwildContainer.innerHTML = rehHTML;
 
-            // 3. Schwarzes Brett (Offene Beiträge)
-            if (bulletinContainer) {
-                let bulletinHTML = '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
-                const openItems = bulletinItemsForStats || [];
-                if (openItems.length === 0) {
-                    bulletinHTML += "<p style='opacity:0.5'>Keine offenen Aufgaben.</p>";
-                } else {
-                    openItems.forEach(item => {
-                        bulletinHTML += `
-                            <div style="padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.9rem;">
-                                <div style="font-weight: 500; margin-bottom: 4px;">${item.message}</div>
-                                <div style="font-size: 0.75rem; opacity: 0.5;">Von ${item.sender || 'Unbekannt'}</div>
-                            </div>
-                        `;
-                    });
-                }
-                bulletinHTML += '</div>';
-                bulletinContainer.innerHTML = bulletinHTML;
-            }
+            // 3. Schwarzes Brett (Offene Beiträge) - rendert das bulletin-Modul
+            window.__features?.bulletin?.renderStatsDetail();
         } catch (err) {
             console.error("renderDetailStats error:", err);
         }
     }
     // Global für onclick Handler verfügbar machen
     window.renderDetailStats = renderDetailStats;
-
-    if (bulletinList || bulletinPreview || document.getElementById("bulletin-list-dashboard")) {
-        bulletinCollection.orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const items = allItems.filter(item => !item.isDone);
-            bulletinItemsForStats = items; // Für Statistik speichern
-            
-            const dashboardList = document.getElementById("bulletin-list-dashboard");
-            
-            // Statistik aktualisieren falls Funktion schon da
-            if (typeof renderDetailStats === 'function') renderDetailStats();
-
-            // 1. Listen rendern (Main Page & Dashboard Feed)
-            const listHTML = items.length ? "" : '<p class="bulletin-empty">Keine Nachrichten vorhanden.</p>';
-            if (bulletinList) bulletinList.innerHTML = listHTML;
-            if (dashboardList) dashboardList.innerHTML = listHTML;
-
-            items.forEach(item => {
-                const date = item.timestamp ? new Date(item.timestamp).toLocaleString('de-DE', {
-                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-                }) : 'Unbekannt';
-
-                const html = `
-                    <div class="bulletin-item-header">
-                        <span class="bulletin-item-sender">${item.sender || 'Unbekannt'}</span>
-                        <span class="bulletin-item-date">${date}</span>
-                    </div>
-                    <div class="bulletin-item-content">${item.message}</div>
-                    <div style="text-align: right; margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
-                        <button class="bulletin-done-btn" data-id="${item.id}" title="Erledigt">
-                            <i class="ti ti-check"></i> Erledigt
-                        </button>
-                        <button class="bulletin-delete-btn" data-id="${item.id}" aria-label="Löschen">
-                            <i class="ti ti-trash"></i>
-                        </button>
-                    </div>
-                `;
-
-                if (bulletinList) {
-                    const el = document.createElement("div");
-                    el.className = "bulletin-item";
-                    el.innerHTML = html;
-                    bulletinList.appendChild(el);
-                }
-                
-                // Im Dashboard nur die ersten 3 anzeigen
-                if (dashboardList && Array.from(dashboardList.children).length < 3) {
-                    const el = document.createElement("div");
-                    el.className = "bulletin-item";
-                    el.innerHTML = html;
-                    dashboardList.appendChild(el);
-                }
-            });
-
-            // Erledigt & Löschen Events (für beide Listen)
-            document.querySelectorAll(".bulletin-done-btn").forEach(btn => {
-                btn.onclick = async (e) => {
-                    e.stopPropagation();
-                    try {
-                        await bulletinCollection.doc(btn.dataset.id).update({ isDone: true });
-                        showToast("Aushang als erledigt markiert", "success");
-                    } catch (err) {
-                        console.error(err);
-                        showToast("Fehler beim Aktualisieren", "error");
-                    }
-                };
-            });
-
-            document.querySelectorAll(".bulletin-delete-btn").forEach(btn => {
-                btn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const confirmed = await showConfirm(
-                        "Aushang unwiderruflich löschen?",
-                        "Aushang löschen",
-                        "Löschen"
-                    );
-                    if (!confirmed) return;
-                    try {
-                        await bulletinCollection.doc(btn.dataset.id).delete();
-                        showToast("Aushang gelöscht", "delete");
-                    } catch (err) {
-                        console.error(err);
-                        showToast("Fehler beim Löschen", "error");
-                    }
-                };
-            });
-
-            if (bulletinBadge) {
-                bulletinBadge.textContent = items.length;
-                bulletinBadge.classList.toggle("hidden", items.length === 0);
-            }
-
-            if (bulletinPreview) {
-                bulletinPreview.innerHTML = items.length ? "" : '<p class="bulletin-empty">Keine neuen Aushänge...</p>';
-                // LIMIT: Zeige maximal 3 neueste Einträge im Dashboard-Widget
-                items.slice(0, 3).forEach(item => {
-                    const el = document.createElement("div");
-                    el.className = "bulletin-preview-item";
-                    el.innerHTML = `
-                        <span class="bulletin-preview-text">${item.message}</span>
-                        <div class="bulletin-preview-actions">
-                            <button class="bulletin-done-btn-sm" data-id="${item.id}" title="Erledigt">
-                                <i class="ti ti-check"></i>
-                            </button>
-                            <button class="bulletin-delete-btn-sm" data-id="${item.id}" title="Löschen">
-                                <i class="ti ti-trash"></i>
-                            </button>
-                        </div>
-                    `;
-
-                    // Klick auf Text -> Feed öffnen
-                    el.querySelector('.bulletin-preview-text').onclick = () => {
-                        toggleDashboardFeed('bulletin');
-                    };
-
-                    // Klick auf Buttons -> Aktionen
-                    el.querySelector('.bulletin-done-btn-sm').onclick = async (e) => {
-                        e.stopPropagation();
-                        try {
-                            await bulletinCollection.doc(item.id).update({ isDone: true });
-                            showToast("Aushang erledigt", "success");
-                        } catch (err) { console.error(err); }
-                    };
-
-                    el.querySelector('.bulletin-delete-btn-sm').onclick = async (e) => {
-                        e.stopPropagation();
-                        const confirmed = await showConfirm(
-                            "Aushang löschen?",
-                            "Aushang löschen",
-                            "Löschen"
-                        );
-                        if (!confirmed) return;
-                        try {
-                            await bulletinCollection.doc(item.id).delete();
-                            showToast("Aushang gelöscht", "delete");
-                        } catch (err) { console.error(err); }
-                    };
-                    bulletinPreview.appendChild(el);
-                });
-            }
-        });
-    }
-
-    // Nachricht senden (Dashboard)
-    const bulletinSubmitDashboard = document.getElementById("bulletin-submit-dashboard");
-    const bulletinInputDashboard = document.getElementById("bulletin-input-dashboard");
-
-    if (bulletinSubmitDashboard && bulletinInputDashboard) {
-        bulletinSubmitDashboard.onclick = async () => {
-            const msg = bulletinInputDashboard.value.trim();
-            if (!msg) return;
-
-            bulletinSubmitDashboard.disabled = true;
-            const user = firebase.auth().currentUser;
-            const senderName = user ? (user.displayName || user.email.split('@')[0]) : "Unbekannt";
-
-            try {
-                await bulletinCollection.add({
-                    message: msg,
-                    sender: senderName,
-                    timestamp: Date.now(),
-                    isDone: false
-                });
-                bulletinInputDashboard.value = "";
-                showToast("Aushang gepostet!", "success");
-            } catch (err) {
-                console.error(err);
-                showToast("Fehler beim Senden", "error");
-            } finally {
-                bulletinSubmitDashboard.disabled = false;
-            }
-        };
-    }
-
-    // Nachricht senden (Main Page)
-    if (bulletinSubmitBtn && bulletinInput) {
-        bulletinSubmitBtn.onclick=async () => {
-            const msg = bulletinInput.value.trim();
-            if (!msg) return;
-
-            bulletinSubmitBtn.disabled=true;
-            const originalContent = bulletinSubmitBtn.innerHTML;
-            bulletinSubmitBtn.innerHTML = "Wird gesendet...";
-
-            try {
-                const user = firebase.auth().currentUser;
-                // Einfacher Name aus E-Mail oder DisplayName
-                const sender = user ? (user.displayName || user.email.split('@')[0]) : 'Unbekannt';
-
-                await bulletinCollection.add({
-                    message: msg,
-                    timestamp: Date.now(),
-                    sender: sender,
-                    isDone: false
-                });
-
-                bulletinInput.value="";
-                showToast("Aushang erfolgreich erstellt", "success");
-            } catch (err) {
-                console.error("Bulletin Error:", err);
-                showToast("Fehler beim Senden", "error");
-            } finally {
-                bulletinSubmitBtn.disabled=false;
-                bulletinSubmitBtn.innerHTML = originalContent;
-            }
-        };
-    }
 
     const hochsitzPanel = document.getElementById("hochsitz-panel");
     const panelContent = hochsitzPanel?.querySelector(".panel-content");
@@ -3047,180 +2814,7 @@ if ("serviceWorker" in navigator) {
     });
 }
 
-async function initPushNotifications(db, swReg) {
-    if (isNativeApp()) {
-        await initNativePush(db);
-        return;
-    }
-
-    if (!firebase.messaging) return;
-
-    try {
-        const isSupported=await firebase.messaging.isSupported();
-        if (!isSupported) return;
-    } catch (e) {
-        return;
-    }
-
-    const currentPerm = Notification.permission;
-
-    if (currentPerm === 'granted') {
-        await fetchAndSaveToken(db, swReg);
-        return;
-    }
-
-    if (currentPerm === 'default') {
-        const requestPushAccess = async () => {
-            window.removeEventListener('click', requestPushAccess);
-            window.removeEventListener('touchstart', requestPushAccess);
-
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    await fetchAndSaveToken(db, swReg);
-                }
-            } catch (err) {
-                console.error("Fehler bei Push-Berechtigung:", err);
-            }
-        };
-
-        // Auf Klick und Touch am window reagieren (sicherer als document)
-        window.addEventListener('click', requestPushAccess);
-        window.addEventListener('touchstart', requestPushAccess, { passive: true });
-    } else if (currentPerm === 'denied') {
-        showToast("BLOCKIERT! Bitte in den Handy-Einstellungen (App Info) erlauben.", "error");
-    }
-}
-
-async function initNativePush(db) {
-    if (!window.Capacitor || !window.Capacitor.Plugins.PushNotifications) {
-        console.warn("Capacitor Push Plugin nicht gefunden.");
-        return;
-    }
-
-    const { PushNotifications } = window.Capacitor.Plugins;
-
-    // Berechtigung prüfen & anfordern
-    let permStatus = await PushNotifications.checkPermissions();
-    if (permStatus.receive === 'prompt') {
-        permStatus = await PushNotifications.requestPermissions();
-    }
-
-    if (permStatus.receive !== 'granted') {
-        showToast("Push-Berechtigung verweigert.", "error");
-        return;
-    }
-
-    // Listener für erfolgreiche Token-Registrierung
-    PushNotifications.addListener('registration', async (token) => {
-        const fcmToken = token.value;
-
-        let user = firebase.auth().currentUser;
-        const tokenData = {
-            token: fcmToken,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            userId: user ? user.uid : 'anon',
-            userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
-            device: 'Android Native App',
-            version: APP_VERSION
-        };
-
-        await db.collection('fcmTokens').doc(fcmToken).set(tokenData, { merge: true });
-        showToast("Native Push aktiv! 🔔", "success");
-    });
-
-    PushNotifications.addListener('registrationError', (error) => {
-        console.error('Push registration error:', error);
-    });
-
-    // Optionale Listener für eintreffende Nachrichten
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push empfangen:', notification);
-    });
-
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-        console.log('Push-Aktion ausgeführt:', notification);
-        // Hier könnte man zur Seite navigieren:
-        // if (notification.notification.data.target) navigateToPage(...)
-    });
-
-    // Registrierung starten
-    await PushNotifications.register();
-}
-
-
-
-async function fetchAndSaveToken(db, swReg) {
-    if (!swReg) {
-        console.warn("[FCM] Kein Service Worker vorhanden");
-        return;
-    }
-
-    let worker = swReg.active;
-    if (!worker || worker.state !== 'activated') {
-        await new Promise(r => setTimeout(r, 2500));
-        worker = swReg.active;
-        if (!worker || worker.state !== 'activated') {
-            console.warn("[FCM] Service Worker nicht aktiviert, überspringe");
-            return;
-        }
-    }
-
-    if (Notification.permission !== 'granted') {
-        return;
-    }
-
-    let user = firebase.auth().currentUser;
-    if (!user) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        user = firebase.auth().currentUser;
-        if (!user) {
-            console.warn("[FCM] Kein User nach Warten, überspringe");
-            return;
-        }
-    }
-
-    const messaging = firebase.messaging();
-    const maxAttempts = 3;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-            const currentToken = await messaging.getToken({
-                vapidKey: 'BDy4YWtERHAaFyUQHr7URTCHbsFC_AwMImJJ5U_AlFrdF_uhsHtEMZMybDXdZWUkapxR9X5JzoKJFAHXvYSIEQg',
-                serviceWorkerRegistration: swReg
-            });
-
-            if (currentToken) {
-                user = firebase.auth().currentUser;
-                const tokenData = {
-                    token: currentToken,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    userId: user ? user.uid : 'anon',
-                    userName: user ? (user.displayName || user.email || 'Nutzer') : 'Unbekannt',
-                    device: navigator.userAgent.substring(0, 100),
-                    version: APP_VERSION
-                };
-
-                await db.collection('fcmTokens').doc(currentToken).set(tokenData, { merge: true });
-                showToast("Push-Benachrichtigungen aktiv!", "success");
-                return;
-            }
-            return;
-        } catch (err) {
-            console.warn(`[FCM] Versuch ${attempt}/${maxAttempts}:`, err.code || err.name);
-
-            if ((err.code === 20 || err.name === 'AbortError') && attempt < maxAttempts) {
-                await new Promise(r => setTimeout(r, 3000 * attempt));
-                continue;
-            }
-
-            if (attempt === maxAttempts) {
-                console.error("[FCM] Token-Registrierung fehlgeschlagen nach", maxAttempts, "Versuchen");
-            }
-            break;
-        }
-    }
-}
+// FCM PUSH siehe src/scripts/core/notifications/index.js (Bridge: window.__features.notifications)
 
 
 // ==============================
@@ -3740,6 +3334,10 @@ function initAll() {
 
     try { window.__features?.presence?.initUI(); } catch (e) {
         console.error("Online Users Dropdown init error:", e);
+    }
+
+    try { window.__features?.bulletin?.initUI(); } catch (e) {
+        console.error("Bulletin init error:", e);
     }
 }
 
