@@ -1236,6 +1236,13 @@ button:hover {
     transition: all var(--transition);
 }
 
+/* Native Dropdown: OS/Chrome oft helle Liste — weisse Schrift vom Select waere unsichtbar */
+#entry-form select option,
+#entry-form select optgroup {
+    color: #1a1a24;
+    background-color: #f4f4f7;
+}
+
 #entry-form input::placeholder,
 #entry-form textarea::placeholder {
     color: rgba(255, 255, 255, 0.6);
