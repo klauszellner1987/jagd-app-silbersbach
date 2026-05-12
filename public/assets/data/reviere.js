@@ -1,5 +1,6 @@
 // assets/data/reviere.js
-const reviere = [
+// eslint-disable-next-line no-var
+var reviere = [
   {
     name: "GJR Silbersbach",
     color: "green",

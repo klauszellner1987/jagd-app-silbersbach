@@ -525,216 +525,8 @@ function initNavigation() {
 // ==============================
 // FIREBASE AUTHENTICATION
 // ==============================
-let loginOverlay, loginForm, loginError, loginLoading;
-let isAppInitialized=false;
-
-function showLoginError(message) {
-    if (loginError) {
-        loginError.textContent = message;
-        loginError.classList.remove("hidden");
-    }
-}
-
-function hideLoginError() {
-    if (loginError) {
-        loginError.classList.add("hidden");
-    }
-}
-
-function setLoginLoading(isLoading) {
-    const submitBtn = loginForm?.querySelector('button[type="submit"]');
-    if (loginLoading) {
-        loginLoading.classList.toggle("hidden", !isLoading);
-    }
-    if (submitBtn) {
-        submitBtn.disabled=isLoading;
-        submitBtn.textContent = isLoading ? "Wird angemeldet..." : "Einloggen";
-    }
-}
-
-async function handleLogin(email, password) {
-    hideLoginError();
-    setLoginLoading(true);
-
-    try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        // Auth state listener will handle the rest
-    } catch (error) {
-        console.error("Login error:", error);
-        let errorMessage = "Login fehlgeschlagen. Bitte prüfe deine Zugangsdaten.";
-
-        switch (error.code) {
-            case 'auth/user-not-found':
-                errorMessage = "Kein Benutzer mit dieser E-Mail gefunden.";
-                break;
-            case 'auth/wrong-password':
-                errorMessage = "Falsches Passwort.";
-                break;
-            case 'auth/invalid-email':
-                errorMessage = "Ungültige E-Mail-Adresse.";
-                break;
-            case 'auth/too-many-requests':
-                errorMessage = "Zu viele Versuche. Bitte warte einen Moment.";
-                break;
-            case 'auth/network-request-failed':
-                errorMessage = "Netzwerkfehler. Bitte prüfe deine Verbindung.";
-                break;
-        }
-
-        showLoginError(errorMessage);
-        setLoginLoading(false);
-    }
-}
-
-function initLogin() {
-    loginOverlay = document.getElementById("login-overlay");
-    loginForm = document.getElementById("login-form");
-    loginError = document.getElementById("login-error");
-    loginLoading = document.getElementById("login-loading");
-
-    if (!loginForm) {
-        console.error("Login form not found!");
-        return;
-    }
-
-    // Handle form submission
-    loginForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const email = document.getElementById("login-email")?.value?.trim();
-        const password=document.getElementById("login-password")?.value;
-
-        if (!email || !password) {
-            showLoginError("Bitte E-Mail und Passwort eingeben.");
-            return;
-        }
-
-        handleLogin(email, password);
-    });
-
-    // Password visibility toggle
-    const passwordToggle = document.getElementById("password-toggle");
-    const passwordInput = document.getElementById("login-password");
-    if (passwordToggle && passwordInput) {
-        passwordToggle.addEventListener("click", () => {
-            const isPassword=passwordInput.type === "password";
-            passwordInput.type=isPassword ? "text" : "password";
-
-            // Toggle icon visibility
-            const eyeOpen = passwordToggle.querySelector(".eye-open");
-            const eyeClosed=passwordToggle.querySelector(".eye-closed");
-            if (eyeOpen && eyeClosed) {
-                eyeOpen.classList.toggle("hidden");
-                eyeClosed.classList.toggle("hidden");
-            }
-        });
-    }
-
-}
-
-function initAuthListener() {
-    // Initialize Firebase if not already done
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-
-    // Listen for auth state changes
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            if (isNativeApp()) {
-                document.body.classList.add("native-app");
-            }
-            document.body.classList.add("authenticated");
-            setLoginLoading(false);
-
-            if (loginOverlay) {
-                loginOverlay.style.display = "none";
-            }
-
-            // Benutzername in Hero und Einstellungen eintragen
-            updateUserInfo(user);
-            window.__features?.presence?.onLogin(user);
-            window.__features?.bulletin?.onLogin(user);
-            window.__features?.streckenliste?.onLogin(user);
-
-            // Tab Bar sofort nach Login anzeigen
-            const bottomNav = document.getElementById("bottom-nav");
-            if (bottomNav) {
-                bottomNav.classList.remove("hidden");
-                setActiveTab("dashboard");
-            }
-
-            // Initialize app only once
-            if (!isAppInitialized) {
-                isAppInitialized=true;
-                initializeApp().then(async () => {
-                    try {
-                        if (isNativeApp()) {
-                            // Native App Push Initialisierung
-                            await window.__features?.notifications?.init({ swReg: null, appVersion: APP_VERSION });
-                        } else if ('serviceWorker' in navigator) {
-                            // PWA Service Worker Push Initialisierung
-                            let reg = window.globalSwReg || await navigator.serviceWorker.getRegistration();
-
-                            if (!reg) {
-                                const timeout = new Promise(r => setTimeout(() => r(null), 5000));
-                                reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
-                            }
-
-                            if (reg) {
-                                await window.__features?.notifications?.init({ swReg: reg, appVersion: APP_VERSION });
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Push init error:", e);
-                    }
-                }).catch((error) => {
-                    showToast("App Fehler: " + error.message, "error");
-                    console.error("App initialization error:", error);
-                });
-
-                // Show install banner after login
-                showInstallBannerAfterLogin();
-            }
-        } else {
-            // User is signed out
-            document.body.classList.remove("authenticated");
-            window.__features?.bulletin?.onLogout();
-            window.__features?.streckenliste?.onLogout();
-            window.__features?.dokumente?.onLogout();
-            window.__features?.map?.onLogout();
-
-            if (loginOverlay) {
-                loginOverlay.style.display = "flex";
-            }
-
-            setLoginLoading(false);
-        }
-    });
-}
-
-function logout() {
-    const user = firebase.auth().currentUser;
-    const performSignOut = () => {
-        firebase.auth().signOut().then(() => {
-            showToast("Erfolgreich abgemeldet");
-            isAppInitialized=false;
-        }).catch((error) => {
-            console.error("Logout error:", error);
-            showToast("Fehler beim Abmelden", "error");
-        });
-    };
-
-    if (user) {
-        const presenceP = window.__features?.presence?.markOffline?.();
-        if (presenceP && typeof presenceP.finally === 'function') {
-            presenceP.finally(performSignOut);
-        } else {
-            performSignOut();
-        }
-    } else {
-        performSignOut();
-    }
-}
+// v6 Refactor: Login, onAuthStateChanged, logout -> src/scripts/features/auth/
+// (Bridge: window.__features.auth, window.logout in initUI)
 
 // ==============================
 // CLOCK (nur für Login Screen)
@@ -1248,7 +1040,7 @@ function initAll() {
         });
     }
 
-    try { initLogin(); } catch (e) {
+    try { window.__features?.auth?.initLogin(); } catch (e) {
         console.error("Login init error:", e);
         showToast("Login Init Fehler", "error");
     }
@@ -1269,7 +1061,16 @@ function initAll() {
         console.error("Wetter Widget init error:", e);
     }
 
-    try { initAuthListener(); } catch (e) {
+    try {
+        window.__features?.auth?.initAuthListener?.({
+            firebaseConfig,
+            appVersion: APP_VERSION,
+            initializeApp,
+            updateUserInfo,
+            showInstallBannerAfterLogin,
+            setActiveTab,
+        });
+    } catch (e) {
         console.error("Auth Listener init error:", e);
     }
 
@@ -1291,6 +1092,10 @@ function initAll() {
 
     try { window.__features?.dokumente?.initUI(); } catch (e) {
         console.error("Dokumente init error:", e);
+    }
+
+    try { window.__features?.auth?.initUI(); } catch (e) {
+        console.error("Auth initUI error:", e);
     }
 
     try { window.__features?.map?.initUI(); } catch (e) {

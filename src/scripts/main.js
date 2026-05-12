@@ -19,6 +19,7 @@ import { schonzeitFeature } from './features/schonzeit/index.js';
 import { wetterFeature } from './features/wetter/index.js';
 import { dokumenteFeature } from './features/dokumente/index.js';
 import { mapFeature } from './features/map/index.js';
+import { authFeature } from './features/auth/index.js';
 
 const features = (window.__features = window.__features || {});
 features.presence = presenceFeature;
@@ -29,6 +30,7 @@ features.schonzeit = schonzeitFeature;
 features.wetter = wetterFeature;
 features.dokumente = dokumenteFeature;
 features.map = mapFeature;
+features.auth = authFeature;
 
 // Hilfreich fuer Debug + E2E-Tests: signalisiert, dass die Bridge bereit ist.
 window.__featuresReady = true;

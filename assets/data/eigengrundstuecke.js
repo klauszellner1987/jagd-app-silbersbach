@@ -1,4 +1,5 @@
-const eigengrundstuecke = [
+// eslint-disable-next-line no-var
+var eigengrundstuecke = [
     {
         id: "flur-476",
         name: "Flurstück 476",
