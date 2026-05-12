@@ -128,63 +128,7 @@ const jagdzeitenBayern = [
 // Bridge fuer v6-Module (z.B. streckenliste): Katalog + Icon-Helfer
 window.jagdzeitenBayern = jagdzeitenBayern;
 
-function showToast(message, type="info", icon = null) {
-    const container = document.getElementById("toast-container");
-    if (!container) return;
-
-    // Standard-Icons je nach Typ
-    const defaultIcons = {
-        info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
-        success: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
-        error: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
-        delete: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
-    };
-
-    const iconSvg = icon || defaultIcons[type] || defaultIcons.info;
-
-    const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span class="toast-icon">${iconSvg}</span><span class="toast-message">${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// Custom Confirm Dialog
-function showConfirm(message, title = "Bestätigung", okText = "Löschen") {
-    return new Promise((resolve) => {
-        const modal = document.getElementById("confirm-modal");
-        const titleEl = document.getElementById("confirm-title");
-        const messageEl = document.getElementById("confirm-message");
-        const okBtn = document.getElementById("confirm-ok-btn");
-        const cancelBtn = document.getElementById("confirm-cancel-btn");
-
-        if (!modal) {
-            resolve(confirm(message)); // Fallback
-            return;
-        }
-
-        titleEl.textContent = title;
-        messageEl.textContent = message;
-        okBtn.textContent = okText;
-        modal.classList.remove("hidden");
-
-        const cleanup = () => {
-            modal.classList.add("hidden");
-            okBtn.onclick=null;
-            cancelBtn.onclick=null;
-        };
-
-        okBtn.onclick=() => {
-            cleanup();
-            resolve(true);
-        };
-
-        cancelBtn.onclick=() => {
-            cleanup();
-            resolve(false);
-        };
-    });
-}
+// Toasts / Confirm: src/scripts/core/ui/index.js (window.showToast / window.showConfirm via main.js initBridge)
 
 // ==============================
 // PAGE NAVIGATION (Dashboard -> Pages -> Back)
@@ -922,7 +866,7 @@ function initAll() {
     });
 
     updateVersionDisplays();
-    showToast(`Reviersystem ${APP_VERSION} bereit`, "success");
+    window.showToast(`Reviersystem ${APP_VERSION} bereit`, "success");
 
     // iOS Bounce/Overscroll Fix
     try {
@@ -992,7 +936,7 @@ function initAll() {
                                 reader.readAsDataURL(uploadItem);
                             });
 
-                            showToast("Bild wird hochgeladen...", "info");
+                            window.showToast("Bild wird hochgeladen...", "info");
 
                             if (typeof firebase.storage !== "function") {
                                 throw new Error("Firebase Storage ist nicht geladen.");
@@ -1013,7 +957,7 @@ function initAll() {
                             photoURL = await Promise.race([upload, timeout]);
                         } catch (uploadError) {
                             console.error("Upload fehlgeschlagen:", uploadError);
-                            showToast("Foto-Upload fehlgeschlagen: " + uploadError.message, "error");
+                            window.showToast("Foto-Upload fehlgeschlagen: " + uploadError.message, "error");
                         }
                     }
 
@@ -1022,27 +966,27 @@ function initAll() {
                         photoURL: photoURL
                     });
 
-                    showToast("Profil aktualisiert!", "success");
+                    window.showToast("Profil aktualisiert!", "success");
                     updateUserInfo(user, newName, photoURL);
                     user.reload().catch(() => {});
 
                 } catch (error) {
                     console.error("Fehler beim Profil-Update:", error);
-                    showToast("Es gab ein Problem beim Speichern: " + error.message, "error");
+                    window.showToast("Es gab ein Problem beim Speichern: " + error.message, "error");
                 } finally {
                     const profileModal = document.getElementById("profile-modal");
                     if (profileModal) profileModal.classList.add("hidden");
                 }
             } else {
                 console.error("No user logged in during profile update");
-                showToast("Nicht angemeldet.", "error");
+                window.showToast("Nicht angemeldet.", "error");
             }
         });
     }
 
     try { window.__features?.auth?.initLogin(); } catch (e) {
         console.error("Login init error:", e);
-        showToast("Login Init Fehler", "error");
+        window.showToast("Login Init Fehler", "error");
     }
 
     try { initNavigation(); } catch (e) {

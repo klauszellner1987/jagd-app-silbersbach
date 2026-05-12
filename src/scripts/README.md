@@ -18,6 +18,8 @@ src/scripts/
       index.js
       webToken.js
       nativeToken.js
+    ui/                  # Toasts + Bestätigungsdialog (Brücke: window.showToast / showConfirm)
+      index.js
   data/                  # Repository-Layer (kapselt Firestore-Pfade)
     userRepo.js
     bulletinRepo.js
@@ -48,7 +50,6 @@ src/scripts/
       index.js
     auth/                # Login-Overlay, onAuthStateChanged, logout (Phase 8a)
       index.js
-  ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
 
@@ -139,7 +140,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 5         | `wetter/`            | migriert   | `wetter.pure.js` (Formatierung/HTML), `refresh` + `renderDetailGrid` |
 | 6         | `dokumente/`         | migriert   | `dokumente.pure.js`, `dokumenteRepo`, Wizard/Upload, `window.compressImage`-Brücke |
 | 7         | `map/`               | migriert   | Leaflet, GPS, Hochsitz-Panels, Eigengrundstücke, `mapRepo`, `AbortController` |
-| 8         | `auth/` + `core/`    | teilweise  | **8a:** `features/auth` — Login, `onAuthStateChanged`, `logout` (`window.logout`); **offen:** Profil-Modal, Toasts/Confirm, Navigation, PWA/SW, Version, `firebaseConfig` im Monolith |
+| 8         | `auth/` + `core/`    | teilweise  | **8a:** `features/auth`; **8b:** `core/ui` — `showToast` / `showConfirm`, `initBridge()` am Ende von `main.js`; **offen:** Navigation, Profil, PWA/SW, Version, `firebaseConfig` |
 
 ## Phase 8 — Inventur: Was noch in `public/js/app.js` liegt
 
@@ -149,7 +150,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | `firebaseConfig` | Compat-Init (Auth-Modul nutzt dieselbe Config per Injection) |
 | `isNativeApp` | Capacitor-Check |
 | `jagdzeitenBayern` + Bridge | `window.jagdzeitenBayern` für Schonzeit/Streckenliste |
-| `showToast` / `showConfirm` | UI-Helfer (künftig `core/ui` oder behalten bis alle Features umgestellt) |
+| `showToast` / `showConfirm` | → **`core/ui`** (`window.*` via `main.js`) |
 | Navigation | `navigateToPage`, `navigateToDashboard`, `closeMapPanels`, `setActiveTab`, `navigateToTab`, `initNavigation` |
 | `compressImage` + `window.compressImage` | Profil + Dokumente |
 | `updateUserInfo`, `openProfileModal`, Profil-`submit` in `initAll` | Firebase Auth Profil + Storage |
@@ -160,7 +161,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | `checkForUpdates`, `showUpdateToast` | Version-Fallback |
 | `initAll`, `updateVersionDisplays`, Error-Handler | Bootstrap |
 
-Nächste sinnvolle Schritte: **8b** Toasts/Confirm → `core/ui`, **8c** Navigation → `features/navigation` oder `core/shell`, **8d** Profil → `features/profile`, **8e** PWA + SW + Version → `core/pwa` / `core/version`, zuletzt **8f** schlanker `app.js`-Bootstrap + optional `firebaseConfig` auslagern.
+Nächste sinnvolle Schritte: **8c** Navigation, **8d** Profil, **8e** PWA + SW + Version, **8f** schlanker `app.js`-Bootstrap + optional `firebaseConfig` auslagern. (**8b** Toasts/Confirm → `core/ui` — erledigt.)
 
 ## Bekannte Einschränkungen / TODOs
 
