@@ -36,6 +36,9 @@ src/scripts/
     schonzeit/           # Jagd-/Schonzeiten (Widget + Listen, kein Firestore)
       index.js
       schonzeit.pure.js
+    wetter/              # Visual Crossing API, Dashboard-Kacheln, Detail-Grid
+      index.js
+      wetter.pure.js
   ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
@@ -124,7 +127,7 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 2         | `core/notifications/`| migriert   | FCM-Token (Web + Native), orthogonal zum Bulletin-Modul                   |
 | 3         | `streckenliste/`     | migriert   | entries-Repo, Liste/Modal/Fotos/Excel, Bridge + `renderDetailStats`       |
 | 4         | `schonzeit/`         | migriert   | Pure `schonzeit.pure.js`, Widget/Liste/API `initUI`; `pure.js`-Re-Export |
-| 5         | `wetter/`            | offen      | API-Layer + UI                                                            |
+| 5         | `wetter/`            | migriert   | `wetter.pure.js` (Formatierung/HTML), `refresh` + `renderDetailGrid` |
 | 6         | `dokumente/`         | offen      | Storage-Integration, Wizard-Flow                                          |
 | 7         | `map/`               | offen      | Leaflet + GPS, grösster Umfang                                            |
 | 8         | `auth/` + `core/`    | offen      | Ganz zum Schluss — `app.js` wird auf Bootstrap reduziert                  |
