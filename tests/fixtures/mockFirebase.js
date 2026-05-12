@@ -158,8 +158,10 @@
 
     const fakeMessaging = () => ({
         getToken: async () => 'mock-fcm-token',
-        onMessage: NOOP,
+        onMessage: () => () => {},
     });
+    // firebase.messaging.isSupported ist eine statische Methode am Namespace
+    fakeMessaging.isSupported = async () => true;
 
     window.firebase = {
         initializeApp: NOOP,
