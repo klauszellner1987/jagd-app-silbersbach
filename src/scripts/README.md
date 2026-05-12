@@ -23,6 +23,7 @@ src/scripts/
     bulletinRepo.js
     entriesRepo.js
     fcmTokenRepo.js
+    dokumenteRepo.js
   features/              # Domain-Module
     presence/            # PILOT - Online-Anzeige + Heartbeat
       index.js
@@ -39,6 +40,9 @@ src/scripts/
     wetter/              # Visual Crossing API, Dashboard-Kacheln, Detail-Grid
       index.js
       wetter.pure.js
+    dokumente/           # Dokumentensafe Wizard, Fotos Firebase Storage + FS
+      index.js
+      dokumente.pure.js
   ui/                    # Toasts, Modals, Image-Viewer (später)
   main.js                # Bootstrap-Bundle, registriert window.__features.*
 ```
@@ -128,14 +132,15 @@ Für jedes weitere Modul vor dem Merge nach `release/v6.0.0`:
 | 3         | `streckenliste/`     | migriert   | entries-Repo, Liste/Modal/Fotos/Excel, Bridge + `renderDetailStats`       |
 | 4         | `schonzeit/`         | migriert   | Pure `schonzeit.pure.js`, Widget/Liste/API `initUI`; `pure.js`-Re-Export |
 | 5         | `wetter/`            | migriert   | `wetter.pure.js` (Formatierung/HTML), `refresh` + `renderDetailGrid` |
-| 6         | `dokumente/`         | offen      | Storage-Integration, Wizard-Flow                                          |
+| 6         | `dokumente/`         | migriert   | `dokumente.pure.js`, `dokumenteRepo`, Wizard/Upload, `window.compressImage`-Brücke |
 | 7         | `map/`               | offen      | Leaflet + GPS, grösster Umfang                                            |
 | 8         | `auth/` + `core/`    | offen      | Ganz zum Schluss — `app.js` wird auf Bootstrap reduziert                  |
 
 ## Bekannte Einschränkungen / TODOs
 
 - `public/js/lib/pure.js` re-exportiert Schonzeit-Pure aus `features/schonzeit/`;
-  `compressImage` bleibt hier bis Profil bzw. Asset-Modul.
+  `compressImage` bleibt hier bis Profil bzw. Asset-Modul; der Monolith setzt zusätzlich
+  `window.compressImage` fuer das Dokumenten-Upload-Feature.
 - `window.firebase` (Compat-SDK) wird vom Monolithen erwartet — der wechsel
   auf modulares Firebase v9+ ist erst sinnvoll, wenn der Monolith vollständig
   weg ist.

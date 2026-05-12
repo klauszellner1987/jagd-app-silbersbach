@@ -54,7 +54,7 @@ window.toggleDashboardFeed = function(view) {
     } else if (view === 'dokumente') {
         if (dokumenteFeed) {
             dokumenteFeed.classList.remove("hidden");
-            initDokumenteSafe();
+            window.__features?.dokumente?.initSafe?.();
         }
     } else {
         standardFeed.classList.remove("hidden");
@@ -362,6 +362,8 @@ async function compressImage(file, maxWidth = 400, maxHeight = 400) {
         reader.onerror = () => reject(new Error("File read error"));
     });
 }
+
+window.compressImage = compressImage;
 
 // Benutzername für Begrüßung & Einstellungen laden
 function updateUserInfo(user, nameOverride = null, photoOverride = null) {
@@ -698,6 +700,7 @@ function initAuthListener() {
             document.body.classList.remove("authenticated");
             window.__features?.bulletin?.onLogout();
             window.__features?.streckenliste?.onLogout();
+            window.__features?.dokumente?.onLogout();
 
             if (loginOverlay) {
                 loginOverlay.style.display = "flex";
@@ -1867,249 +1870,6 @@ function showUpdateToast(forceReload=false, newVersion = null) {
 }
 
 // ==============================
-// DOKUMENTENSAFE
-// ==============================
-const DOKUMENT_KATEGORIEN = [
-    { id: 'jagderlaubnisschein', name: 'Jagderlaubnisschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-    { id: 'jagdschein', name: 'Jagdschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>' },
-    { id: 'waffenbesitzkarte', name: 'Waffenbesitzkarte', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>' },
-    { id: 'begehungsschein', name: 'Begehungsschein', icon: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="15" r="2"/></svg>' }
-];
-
-let dokumenteCache = {};
-
-function initDokumenteSafe() {
-    const wizardDone = localStorage.getItem('dokumente_wizard_done');
-    const wizard = document.getElementById('dokumente-wizard');
-    const grid = document.getElementById('dokumente-grid');
-    if (!wizard || !grid) return;
-
-    if (!wizardDone) {
-        wizard.classList.remove('hidden');
-        grid.classList.add('hidden');
-        initDokumenteWizard();
-    } else {
-        wizard.classList.add('hidden');
-        grid.classList.remove('hidden');
-        renderDokumenteSafe();
-    }
-}
-
-function initDokumenteWizard() {
-    const steps = document.querySelectorAll('.dok-wizard-step');
-    const dots = document.querySelectorAll('.dok-wizard-dot');
-    const prevBtn = document.getElementById('dok-wizard-prev');
-    const nextBtn = document.getElementById('dok-wizard-next');
-    if (!steps.length || !prevBtn || !nextBtn) return;
-
-    let currentStep = 0;
-    const totalSteps = steps.length;
-
-    function showStep(idx) {
-        steps.forEach(s => s.classList.remove('active'));
-        dots.forEach(d => d.classList.remove('active'));
-        steps[idx].classList.add('active');
-        dots[idx].classList.add('active');
-
-        prevBtn.classList.toggle('hidden', idx === 0);
-
-        if (idx === totalSteps - 1) {
-            nextBtn.textContent = 'Fertig';
-        } else {
-            nextBtn.textContent = 'Weiter';
-        }
-    }
-
-    prevBtn.onclick = () => {
-        if (currentStep > 0) {
-            currentStep--;
-            showStep(currentStep);
-        }
-    };
-
-    nextBtn.onclick = () => {
-        if (currentStep < totalSteps - 1) {
-            currentStep++;
-            showStep(currentStep);
-        } else {
-            localStorage.setItem('dokumente_wizard_done', 'true');
-            const wizard = document.getElementById('dokumente-wizard');
-            const grid = document.getElementById('dokumente-grid');
-            if (wizard) wizard.classList.add('hidden');
-            if (grid) grid.classList.remove('hidden');
-            renderDokumenteSafe();
-        }
-    };
-
-    showStep(0);
-}
-
-async function renderDokumenteSafe() {
-    const grid = document.getElementById('dokumente-grid');
-    if (!grid) return;
-
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        grid.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">Bitte zuerst anmelden.</p>';
-        return;
-    }
-
-    grid.innerHTML = DOKUMENT_KATEGORIEN.map(kat => `
-        <div class="wetter-detail-widget dok-widget" data-kategorie="${kat.id}">
-            <div class="wetter-detail-header">
-                ${kat.icon}
-                <span>${kat.name}</span>
-            </div>
-            <div class="wetter-detail-content">
-                <div class="dok-thumbnails" id="dok-thumbs-${kat.id}">
-                    <div class="dok-loading">Lade...</div>
-                </div>
-                <button class="dok-upload-btn" onclick="uploadDokument('${kat.id}')">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                    Foto hinzufügen
-                </button>
-            </div>
-        </div>
-    `).join('');
-
-    await loadDokumente(user.uid);
-}
-
-async function loadDokumente(uid) {
-    const db = firebase.firestore();
-    try {
-        const snapshot = await db.collection('users').doc(uid).collection('documents').get();
-        dokumenteCache = {};
-        snapshot.forEach(doc => {
-            dokumenteCache[doc.id] = doc.data();
-        });
-        DOKUMENT_KATEGORIEN.forEach(kat => renderDokumentThumbnails(kat.id));
-    } catch (err) {
-        console.error("Dokumente laden Fehler:", err);
-        showToast("Fehler beim Laden der Dokumente", "error");
-    }
-}
-
-function renderDokumentThumbnails(kategorie) {
-    const container = document.getElementById(`dok-thumbs-${kategorie}`);
-    const wizardContainer = document.getElementById(`wizard-thumbs-${kategorie}`);
-    const data = dokumenteCache[kategorie];
-    const images = (data && data.images) || [];
-
-    const html = images.length === 0
-        ? '<span class="dok-empty">Keine Dokumente</span>'
-        : images.map((img, idx) => `
-            <div class="dok-thumb-wrap">
-                <img src="${img.url}" alt="${kategorie}" class="dok-thumb-img" onclick="openImageModal('${img.url}')">
-                <button class="dok-thumb-delete" onclick="deleteDokument('${kategorie}', ${idx})" aria-label="Löschen">
-                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-        `).join('');
-
-    if (container) container.innerHTML = html;
-    if (wizardContainer) wizardContainer.innerHTML = html;
-}
-
-async function uploadDokument(kategorie) {
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        showToast("Bitte zuerst anmelden", "error");
-        return;
-    }
-
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.click();
-
-    fileInput.onchange = async () => {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        try {
-            showToast("Dokument wird hochgeladen...", "info");
-
-            const blob = await compressImage(file, 1200, 1200);
-
-            const storageRef = firebase.storage().ref();
-            const filename = `${Date.now()}.jpg`;
-            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${filename}`);
-
-            await fileRef.put(blob, { contentType: 'image/jpeg' });
-            const url = await fileRef.getDownloadURL();
-
-            const db = firebase.firestore();
-            const docRef = db.collection('users').doc(user.uid).collection('documents').doc(kategorie);
-            const docSnap = await docRef.get();
-            const existing = docSnap.exists ? (docSnap.data().images || []) : [];
-
-            existing.push({
-                url: url,
-                name: filename,
-                uploadedAt: Date.now()
-            });
-
-            await docRef.set({
-                images: existing,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-
-            if (!dokumenteCache[kategorie]) dokumenteCache[kategorie] = { images: [] };
-            dokumenteCache[kategorie].images = existing;
-            renderDokumentThumbnails(kategorie);
-
-            showToast("Dokument gespeichert", "success");
-        } catch (err) {
-            console.error("Dokument Upload Fehler:", err);
-            showToast("Fehler beim Hochladen: " + err.message, "error");
-        }
-    };
-}
-
-async function deleteDokument(kategorie, imageIndex) {
-    const confirmed = await showConfirm(
-        "Möchtest du dieses Dokument wirklich löschen?",
-        "Dokument löschen",
-        "Löschen"
-    );
-    if (!confirmed) return;
-
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    try {
-        const data = dokumenteCache[kategorie];
-        if (!data || !data.images || !data.images[imageIndex]) return;
-
-        const image = data.images[imageIndex];
-
-        // Storage-Datei loeschen
-        try {
-            const storageRef = firebase.storage().ref();
-            const fileRef = storageRef.child(`documents/${user.uid}/${kategorie}/${image.name}`);
-            await fileRef.delete();
-        } catch (storageErr) {
-            console.warn("Storage Datei konnte nicht gelöscht werden:", storageErr);
-        }
-
-        // Firestore aktualisieren
-        data.images.splice(imageIndex, 1);
-        const db = firebase.firestore();
-        await db.collection('users').doc(user.uid).collection('documents').doc(kategorie).set({
-            images: data.images,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        renderDokumentThumbnails(kategorie);
-        showToast("Dokument gelöscht", "delete");
-    } catch (err) {
-        console.error("Dokument löschen Fehler:", err);
-        showToast("Fehler beim Löschen", "error");
-    }
-}
-
-// ==============================
 // MAIN INITIALIZATION
 // ==============================
 function initAll() {
@@ -2294,6 +2054,10 @@ function initAll() {
 
     try { window.__features?.streckenliste?.initUI(); } catch (e) {
         console.error("Streckenliste init error:", e);
+    }
+
+    try { window.__features?.dokumente?.initUI(); } catch (e) {
+        console.error("Dokumente init error:", e);
     }
 }
 
