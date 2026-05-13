@@ -10,6 +10,7 @@ import {
     getJagdzeitDatum,
     wildartenNachTabFilter,
     filterWildartenMitJagdzeitWidget,
+    formatJagdzeitSpanne,
 } from './schonzeit.pure.js';
 
 const state = {
@@ -43,7 +44,7 @@ function updateSchonzeitWidget() {
     const jagdzeitWildarten = filterWildartenMitJagdzeitWidget(catalog());
 
     if (jagdzeitWildarten.length === 0) {
-        iconContainer.style.display = 'none';
+        iconContainer.style.display = '';
         wildartEl.textContent = 'Keine aktiven Jagdzeiten';
         datumEl.textContent = 'Alle Wildarten haben aktuell Schonzeit';
         indicatorEl.className = 'schonzeit-indicator closed';
@@ -52,7 +53,7 @@ function updateSchonzeitWidget() {
     }
 
     const wildart = jagdzeitWildarten[state.schonzeitIndex % jagdzeitWildarten.length];
-    iconContainer.style.display = 'none';
+    iconContainer.style.display = '';
     wildartEl.textContent = wildart.name;
     datumEl.textContent = getJagdzeitDatum(wildart);
     indicatorEl.className = 'schonzeit-indicator open';
@@ -83,7 +84,7 @@ function buildSchonzeitListeHTML(now = new Date()) {
         const statusText = hatSchonzeit ? 'Schonzeit' : 'Jagdzeit';
         const zeitInfo = wildart.keineJagdzeit
             ? 'Ganzjährige Schonzeit'
-            : (wildart.ganzjaehrig ? 'Ganzjährig bejagbar' : `Jagdzeit: ${wildart.jagdzeitStart || '-'} - ${wildart.jagdzeitEnde || '-'}`);
+            : (wildart.ganzjaehrig ? 'Ganzjährig bejagbar' : formatJagdzeitSpanne(wildart));
 
         return `
                 <div class="wildart-card">

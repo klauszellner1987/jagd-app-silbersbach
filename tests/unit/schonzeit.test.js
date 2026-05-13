@@ -83,6 +83,15 @@ describe('getJagdzeitDatum', () => {
         expect(getJagdzeitDatum(stockente)).toBe('Jagdzeit: 01.09 - 15.01');
         expect(getJagdzeitDatum(fasan)).toBe('Jagdzeit: 01.10 - 31.12');
     });
+
+    it('ganzjaehrig -> Ganzjährig bejagbar (kein undefined in der Zeile)', () => {
+        expect(getJagdzeitDatum(wildkaninchen)).toBe('Ganzjährig bejagbar');
+    });
+
+    it('fehlende Jagdzeit-Daten -> Verweis statt undefined', () => {
+        const ohneTermine = { id: 'x', name: 'Test', iconClass: 'fasan', jagdzeitStart: '', jagdzeitEnde: '' };
+        expect(getJagdzeitDatum(ohneTermine)).toBe('Jagdzeit: siehe Verordnung');
+    });
 });
 
 describe('parseJagdzeit', () => {

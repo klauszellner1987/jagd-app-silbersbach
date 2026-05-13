@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 5176;
-const BASE_URL = `http://localhost:${PORT}/jagd-app-silbersbach/`;
+const BASE_URL = `http://localhost:${PORT}/`;
 const isCI = !!process.env.CI;
 
 /** In CI nur Desktop-Chromium — halbiert Laenge und Linux-Flakes (Mobile bleibt lokal optional). */

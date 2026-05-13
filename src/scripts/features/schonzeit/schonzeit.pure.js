@@ -36,6 +36,22 @@ export function istSchonzeit(wildart, now = new Date()) {
 }
 
 /**
+ * Jagdzeit-Zeitraum als eine Zeile (nur wenn weder ganzjaehrig noch keineJagdzeit).
+ * @param {Object} wildart
+ * @returns {string}
+ */
+export function formatJagdzeitSpanne(wildart) {
+    const s = wildart?.jagdzeitStart;
+    const e = wildart?.jagdzeitEnde;
+    const sOk = s != null && String(s).trim() !== '';
+    const eOk = e != null && String(e).trim() !== '';
+    if (!sOk || !eOk) {
+        return 'Jagdzeit: siehe Verordnung';
+    }
+    return `Jagdzeit: ${s} - ${e}`;
+}
+
+/**
  * Kurze Beschreibung der Jagdzeit (ohne Schonzeit-Zwischenstatus).
  * @param {Object} wildart
  * @returns {string}
@@ -44,7 +60,10 @@ export function getJagdzeitDatum(wildart) {
     if (wildart.keineJagdzeit) {
         return 'Keine Jagdzeit';
     }
-    return `Jagdzeit: ${wildart.jagdzeitStart} - ${wildart.jagdzeitEnde}`;
+    if (wildart.ganzjaehrig) {
+        return 'Ganzjährig bejagbar';
+    }
+    return formatJagdzeitSpanne(wildart);
 }
 
 /** iconClass-Werte der Wildarten, die in der Schonzeit-Ansicht erscheinen (wie Legacy). */

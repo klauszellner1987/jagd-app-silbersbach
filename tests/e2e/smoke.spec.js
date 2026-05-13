@@ -20,14 +20,14 @@ const TEST_USER = {
 test.describe('Smoke (minimal E2E)', () => {
     test('Gast: Login-Overlay ist sichtbar', async ({ page }) => {
         await setupMockedApp(page, null);
-        await page.goto('/jagd-app-silbersbach/');
+        await page.goto('/');
         await expect(page.locator('#login-overlay')).toBeVisible({ timeout: 10_000 });
         await expect(page.locator('#login-form')).toBeVisible();
     });
 
     test('Mock-Auth: Dashboard sichtbar, Overlay weg', async ({ page }) => {
         await setupMockedApp(page, TEST_USER);
-        await page.goto('/jagd-app-silbersbach/');
+        await page.goto('/');
         await expect(page.locator('body')).toHaveClass(/authenticated/, { timeout: 10_000 });
         await expect(page.locator('#login-overlay')).toBeHidden();
         await expect(page.locator('#dashboard')).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('Smoke (minimal E2E)', () => {
 
     test('v6 Bridges: presence, bulletin, streckenliste, schonzeit, notifications', async ({ page }) => {
         await setupMockedApp(page, TEST_USER);
-        await page.goto('/jagd-app-silbersbach/');
+        await page.goto('/');
         await expect(page.locator('body')).toHaveClass(/authenticated/, { timeout: 10_000 });
 
         const bridges = await page.evaluate(() => ({
@@ -70,7 +70,7 @@ test.describe('Smoke (minimal E2E)', () => {
 
     test('Schwarzes Brett: Seed-Daten im DOM, Badge zaehlt nur offene', async ({ page }) => {
         await setupMockedApp(page, TEST_USER);
-        await page.goto('/jagd-app-silbersbach/');
+        await page.goto('/');
         await expect(page.locator('body')).toHaveClass(/authenticated/, { timeout: 10_000 });
 
         await page.evaluate(() => {
